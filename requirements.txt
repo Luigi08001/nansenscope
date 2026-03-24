@@ -1,0 +1,4 @@
+rich>=13.0
+aiohttp>=3.9
+plotly>=5.18
+kaleido>=0.2.1
