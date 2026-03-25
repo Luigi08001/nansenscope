@@ -6,27 +6,31 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-green)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-NansenScope scans Nansen's smart money data across multiple blockchains, detects actionable signals through cross-referencing, runs alert rules with cooldowns, generates visualizations, and produces intelligence reports — all from one command.
+NansenScope scans Nansen's smart money data across **18 blockchains**, detects actionable signals through cross-referencing, maps wallet networks, tracks perpetual trading sentiment, runs alert rules with cooldowns, generates visualizations, and produces intelligence reports — all from one command.
 
 ## What It Does
 
-1. **Multi-chain scanning** — Queries netflows, DEX trades, holdings, and token screener across Ethereum, Base, Solana, Arbitrum, and BNB
+1. **18-chain scanning** — Queries netflows, DEX trades, holdings, and token screener across Ethereum, Base, Solana, Arbitrum, BNB, Polygon, Avalanche, Optimism, Fantom, Blast, Scroll, zkSync, Linea, Mantle, Sei, Sui, Aptos, and Ronin
 2. **Signal detection** — Identifies accumulation, distribution, whale trades, position shifts, and convergence patterns
-3. **Alert engine** — 5 built-in rules (whale accumulation, SM divergence, cross-chain flow, new token attention, convergence spike) with cooldowns and history
-4. **Visualizations** — Flow heatmaps, signal timelines, chain comparison bars, holdings treemaps (Plotly → PNG)
-5. **Reports** — Structured Markdown with executive summary, chart embedding, and API cost tracking
-6. **Daily pipeline** — One command runs everything: `scan → signals → alerts → charts → report`
+3. **Wallet network analysis** — BFS graph expansion from seed addresses, cluster detection, centrality scoring, cross-chain presence mapping, and fund flow tracing
+4. **Perpetual trading intelligence** — Parses smart money perp trades from Hyperliquid, computes long/short ratios, detects consensus plays across multiple wallets
+5. **Alert engine** — 5 built-in rules (whale accumulation, SM divergence, cross-chain flow, new token attention, convergence spike) with cooldowns and history
+6. **Visualizations** — Flow heatmaps, signal timelines, chain comparison bars, holdings treemaps (Plotly → PNG)
+7. **Reports** — Structured Markdown with executive summary, chart embedding, and API cost tracking
+8. **Daily pipeline** — One command runs everything: `scan → signals → alerts → perps → charts → report`
 
 ## Architecture
 
 ```
-nansenscope.py    CLI (7 commands, argparse + Rich)
-  ├── scanner.py    Nansen CLI wrappers (async subprocess, retry/backoff)
+nansenscope.py    CLI (9 commands, argparse + Rich)
+  ├── scanner.py    Nansen CLI wrappers (20+ async endpoints, retry/backoff)
   ├── signals.py    Signal detection (5 detectors + convergence engine)
+  ├── network.py    Wallet network/cluster analysis (BFS, centrality, flow tracing)
+  ├── perps.py      Perpetual trading intelligence (Hyperliquid SM sentiment)
   ├── alerts.py     Alert engine (5 rules, cooldowns, JSON history)
   ├── charts.py     Plotly visualizations (4 chart types → PNG)
   ├── reporter.py   Markdown report generator (charts, alerts, cost tracking)
-  ├── config.py     Chains, thresholds, severity levels, API tracking
+  ├── config.py     18 chains, thresholds, severity levels, API tracking
   └── skill/        OpenClaw skill package
       ├── SKILL.md
       └── scripts/daily_scan.py
@@ -125,6 +129,12 @@ python nansenscope.py charts --chains ethereum,base
 # Profile a specific wallet
 python nansenscope.py profile --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --chain ethereum
 
+# Map wallet networks (the killer feature)
+python nansenscope.py network --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --chain ethereum --depth 2
+
+# Smart money perpetual trading sentiment
+python nansenscope.py perps --chains ethereum
+
 # Generate a full intelligence report
 python nansenscope.py report --chains ethereum,base,solana
 
@@ -214,18 +224,55 @@ openclaw cron add --name "nansenscope-daily" \
 
 See `skill/SKILL.md` for full skill specification.
 
+## Wallet Network Analysis (Killer Feature)
+
+Most tools look at wallets in isolation. NansenScope maps the **network** around a wallet:
+
+- **BFS expansion** — Starting from a seed address, discovers related wallets through counterparties and transactions (configurable depth)
+- **Cluster detection** — Groups connected wallets into clusters using connected components analysis
+- **Centrality scoring** — Identifies the most influential nodes (wallets that connect many others)
+- **Fund flow tracing** — Traces how capital moves through a network of wallets across configurable hops
+- **Cross-chain presence** — Scans all 18 chains to find where a wallet (or cluster) operates
+
+This reveals coordinated activity that single-wallet analysis misses entirely.
+
+## Perpetual Trading Intelligence
+
+Tracks smart money perpetual futures activity on Hyperliquid:
+
+- **Long/short ratio** — Aggregate positioning of smart money wallets per token
+- **Consensus detection** — Flags when multiple independent SM wallets take the same directional bet
+- **Sentiment scoring** — Bullish/bearish/neutral classification with confidence levels
+- Real data: tested with live Nansen CLI calls, producing actionable directional signals
+
 ## Nansen CLI Commands Used
 
 ```bash
+# Smart Money endpoints
 nansen research smart-money netflow --chain <chain>
 nansen research smart-money dex-trades --chain <chain>
 nansen research smart-money holdings --chain <chain>
 nansen research smart-money dcas --chain <chain>
+nansen research smart-money perp-trades --chain <chain>
+
+# Token analysis
 nansen research token screener --chain <chain> --timeframe 24h
+
+# Wallet profiling
 nansen research profiler pnl-summary --address <addr> --chain <chain> --days 30
 nansen research profiler counterparties --address <addr> --chain <chain>
 nansen research profiler labels --address <addr> --chain <chain>
 nansen research profiler balance --address <addr> --chain <chain>
+nansen research profiler historical-holdings --address <addr> --chain <chain>
+nansen research profiler historical-balances --address <addr> --chain <chain>
+nansen research profiler transactions --address <addr> --chain <chain>
+nansen research profiler related-wallets --address <addr> --chain <chain>
+nansen research profiler pnl --address <addr> --chain <chain>
+nansen research profiler portfolio --address <addr> --chain <chain>
+nansen research profiler defi --address <addr> --chain <chain>
+
+# Search
+nansen search --query <term>
 ```
 
 ## License
