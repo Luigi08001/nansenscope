@@ -59,6 +59,7 @@ class NetworkEdge:
     source: str
     target: str
     relation: str  # "First Funder", "counterparty", "related"
+    weight: float = 1.0
     chain: str = ""
     volume_usd: float = 0.0
     tx_hash: str = ""

@@ -87,6 +87,10 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"Comma-separated chains to scan (default: {','.join(DEFAULT_CHAINS)})",
     )
     scan_p.add_argument(
+        "--all-chains", action="store_true", default=False,
+        help="Scan ALL 18 supported chains (overrides --chains)",
+    )
+    scan_p.add_argument(
         "--output", "-o", type=str, default=None,
         help="Save report to file (default: reports/scan_YYYY-MM-DD.md)",
     )
@@ -135,7 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # ── network ──
     net_p = sub.add_parser("network", help="Wallet network & cluster analysis (KILLER FEATURE)")
-    net_p.add_argument("--address", "-a", required=True, help="Seed wallet address")
+    net_p.add_argument("--address", "-a", nargs="+", required=True, help="One or more seed wallet addresses")
     net_p.add_argument("--chain", "-c", default="ethereum", help="Chain (default: ethereum)")
     net_p.add_argument("--hops", type=int, default=2, help="Network expansion depth (default: 2)")
     net_p.add_argument("--max-nodes", type=int, default=30, help="Max nodes to discover (default: 30)")
@@ -164,7 +168,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 async def cmd_scan(args: argparse.Namespace):
     """Run a full multi-chain smart money scan."""
-    chains = [c.strip() for c in args.chains.split(",") if c.strip()]
+    if args.all_chains:
+        from config import ALL_CHAINS
+        chains = ALL_CHAINS
+    else:
+        chains = [c.strip() for c in args.chains.split(",") if c.strip()]
     show_banner()
 
     console.print(f"[bold cyan]Scanning {len(chains)} chains:[/bold cyan] {', '.join(chains)}\n")
@@ -485,9 +493,12 @@ async def cmd_network(args: argparse.Namespace):
     from network import NetworkAnalyzer
     show_banner()
 
+    seeds = args.address  # list of one or more addresses
+    seed_display = ", ".join(f"{a[:8]}..." for a in seeds)
+
     console.print(Panel(
         f"[bold]Wallet Network Analysis[/bold]\n"
-        f"Seed: {args.address}\n"
+        f"Seeds: {seed_display}\n"
         f"Chain: {args.chain} | Hops: {args.hops} | Max nodes: {args.max_nodes}",
         border_style="magenta",
     ))
@@ -501,7 +512,7 @@ async def cmd_network(args: argparse.Namespace):
         console=console,
     ) as progress:
         task = progress.add_task("Building wallet network...", total=None)
-        await analyzer.build_network([args.address], args.chain)
+        await analyzer.build_network(seeds, args.chain)
         progress.update(task, completed=True, description="[green]Network built")
 
     # Display results
@@ -544,13 +555,22 @@ async def cmd_network(args: argparse.Namespace):
             label = ", ".join(node.labels[:2]) if node and node.labels else "unlabeled"
             console.print(f"  {addr[:10]}... — {degree} connections ({label})")
 
+    # Generate bubble map
+    try:
+        bubble_path = analyzer.generate_bubble_map()
+        if bubble_path:
+            console.print(f"\n[green]✓[/green] Bubble map saved: {bubble_path}")
+    except Exception as e:
+        console.print(f"\n[yellow]Bubble map generation failed: {e}[/yellow]")
+
     # Save report
-    output_path = args.output or _default_report_path(f"network_{args.address[:8]}")
+    output_path = args.output or _default_report_path(f"network_{seeds[0][:8]}")
     report = analyzer.generate_report()
     saved = save_report(report, output_path)
 
     _display_api_stats()
     console.print(f"\n[bold green]Network report saved:[/bold green] {saved}")
+    console.print("[green]✓[/green] Command completed successfully")
 
 
 async def cmd_perps(args: argparse.Namespace):

@@ -407,20 +407,292 @@ def generate_all_charts(
 
 # ── Syndicate Bubble Map (Network Graph) ─────────────────────────────────────
 
+SM_LABELS = {"Fund", "Smart Trader", "30D Smart Trader",
+             "90D Smart Trader", "180D Smart Trader",
+             "Smart HL Perps Trader"}
+
+
+def _build_bubble_map_data(nodes: dict, edges: list, title: str) -> dict:
+    """
+    Shared computation for both PNG and HTML bubble maps.
+    Returns a dict with all computed layout data, traces, and stats.
+    """
+    import math
+    import networkx as nx
+
+    addr_list = list(nodes.keys())
+    n = len(addr_list)
+
+    # ── Build NetworkX graph for spring layout ──
+    G = nx.DiGraph()
+    for addr in addr_list:
+        G.add_node(addr)
+    for edge in edges:
+        if edge.source in nodes and edge.target in nodes:
+            w = getattr(edge, 'weight', 1.0) or 1.0
+            G.add_edge(edge.source, edge.target, weight=w,
+                       relation=getattr(edge, 'relation', ''))
+
+    # Spring layout with seed for reproducibility; heavier edges pull tighter
+    positions = nx.spring_layout(
+        G, k=2.5 / math.sqrt(max(n, 1)), iterations=80,
+        seed=42, weight='weight',
+    )
+
+    # ── Pre-compute node metrics ──
+    node_meta: dict[str, dict] = {}
+    for addr in addr_list:
+        nd = nodes[addr]
+        labels = nd.labels if hasattr(nd, 'labels') else []
+        is_sm = bool(SM_LABELS & set(labels))
+        is_seed = hasattr(nd, 'depth') and nd.depth == 0
+        conn_count = len(nd.connections) if hasattr(nd, 'connections') else 0
+        pnl = nd.pnl_usd if hasattr(nd, 'pnl_usd') else 0.0
+
+        # Size: logarithmic scaling; prefer PnL, fall back to connections
+        if pnl and abs(pnl) > 0:
+            raw = math.log2(abs(pnl) + 1)
+            size = max(18, min(raw * 4, 70))
+        else:
+            size = max(18, min(math.log2(conn_count + 1) * 12 + 14, 60))
+        if is_seed:
+            size = max(size, 55)
+        if is_sm:
+            size = max(size, 35)
+
+        # Color gradient: red (seed) -> gold (SM) -> blue (connected) -> gray (edge)
+        if is_seed:
+            color = "#E63946"     # vivid red
+        elif is_sm:
+            color = "#FFB703"     # gold
+        elif conn_count >= 3:
+            color = "#219EBC"     # blue (well-connected)
+        else:
+            color = "#8D99AE"     # gray (edge nodes)
+
+        node_meta[addr] = dict(
+            labels=labels, is_sm=is_sm, is_seed=is_seed,
+            conn_count=conn_count, pnl=pnl, size=size, color=color,
+        )
+
+    # ── Edge weight map (shared counterparties proxy = edge weight) ──
+    edge_weights: dict[tuple, float] = {}
+    for edge in edges:
+        key = (edge.source, edge.target)
+        w = getattr(edge, 'weight', 1.0) or 1.0
+        edge_weights[key] = edge_weights.get(key, 0) + w
+    max_ew = max(edge_weights.values()) if edge_weights else 1
+
+    # ── Cluster detection (connected components on undirected) ──
+    UG = G.to_undirected()
+    clusters = list(nx.connected_components(UG))
+    num_clusters = len([c for c in clusters if len(c) >= 2])
+
+    # ── Stats ──
+    sm_count = sum(1 for m in node_meta.values() if m['is_sm'])
+    total_pnl = sum(m['pnl'] for m in node_meta.values())
+
+    subtitle = (f"{num_clusters} cluster{'s' if num_clusters != 1 else ''} detected"
+                f" | {sm_count} Smart Money node{'s' if sm_count != 1 else ''}"
+                f" | ${total_pnl:,.0f} total PnL")
+
+    return dict(
+        positions=positions, node_meta=node_meta, edge_weights=edge_weights,
+        max_ew=max_ew, addr_list=addr_list, subtitle=subtitle,
+        num_clusters=num_clusters, sm_count=sm_count, total_pnl=total_pnl,
+        G=G,
+    )
+
+
+def _build_bubble_fig(nodes: dict, edges: list, title: str, data: dict) -> go.Figure:
+    """Build the Plotly figure from pre-computed data."""
+    import math
+
+    positions = data['positions']
+    node_meta = data['node_meta']
+    edge_weights = data['edge_weights']
+    max_ew = data['max_ew']
+    addr_list = data['addr_list']
+    subtitle = data['subtitle']
+
+    fig = go.Figure()
+
+    # ── Edge traces (grouped by weight for varied thickness) ──
+    # Bucket edges into thin / medium / thick
+    for bucket_label, lo, hi, width, opacity in [
+        ("weak", 0, 0.33, 0.6, 0.15),
+        ("medium", 0.33, 0.66, 1.5, 0.30),
+        ("strong", 0.66, 1.01, 3.0, 0.55),
+    ]:
+        ex, ey = [], []
+        for edge in edges:
+            if edge.source not in positions or edge.target not in positions:
+                continue
+            key = (edge.source, edge.target)
+            norm_w = edge_weights.get(key, 1) / max_ew
+            if lo <= norm_w < hi:
+                x0, y0 = positions[edge.source]
+                x1, y1 = positions[edge.target]
+                ex.extend([x0, x1, None])
+                ey.extend([y0, y1, None])
+        if ex:
+            fig.add_trace(go.Scatter(
+                x=ex, y=ey, mode="lines",
+                line=dict(width=width, color=f"rgba(150,180,220,{opacity})"),
+                hoverinfo="none", showlegend=False,
+            ))
+
+    # ── Arrow annotations for fund flow direction ──
+    arrow_annotations = []
+    for edge in edges:
+        if edge.source not in positions or edge.target not in positions:
+            continue
+        x0, y0 = positions[edge.source]
+        x1, y1 = positions[edge.target]
+        # Place arrowhead 80% along the edge (so it doesn't overlap the target node)
+        frac = 0.75
+        ax = x0 + frac * (x1 - x0)
+        ay = y0 + frac * (y1 - y0)
+        key = (edge.source, edge.target)
+        norm_w = edge_weights.get(key, 1) / max_ew
+        arrow_annotations.append(dict(
+            ax=x0 + 0.60 * (x1 - x0), ay=y0 + 0.60 * (y1 - y0),
+            x=ax, y=ay,
+            xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True,
+            arrowhead=3, arrowsize=1.2,
+            arrowwidth=max(0.8, norm_w * 2.5),
+            arrowcolor=f"rgba(150,180,220,{0.2 + norm_w * 0.5})",
+        ))
+
+    # ── Node trace ──
+    node_x, node_y = [], []
+    node_sizes, node_colors, node_text, node_hover = [], [], [], []
+    label_x, label_y, label_text = [], [], []
+
+    for addr in addr_list:
+        x, y = positions[addr]
+        meta = node_meta[addr]
+        node_x.append(x)
+        node_y.append(y)
+        node_sizes.append(meta['size'])
+        node_colors.append(meta['color'])
+
+        short = f"{addr[:6]}...{addr[-4:]}"
+        lbl_str = ", ".join(meta['labels'][:2]) if meta['labels'] else ""
+        pnl = meta['pnl']
+
+        hover = (f"<b>{short}</b><br>"
+                 f"Labels: {', '.join(meta['labels'][:3]) or 'none'}<br>"
+                 f"PnL: ${pnl:,.0f}<br>"
+                 f"Connections: {meta['conn_count']}<br>"
+                 f"{'SMART MONEY' if meta['is_sm'] else ''}"
+                 f"{'SEED' if meta['is_seed'] else ''}")
+        node_hover.append(hover)
+
+        # Only label nodes with 3+ connections or SM/seed
+        if meta['conn_count'] >= 3 or meta['is_sm'] or meta['is_seed']:
+            label_x.append(x)
+            label_y.append(y + meta['size'] * 0.006 + 0.04)
+            tag = lbl_str if lbl_str else short
+            label_text.append(tag[:20])
+
+    # Glow effect: larger faint circle behind each node
+    fig.add_trace(go.Scatter(
+        x=node_x, y=node_y,
+        mode="markers",
+        marker=dict(
+            size=[s * 1.6 for s in node_sizes],
+            color=node_colors,
+            opacity=0.08,
+        ),
+        hoverinfo="none", showlegend=False,
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=node_x, y=node_y,
+        mode="markers",
+        marker=dict(
+            size=node_sizes,
+            color=node_colors,
+            line=dict(width=1.5, color="rgba(255,255,255,0.25)"),
+            opacity=0.92,
+        ),
+        hovertext=node_hover,
+        hoverinfo="text",
+        name="Wallets",
+    ))
+
+    # Label trace (separate to avoid overlap with markers)
+    if label_x:
+        fig.add_trace(go.Scatter(
+            x=label_x, y=label_y,
+            mode="text",
+            text=label_text,
+            textfont=dict(size=9, color="#E0E6ED",
+                          family="Courier New, monospace"),
+            hoverinfo="none", showlegend=False,
+        ))
+
+    # ── Legend traces ──
+    for name, color in [("Seed Wallet", "#E63946"), ("Smart Money", "#FFB703"),
+                        ("Connected (3+)", "#219EBC"), ("Edge Node", "#8D99AE")]:
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None], mode="markers",
+            marker=dict(size=10, color=color, symbol="circle"),
+            name=name,
+        ))
+
+    # ── Layout ──
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#0B0E13",
+        plot_bgcolor="#0F1318",
+        font=dict(family="Courier New, monospace", color="#C9D1D9"),
+        title=dict(
+            text=(f"<b>{title}</b><br>"
+                  f"<span style='font-size:13px;color:#8B949E'>"
+                  f"{len(nodes)} nodes · {len(edges)} edges · {subtitle}</span>"),
+            font=dict(size=20, color="#E6EDF3"),
+            x=0.5, xanchor="center",
+        ),
+        showlegend=True,
+        legend=dict(
+            x=0.01, y=0.99, bgcolor="rgba(11,14,19,0.85)",
+            bordercolor="rgba(150,180,220,0.2)", borderwidth=1,
+            font=dict(color="#C9D1D9", size=11),
+        ),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False,
+                    showline=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False,
+                    showline=False, scaleanchor="x"),
+        margin=dict(l=20, r=20, t=90, b=30),
+        annotations=arrow_annotations[:200],  # cap annotations for performance
+        width=1400, height=1000,
+    )
+
+    return fig
+
+
 def syndicate_bubble_map(
     nodes: dict,  # {addr: WalletNode}
     edges: list,  # [NetworkEdge]
     title: str = "Syndicate Hunter — Wallet Network Map",
 ) -> str:
     """
-    Generate an interactive-style bubble map of wallet connections.
-    
-    - Node size = connection count (more connected = bigger)
-    - Node color = Smart Money (gold) vs regular (gray)
-    - Edge opacity = relationship strength
-    - Labels show truncated address + labels
+    Generate a competition-grade bubble map of wallet connections.
 
-    This is the visual that wins competitions.
+    Features:
+    - Force-directed (spring) layout via NetworkX
+    - Edge thickness proportional to relationship weight
+    - Directional arrows showing fund flow
+    - Logarithmic node sizing (PnL or connection count fallback)
+    - Smart label placement (only high-connectivity / SM nodes)
+    - Cluster & stats subtitle
+    - Color gradient: red (seed) -> gold (SM) -> blue -> gray
+    - Also generates interactive HTML version
+
+    Returns path to saved PNG.
     """
     if not nodes or len(nodes) < 2:
         log.warning("Not enough nodes for bubble map")
@@ -428,151 +700,67 @@ def syndicate_bubble_map(
 
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    import math
+    data = _build_bubble_map_data(nodes, edges, title)
+    fig = _build_bubble_fig(nodes, edges, title, data)
 
-    # Layout: circular with clusters grouped
-    addr_list = list(nodes.keys())
-    n = len(addr_list)
-    positions = {}
+    # Save PNG
+    png_path = str(CHARTS_DIR / "syndicate_bubble_map.png")
+    try:
+        fig.write_image(png_path, width=1400, height=1000, scale=2)
+        log.info("Syndicate bubble map PNG saved: %s", png_path)
+    except Exception as e:
+        log.error("Failed to write PNG: %s", e)
+        png_path = ""
 
-    # Simple force-directed-ish layout: place connected nodes closer
-    for i, addr in enumerate(addr_list):
-        angle = 2 * math.pi * i / n
-        radius = 2.0
-        # Pull SM nodes toward center
-        node = nodes[addr]
-        if hasattr(node, 'is_smart_money') and node.is_smart_money:
-            radius = 1.0
-        elif hasattr(node, 'depth') and node.depth == 0:
-            radius = 0.3  # Seed node at center
-        positions[addr] = (radius * math.cos(angle), radius * math.sin(angle))
+    # Also generate HTML interactive version
+    try:
+        html_path = syndicate_bubble_map_html(nodes, edges, title, _precomputed=data)
+        log.info("Syndicate bubble map HTML saved: %s", html_path)
+    except Exception as e:
+        log.error("Failed to write HTML: %s", e)
 
-    # Build edge traces
-    edge_x, edge_y = [], []
-    for edge in edges:
-        if edge.source in positions and edge.target in positions:
-            x0, y0 = positions[edge.source]
-            x1, y1 = positions[edge.target]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
+    return png_path
 
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=0.8, color="rgba(150,150,150,0.3)"),
-        hoverinfo="none",
-        mode="lines",
-        name="Connections",
+
+def syndicate_bubble_map_html(
+    nodes: dict,
+    edges: list,
+    title: str = "Syndicate Hunter — Wallet Network Map",
+    *,
+    _precomputed: dict | None = None,
+) -> str:
+    """
+    Generate an interactive HTML bubble map with hover details.
+    Judges can explore the network in-browser.
+
+    Returns path to saved HTML file.
+    """
+    if not nodes or len(nodes) < 2:
+        log.warning("Not enough nodes for HTML bubble map")
+        return ""
+
+    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    data = _precomputed or _build_bubble_map_data(nodes, edges, title)
+    fig = _build_bubble_fig(nodes, edges, title, data)
+
+    # Enhance for interactive: bigger hover labels, zoom/pan instructions
+    fig.update_layout(
+        dragmode="pan",
+        modebar=dict(bgcolor="rgba(0,0,0,0)", color="#8B949E",
+                     activecolor="#FFB703"),
     )
 
-    # Build node traces
-    node_x, node_y = [], []
-    node_sizes, node_colors, node_text, node_hover = [], [], [], []
+    html_path = str(CHARTS_DIR / "syndicate_bubble_map.html")
+    try:
+        fig.write_html(
+            html_path,
+            include_plotlyjs="cdn",
+            full_html=True,
+            config={"scrollZoom": True, "displayModeBar": True},
+        )
+    except Exception as e:
+        log.error("Failed to write HTML: %s", e)
+        return ""
 
-    SM_LABELS = {"Fund", "Smart Trader", "30D Smart Trader",
-                 "90D Smart Trader", "180D Smart Trader",
-                 "Smart HL Perps Trader"}
-
-    for addr in addr_list:
-        node = nodes[addr]
-        x, y = positions[addr]
-        node_x.append(x)
-        node_y.append(y)
-
-        # Size by connection count
-        conn_count = len(node.connections) if hasattr(node, 'connections') else 0
-        base_size = max(15, min(conn_count * 8 + 15, 60))
-
-        # Seed nodes get extra size
-        if hasattr(node, 'depth') and node.depth == 0:
-            base_size = 50
-
-        node_sizes.append(base_size)
-
-        # Color: gold for SM, blue for seed, gray for others
-        labels = node.labels if hasattr(node, 'labels') else []
-        is_sm = bool(SM_LABELS & set(labels))
-        is_seed = hasattr(node, 'depth') and node.depth == 0
-
-        if is_seed:
-            node_colors.append("#FF4500")  # Orange-red for seed
-        elif is_sm:
-            node_colors.append("#FFD700")  # Gold for Smart Money
-        else:
-            node_colors.append("#4A9EFF")  # Blue for regular
-
-        # Label
-        short_addr = f"{addr[:6]}...{addr[-4:]}"
-        label_str = ", ".join(labels[:2]) if labels else ""
-        display = f"{short_addr}" + (f"\n{label_str}" if label_str else "")
-        node_text.append(display)
-
-        # Hover info
-        pnl = node.pnl_usd if hasattr(node, 'pnl_usd') else 0
-        hover = (f"Address: {addr[:10]}...\n"
-                 f"Labels: {', '.join(labels[:3]) or 'none'}\n"
-                 f"PnL: ${pnl:,.0f}\n"
-                 f"Connections: {conn_count}")
-        node_hover.append(hover)
-
-    node_trace = go.Scatter(
-        x=node_x, y=node_y,
-        mode="markers+text",
-        marker=dict(
-            size=node_sizes,
-            color=node_colors,
-            line=dict(width=1.5, color="rgba(255,255,255,0.3)"),
-            opacity=0.9,
-        ),
-        text=node_text,
-        textposition="bottom center",
-        textfont=dict(size=8, color="#C9D1D9"),
-        hovertext=node_hover,
-        hoverinfo="text",
-        name="Wallets",
-    )
-
-    # Legend trace for SM vs regular
-    legend_sm = go.Scatter(
-        x=[None], y=[None],
-        mode="markers",
-        marker=dict(size=12, color="#FFD700"),
-        name="Smart Money",
-    )
-    legend_seed = go.Scatter(
-        x=[None], y=[None],
-        mode="markers",
-        marker=dict(size=12, color="#FF4500"),
-        name="Seed Wallet",
-    )
-    legend_reg = go.Scatter(
-        x=[None], y=[None],
-        mode="markers",
-        marker=dict(size=12, color="#4A9EFF"),
-        name="Connected Wallet",
-    )
-
-    fig = go.Figure(
-        data=[edge_trace, node_trace, legend_sm, legend_seed, legend_reg],
-        layout=go.Layout(
-            title=dict(
-                text=f"<b>{title}</b><br><sup>{len(nodes)} nodes · {len(edges)} connections</sup>",
-                font=dict(size=18, color="#C9D1D9"),
-                x=0.5,
-            ),
-            showlegend=True,
-            legend=dict(
-                x=0.02, y=0.98,
-                bgcolor="rgba(13,17,23,0.8)",
-                font=dict(color="#C9D1D9"),
-            ),
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            **LAYOUT_DEFAULTS,
-        ),
-    )
-
-    # Save
-    path = str(CHARTS_DIR / "syndicate_bubble_map.png")
-    fig.write_image(path, width=1200, height=900, scale=2)
-    log.info("Syndicate bubble map saved to %s", path)
-    return path
+    return html_path

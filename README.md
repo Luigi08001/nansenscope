@@ -1,280 +1,420 @@
-# NansenScope
 
-> **Autonomous Smart Money Intelligence Agent** | Nansen CLI Challenge Week 2
+<p align="center">
+<pre>
+ _   _                            ____
+| \ | | __ _ _ __  ___  ___ _ __ / ___|  ___ ___  _ __   ___
+|  \| |/ _` | '_ \/ __|/ _ \ '_ \\___ \ / __/ _ \| '_ \ / _ \
+| |\  | (_| | | | \__ \  __/ | | |___) | (_| (_) | |_) |  __/
+|_| \_|\__,_|_| |_|___/\___|_| |_|____/ \___\___/| .__/ \___|
+                                                  |_|
+</pre>
+</p>
 
-[![Nansen CLI Challenge](https://img.shields.io/badge/Nansen%20CLI-Challenge%20Week%202-blue)](https://docs.nansen.ai)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-green)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<h3 align="center">Autonomous Smart Money Intelligence Agent powered by Nansen CLI</h3>
 
-NansenScope scans Nansen's smart money data across **18 blockchains**, detects actionable signals through cross-referencing, maps wallet networks, tracks perpetual trading sentiment, runs alert rules with cooldowns, generates visualizations, and produces intelligence reports — all from one command.
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#commands">Commands</a> •
+  <a href="#chains">Chains</a> •
+  <a href="#how-it-works">How It Works</a>
+</p>
 
-## What It Does
+<p align="center">
+  <img src="https://img.shields.io/badge/chains-18-blue?style=flat-square" alt="18 Chains" />
+  <img src="https://img.shields.io/badge/signals-9_engines-orange?style=flat-square" alt="9 Signal Engines" />
+  <img src="https://img.shields.io/badge/python-3.11+-green?style=flat-square" alt="Python 3.11+" />
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="MIT License" />
+  <img src="https://img.shields.io/badge/%23NansenCLI-Challenge_Week_2-purple?style=flat-square" alt="NansenCLI Challenge" />
+</p>
 
-1. **18-chain scanning** — Queries netflows, DEX trades, holdings, and token screener across Ethereum, Base, Solana, Arbitrum, BNB, Polygon, Avalanche, Optimism, Fantom, Blast, Scroll, zkSync, Linea, Mantle, Sei, Sui, Aptos, and Ronin
-2. **Signal detection** — Identifies accumulation, distribution, whale trades, position shifts, and convergence patterns
-3. **Wallet network analysis** — BFS graph expansion from seed addresses, cluster detection, centrality scoring, cross-chain presence mapping, and fund flow tracing
-4. **Perpetual trading intelligence** — Parses smart money perp trades from Hyperliquid, computes long/short ratios, detects consensus plays across multiple wallets
-5. **Alert engine** — 5 built-in rules (whale accumulation, SM divergence, cross-chain flow, new token attention, convergence spike) with cooldowns and history
-6. **Visualizations** — Flow heatmaps, signal timelines, chain comparison bars, holdings treemaps (Plotly → PNG)
-7. **Reports** — Structured Markdown with executive summary, chart embedding, and API cost tracking
-8. **Daily pipeline** — One command runs everything: `scan → signals → alerts → perps → charts → report`
+---
+
+**NansenScope** doesn't just read Nansen data — it thinks about it. It scans 18 chains, detects signals across netflows/DEX trades/holdings/screener data, cross-references them for convergence, maps wallet networks via BFS graph traversal, tracks perpetual positions on Hyperliquid, and delivers prioritized intelligence reports. One command. Zero manual work.
+
+---
+
+## Features
+
+| Module | Command | What It Does |
+|--------|---------|-------------|
+| **⚡ Chain Sweep** | `scan` | Multi-chain smart money scan across 18 chains — netflows, DEX trades, holdings, token screener — all in parallel |
+| **🕸️ Syndicate Hunter** | `network` | Wallet cluster detection via BFS graph traversal. Maps counterparties, related wallets, and first-funders to expose coordinated groups |
+| **📊 Leverage Radar** | `perps` | Hyperliquid perpetual position intelligence — long/short ratios, top tokens, whale position tracking |
+| **🎯 Signal Fusion** | `signals` | Cross-chain convergence detection. When multiple signal types fire on the same token across chains, that's alpha |
+| **🚨 Threat Matrix** | `alerts` | Rule-based alert engine with cooldown management, deduplication, and persistent history tracking |
+| **🎨 Intel Canvas** | `charts` | Plotly visualizations — chain heatmaps, signal severity distributions, netflow comparisons, bubble maps |
+| **📋 Morning Brief** | `daily` | Full daily pipeline: scan → signals → alerts → perps → charts → report. One command, complete intel |
+| **🔍 Deep Dive** | `profile` | Single wallet forensics — PnL summary, counterparties, labels, balance, trading performance |
+| **📄 Situation Report** | `report` | Full intelligence report in structured markdown — human-readable and LLM-parseable |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- [Nansen CLI](https://cli.nansen.ai) installed and authenticated (`nansen auth login`)
+
+### Install
+
+```bash
+# Clone
+git clone https://github.com/yourusername/nansenscope.git
+cd nansenscope
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run your first scan
+python nansenscope.py scan --chains ethereum,base,solana
+```
+
+### First Commands
+
+```bash
+# Full scan across default chains (ethereum, solana, base, bnb, arbitrum)
+python nansenscope.py scan
+
+# Deep dive on a specific wallet
+python nansenscope.py profile --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+
+# Detect cross-chain convergence signals
+python nansenscope.py signals --top 20
+
+# Map a wallet's network (THE killer feature)
+python nansenscope.py network --address 0x... --hops 2 --max-nodes 30
+
+# Smart Money perp positions on Hyperliquid
+python nansenscope.py perps --limit 50
+
+# Run the full daily pipeline
+python nansenscope.py daily
+```
+
+---
 
 ## Architecture
 
 ```
-nansenscope.py    CLI (9 commands, argparse + Rich)
-  ├── scanner.py    Nansen CLI wrappers (20+ async endpoints, retry/backoff)
-  ├── signals.py    Signal detection (5 detectors + convergence engine)
-  ├── network.py    Wallet network/cluster analysis (BFS, centrality, flow tracing)
-  ├── perps.py      Perpetual trading intelligence (Hyperliquid SM sentiment)
-  ├── alerts.py     Alert engine (5 rules, cooldowns, JSON history)
-  ├── charts.py     Plotly visualizations (4 chart types → PNG)
-  ├── reporter.py   Markdown report generator (charts, alerts, cost tracking)
-  ├── config.py     18 chains, thresholds, severity levels, API tracking
-  └── skill/        OpenClaw skill package
-      ├── SKILL.md
-      └── scripts/daily_scan.py
+┌─────────────────────────────────────────────────────────────────┐
+│                        NansenScope CLI                          │
+│                      nansenscope.py (9 commands)                │
+├─────────────┬──────────────┬──────────────┬─────────────────────┤
+│             │              │              │                     │
+│  scanner.py │  signals.py  │  network.py  │     perps.py        │
+│  ─────────  │  ──────────  │  ──────────  │     ────────        │
+│  Nansen CLI │  Signal      │  BFS Graph   │     Hyperliquid     │
+│  subprocess │  detection   │  Traversal   │     Perp Intel      │
+│  wrapper    │  engine      │  & Clusters  │                     │
+│  w/ retries │  (6 types)   │              │                     │
+│             │              │              │                     │
+├─────────────┴──────┬───────┴──────────────┴─────────────────────┤
+│                    │                                            │
+│   alerts.py        │        charts.py        reporter.py        │
+│   ─────────        │        ──────────       ────────────       │
+│   Rule engine      │        Plotly PNG       Markdown reports   │
+│   w/ cooldowns     │        generation       (structured,       │
+│   & history        │                         LLM-parseable)     │
+│                    │                                            │
+├────────────────────┴────────────────────────────────────────────┤
+│                        config.py                                │
+│          Chains · Thresholds · Severity · API Tracking          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │   Nansen CLI     │
+                    │   (subprocess)   │
+                    │   v1.21.0+       │
+                    └──────────────────┘
 ```
 
-```
-                    ┌─────────────────────────────────────┐
-                    │         nansenscope.py (CLI)         │
-                    │  scan│profile│signals│alerts│charts  │
-                    │            │daily│report             │
-                    └─────────┬───────────────┬───────────┘
-                              │               │
-                 ┌────────────▼──┐    ┌───────▼────────┐
-                 │  scanner.py   │    │   config.py    │
-                 │ async Nansen  │    │  chains, thres │
-                 │ CLI wrappers  │    │  API tracker   │
-                 └──────┬────┬──┘    └────────────────┘
-                        │    │
-           ┌────────────▼┐  └──────────┐
-           │ signals.py  │             │
-           │ 5 detectors │      ┌──────▼──────┐
-           │ convergence │      │  alerts.py  │
-           └──────┬──────┘      │ 5 rules     │
-                  │             │ cooldowns   │
-           ┌──────▼──────┐     └─────────────┘
-           │ reporter.py │
-           │ MD reports  │──── charts.py (Plotly PNG)
-           └─────────────┘
-```
+---
 
-## Setup
+## Commands in Detail
 
-### 1. Install Nansen CLI
+### ⚡ Chain Sweep — `scan`
+
+Scans all core smart money endpoints across your chosen chains in parallel:
+- **Netflows** — where capital is moving (in/out by token)
+- **DEX Trades** — what smart money is actively buying/selling
+- **Holdings** — what positions smart money currently holds
+- **Token Screener** — tokens gaining smart money attention
 
 ```bash
-npm install -g nansen-cli
+python nansenscope.py scan --chains ethereum,base,solana,arbitrum,bnb
 ```
 
-### 2. Set Up x402 Payment (USDC on Base)
+![Chain Sweep](screenshots/screenshot_scan.png)
 
-NansenScope uses [x402 micropayments](https://docs.nansen.ai) — no API key needed. Each CLI call is paid per-use with USDC on Base.
+---
+
+### 🕸️ Syndicate Hunter — `network`
+
+**The killer feature.** Starting from a seed wallet, NansenScope uses BFS (breadth-first search) to expand through related wallets and counterparties, building a full network graph. It then:
+
+- Detects **wallet clusters** (coordinated groups)
+- Identifies **smart money nodes** within the network
+- Finds **central nodes** (most connected wallets)
+- Maps **counterparty relationships** by volume
 
 ```bash
-# Create a wallet
-nansen wallet create
-
-# Fund it with USDC on Base network
-# Send USDC to the displayed wallet address on Base chain
-# Minimum ~$5 USDC recommended for a full scan
-
-# Verify wallet is set up
-nansen wallet status
+python nansenscope.py network --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 \
+  --chain ethereum --hops 2 --max-nodes 30
 ```
 
-Alternatively, use an API key:
-```bash
-nansen login --api-key <your-key>
-```
+![Syndicate Hunter](screenshots/screenshot_network.png)
 
-### 3. Install Python Dependencies
+---
+
+### 📊 Leverage Radar — `perps`
+
+Taps into Hyperliquid perpetual trading data from Smart Money wallets:
+- Long/short ratio and market sentiment
+- Top tokens by perpetual volume
+- Individual whale position tracking
+- Signal detection on large leveraged bets
 
 ```bash
-cd nansenscope
-pip install -r requirements.txt
+python nansenscope.py perps --limit 50
 ```
 
-**Dependencies:** `rich`, `aiohttp`, `plotly`, `kaleido`
+![Leverage Radar](screenshots/screenshot_perps.png)
 
-## Usage
+---
 
-### Daily Pipeline (The Killer Feature)
+### 🎯 Signal Fusion — `signals`
 
-One command runs the full intelligence pipeline:
+The signal engine runs 6 detector types across all scanned data, then cross-references for **convergence** — when multiple independent signals fire on the same token:
+
+| Detector | What It Catches |
+|----------|----------------|
+| Netflow Signals | Large capital inflows/outflows, extreme imbalances |
+| DEX Trade Signals | Whale trades, accumulation/distribution patterns |
+| Holdings Signals | Significant position changes across SM wallets |
+| Screener Signals | Tokens gaining unusual SM attention |
+| Convergence | Multiple signal types on same token = high conviction |
+| Cross-Chain | Same token accumulation across multiple chains |
+
+Signals are scored 0–100 and ranked by severity (CRITICAL → HIGH → MEDIUM → LOW).
+
+```bash
+python nansenscope.py signals --chains ethereum,base --top 20
+```
+
+![Signal Fusion](screenshots/screenshot_signals.png)
+
+---
+
+### 🚨 Threat Matrix — `alerts`
+
+Production-grade alert engine built on top of signals:
+- **Rule-based** — configurable conditions per severity level
+- **Cooldown management** — prevents alert fatigue with per-rule cooldowns
+- **Deduplication** — same alert won't fire twice within cooldown window
+- **Persistent history** — alert log stored as JSON for audit trail
+
+```bash
+python nansenscope.py alerts --chains ethereum,base,solana
+```
+
+---
+
+### 🎨 Intel Canvas — `charts`
+
+Auto-generates Plotly visualizations saved as PNG:
+- Chain activity heatmaps
+- Signal severity distribution
+- Netflow comparison charts
+- Bubble maps for multi-dimensional data
+
+```bash
+python nansenscope.py charts --chains ethereum,base,solana
+```
+
+![Intel Canvas](screenshots/screenshot_charts.png)
+
+---
+
+### 📋 Morning Brief — `daily`
+
+The full pipeline in one command. Runs all 5 stages sequentially:
+
+```
+scan → signals → alerts → charts → report
+```
 
 ```bash
 python nansenscope.py daily --chains ethereum,base,solana,arbitrum,bnb
 ```
 
-This executes: **scan → signals → alerts → charts → report** and saves everything to `reports/`.
+Outputs a timestamped daily report with everything: signals, alerts, charts, and API usage stats.
 
-### Individual Commands
+---
 
-```bash
-# Scan chains for smart money activity
-python nansenscope.py scan --chains ethereum,base,solana
+## Supported Chains
 
-# Detect and rank signals
-python nansenscope.py signals --chains ethereum --top 20
+NansenScope supports all **18 chains** available in Nansen CLI v1.21.0:
 
-# Run alert engine (with cooldowns and history)
-python nansenscope.py alerts --chains ethereum,base,solana
+| Core Chains | Extended Chains | |
+|-------------|-----------------|---|
+| Ethereum | Polygon | Ronin |
+| Solana | Optimism | Sei |
+| Base | Avalanche | Plasma |
+| BNB | Linea | Sonic |
+| Arbitrum | Scroll | Monad |
+| | Mantle | HyperEVM |
+| | | IOTA EVM |
 
-# Generate visualizations (PNG charts)
-python nansenscope.py charts --chains ethereum,base
+Plus **Hyperliquid** for perpetual trading data.
 
-# Profile a specific wallet
-python nansenscope.py profile --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --chain ethereum
+---
 
-# Map wallet networks (the killer feature)
-python nansenscope.py network --address 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --chain ethereum --depth 2
-
-# Smart money perpetual trading sentiment
-python nansenscope.py perps --chains ethereum
-
-# Generate a full intelligence report
-python nansenscope.py report --chains ethereum,base,solana
-
-# Verbose mode (debug logging)
-python nansenscope.py -v daily --chains ethereum
-```
-
-### Cron / Automated Daily Scan
-
-```bash
-# Standalone script for cron (outputs markdown to stdout)
-python3 skill/scripts/daily_scan.py --chains ethereum,base,solana
-
-# Crontab: run daily at 8:00 AM UTC
-# 0 8 * * * cd /path/to/nansenscope && python3 skill/scripts/daily_scan.py >> reports/cron.log 2>&1
-```
-
-## Signal Types
-
-| Signal | Description | Severity |
-|--------|-------------|----------|
-| Convergence | Multiple signal types on same token | CRITICAL / HIGH |
-| Large Netflow | Significant capital flow (>$10M) | HIGH |
-| Whale Trade | Single trade >$1M | HIGH |
-| Accumulation | Buy/sell ratio >2x from smart money | HIGH |
-| Distribution | Sell/buy ratio >2x from smart money | HIGH |
-| Screener Trending | Token with multiple SM holders | MEDIUM-HIGH |
-| High Conviction | Many smart money wallets hold | MEDIUM |
-| Position Shift | Holdings change >10% | MEDIUM |
-| Notable Netflow | Capital flow >$1M | MEDIUM |
-
-## Alert Rules
-
-| Rule | Trigger | Severity | Cooldown |
-|------|---------|----------|----------|
-| whale_accumulation | SM buying across 2+ chains | CRITICAL | 60 min |
-| convergence_spike | Convergence score >80 | CRITICAL | 30 min |
-| smart_money_divergence | SM buying while price drops >5% | HIGH | 30 min |
-| cross_chain_flow | Token flowing into multiple chains | HIGH | 45 min |
-| new_token_attention | New token in SM holdings | MEDIUM | 120 min |
-
-## Outputs
-
-- **Reports:** `reports/daily_YYYY-MM-DD_HHMM.md` — Full Markdown intelligence reports
-- **Charts:** `reports/charts/*.png` — Flow heatmaps, signal timelines, chain comparisons, treemaps
-- **Alert History:** `reports/alert_history.json` — Persistent history with deduplication
-
-### Sample Report Sections
+## How It Works
 
 ```
-# NansenScope — Smart Money Intelligence Report
-## Executive Summary
-  Market Snapshot: Bullish on ETH, USDC | Bearish on ...
-  Top Alerts: CONVERGENCE on ethereum...
-## Triggered Alerts
-## High-Priority Signals
-## ETHEREUM / BASE / SOLANA (per-chain breakdown)
-## Visualizations (embedded charts)
-## API Usage & Cost Tracking
+                    ┌──────────────┐
+                    │  Nansen CLI  │
+                    │  18 chains   │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │ Netflows │ │DEX Trades│ │ Holdings │ ...
+        └────┬─────┘ └────┬─────┘ └────┬─────┘
+             │            │            │
+             └──────┬─────┴────────────┘
+                    ▼
+         ┌─────────────────┐
+         │ Signal Detection │ ← 6 detector types
+         │ (signals.py)     │
+         └────────┬────────┘
+                  │
+         ┌────────▼────────┐
+         │  Convergence    │ ← cross-reference: same token,
+         │  Detection      │   multiple signal types = alpha
+         └────────┬────────┘
+                  │
+        ┌─────────┼──────────┐
+        ▼         ▼          ▼
+   ┌─────────┐ ┌───────┐ ┌────────┐
+   │ Alerts  │ │Charts │ │Reports │
+   │ Engine  │ │(PNG)  │ │ (.md)  │
+   └─────────┘ └───────┘ └────────┘
 ```
 
-## How Convergence Works
+**Data Flow:**
+1. **Ingest** — `scanner.py` wraps `nansen` CLI calls via async subprocess with retry logic, rate-limit handling, and 402 payment detection
+2. **Detect** — `signals.py` runs 6 detector types over raw data, scoring each signal 0–100
+3. **Converge** — Cross-references signals: when netflows + DEX trades + holdings all point to the same token, conviction multiplies
+4. **Alert** — `alerts.py` applies rules with cooldowns to prevent noise
+5. **Visualize** — `charts.py` generates Plotly PNGs for visual analysis
+6. **Report** — `reporter.py` compiles everything into structured markdown
 
-NansenScope's key insight: a single data point is noise, but multiple independent signals pointing at the same token is a pattern.
+**Resilience:**
+- Exponential backoff on rate limits (429)
+- Graceful handling of payment-required (402) and unauthorized (401)
+- Per-call timeout protection (60s)
+- API call tracking across entire session
+- Up to 3 retries per endpoint with configurable delays
 
-When the same token appears in:
-- **Netflow data** (capital moving in)
-- **DEX trades** (wallets actively buying)
-- **Holdings** (positions being built)
-- **Token screener** (gaining smart money attention)
+---
 
-...the engine flags it as a **convergence** — the highest-conviction signal it can produce.
+## x402 Payment Protocol
 
-## OpenClaw Skill
+NansenScope gracefully handles Nansen CLI's x402 payment protocol. When an endpoint requires payment:
+- The scanner detects 402 responses and logs them clearly
+- No crash, no retry loop — just clean error reporting
+- Configure your Nansen CLI wallet/auth for seamless paid access
 
-NansenScope ships as an OpenClaw skill for automated fleet integration:
+---
 
-```bash
-# Install the skill
-openclaw skill install ./skill
+## Configuration
 
-# Or reference directly in cron
-openclaw cron add --name "nansenscope-daily" \
-  --schedule "0 8 * * *" \
-  --command "cd /path/to/nansenscope && python3 skill/scripts/daily_scan.py"
+All thresholds are tunable in `config.py`:
+
+```python
+@dataclass
+class SignalThresholds:
+    netflow_significant_usd: float = 1_000_000    # Flag netflows above $1M
+    netflow_large_usd: float = 10_000_000          # Large netflows above $10M
+    dex_trade_notable_usd: float = 100_000         # Notable DEX trades
+    dex_trade_whale_usd: float = 1_000_000         # Whale-sized trades
+    accumulation_ratio: float = 2.0                 # Buy/sell ratio for accumulation
+    convergence_min_signals: int = 2                # Min signals for convergence
+    # ... and more
 ```
 
-See `skill/SKILL.md` for full skill specification.
+---
 
-## Wallet Network Analysis (Killer Feature)
+## Project Structure
 
-Most tools look at wallets in isolation. NansenScope maps the **network** around a wallet:
-
-- **BFS expansion** — Starting from a seed address, discovers related wallets through counterparties and transactions (configurable depth)
-- **Cluster detection** — Groups connected wallets into clusters using connected components analysis
-- **Centrality scoring** — Identifies the most influential nodes (wallets that connect many others)
-- **Fund flow tracing** — Traces how capital moves through a network of wallets across configurable hops
-- **Cross-chain presence** — Scans all 18 chains to find where a wallet (or cluster) operates
-
-This reveals coordinated activity that single-wallet analysis misses entirely.
-
-## Perpetual Trading Intelligence
-
-Tracks smart money perpetual futures activity on Hyperliquid:
-
-- **Long/short ratio** — Aggregate positioning of smart money wallets per token
-- **Consensus detection** — Flags when multiple independent SM wallets take the same directional bet
-- **Sentiment scoring** — Bullish/bearish/neutral classification with confidence levels
-- Real data: tested with live Nansen CLI calls, producing actionable directional signals
-
-## Nansen CLI Commands Used
-
-```bash
-# Smart Money endpoints
-nansen research smart-money netflow --chain <chain>
-nansen research smart-money dex-trades --chain <chain>
-nansen research smart-money holdings --chain <chain>
-nansen research smart-money dcas --chain <chain>
-nansen research smart-money perp-trades --chain <chain>
-
-# Token analysis
-nansen research token screener --chain <chain> --timeframe 24h
-
-# Wallet profiling
-nansen research profiler pnl-summary --address <addr> --chain <chain> --days 30
-nansen research profiler counterparties --address <addr> --chain <chain>
-nansen research profiler labels --address <addr> --chain <chain>
-nansen research profiler balance --address <addr> --chain <chain>
-nansen research profiler historical-holdings --address <addr> --chain <chain>
-nansen research profiler historical-balances --address <addr> --chain <chain>
-nansen research profiler transactions --address <addr> --chain <chain>
-nansen research profiler related-wallets --address <addr> --chain <chain>
-nansen research profiler pnl --address <addr> --chain <chain>
-nansen research profiler portfolio --address <addr> --chain <chain>
-nansen research profiler defi --address <addr> --chain <chain>
-
-# Search
-nansen search --query <term>
 ```
+nansenscope/
+├── nansenscope.py    # CLI entrypoint — 9 commands, Rich UI
+├── scanner.py        # Nansen CLI wrapper — async, retries, rate limits
+├── signals.py        # Signal detection — 6 detector types, scoring
+├── network.py        # Wallet network — BFS traversal, cluster detection
+├── perps.py          # Perp intelligence — Hyperliquid positions
+├── charts.py         # Plotly visualizations — heatmaps, bubble maps
+├── alerts.py         # Alert engine — rules, cooldowns, history
+├── reporter.py       # Markdown report generator
+├── config.py         # Chains, thresholds, severity, tracking
+├── requirements.txt  # Dependencies
+└── reports/          # Generated reports, charts, alert history
+    └── charts/       # PNG chart output
+```
+
+---
+
+## Built for #NansenCLI Challenge — Week 2
+
+<p align="center">
+  <img src="https://img.shields.io/badge/%23NansenCLI-Challenge_Week_2-blueviolet?style=for-the-badge" alt="NansenCLI Challenge Week 2" />
+</p>
+
+NansenScope was built specifically for the **Nansen CLI Developer Challenge Week 2** with a focus on:
+
+- **Breadth** — 18 chains, 9 commands, 6 signal types, perpetual trading data
+- **Depth** — Wallet network analysis with BFS graph traversal and cluster detection (no other entry has this)
+- **Intelligence** — Not just data retrieval but signal detection, convergence analysis, and automated alerting
+- **Production quality** — Async execution, rate-limit handling, exponential backoff, structured error handling
+- **Developer experience** — Rich terminal UI, progress bars, colored tables, auto-generated reports
+
+### What Makes NansenScope Different
+
+Most challenge entries query Nansen data and display it. **NansenScope reasons about it.**
+
+The **Syndicate Hunter** (network analysis) is the standout feature: starting from one wallet, it BFS-expands through Nansen's related-wallets and counterparty data to build a network graph, detect clusters of coordinated wallets, and identify the most influential nodes. This is the kind of analysis that hedge funds pay six figures for.
+
+**Signal Fusion** (convergence detection) is the other differentiator: when netflow signals, DEX trade signals, and holdings signals independently point to the same token, that's not coincidence — that's alpha. NansenScope catches it automatically.
+
+---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Language | Python 3.11+ |
+| CLI Framework | argparse + Rich |
+| Data Source | Nansen CLI (subprocess) |
+| Async | asyncio |
+| Visualizations | Plotly |
+| Reports | Structured Markdown |
+
+---
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  <b>NansenScope</b> — Stop reading data. Start reading signals.<br/>
+  <sub>Built with conviction for the #NansenCLI Challenge</sub>
+</p>
