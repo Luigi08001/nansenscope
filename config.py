@@ -14,13 +14,13 @@ from pathlib import Path
 
 SUPPORTED_CHAINS = [
     "ethereum",
-    "base",
     "solana",
-    "arbitrum",
+    "base",
     "bnb",
+    "arbitrum",
 ]
 
-# Extended chains available in Nansen but not scanned by default
+# Extended chains — all 18 supported by Nansen CLI v1.21.0
 EXTENDED_CHAINS = [
     "polygon",
     "optimism",
@@ -30,8 +30,14 @@ EXTENDED_CHAINS = [
     "mantle",
     "ronin",
     "sei",
+    "plasma",
     "sonic",
+    "monad",
+    "hyperevm",
+    "iotaevm",
 ]
+
+ALL_CHAINS = SUPPORTED_CHAINS + EXTENDED_CHAINS  # 18 total
 
 
 # ── Signal Severity ──────────────────────────────────────────────────────────

@@ -354,6 +354,102 @@ async def get_token_flows(token: str, chain: str = "ethereum") -> ScanResult:
     )
 
 
+# ── NEW: Perpetual Trading ───────────────────────────────────────────────────
+
+async def get_smart_money_perp_trades(limit: int = 50) -> ScanResult:
+    """
+    Get Smart Money perpetual trading activity on Hyperliquid.
+    No chain param needed — Hyperliquid only.
+    """
+    return await _run_nansen(
+        ["research", "smart-money", "perp-trades", "--limit", str(limit)],
+        endpoint="smart-money/perp-trades",
+    )
+
+
+# ── NEW: Historical Data ────────────────────────────────────────────────────
+
+async def get_smart_money_historical_holdings(
+    chain: str = "ethereum", days: int = 30
+) -> ScanResult:
+    """
+    Get historical Smart Money holdings over time.
+    Shows how SM positions evolved — crucial for trend detection.
+    """
+    return await _run_nansen(
+        ["research", "smart-money", "historical-holdings",
+         "--chain", chain, "--days", str(days)],
+        endpoint="smart-money/historical-holdings",
+    )
+
+
+# ── NEW: Extended Wallet Profiler ────────────────────────────────────────────
+
+async def get_wallet_related(address: str, chain: str = "ethereum") -> ScanResult:
+    """
+    Find wallets related to an address (First Funder, deployer, etc.).
+    KEY for cluster detection and network mapping.
+    """
+    return await _run_nansen(
+        ["research", "profiler", "related-wallets",
+         "--address", address, "--chain", chain],
+        endpoint="profiler/related-wallets",
+    )
+
+
+async def get_wallet_transactions(
+    address: str, chain: str = "ethereum", days: int = 30
+) -> ScanResult:
+    """Get full transaction history for a wallet."""
+    return await _run_nansen(
+        ["research", "profiler", "transactions",
+         "--address", address, "--chain", chain, "--days", str(days)],
+        endpoint="profiler/transactions",
+    )
+
+
+async def get_wallet_historical_balances(
+    address: str, chain: str = "ethereum", days: int = 30
+) -> ScanResult:
+    """Get historical balance snapshots over time."""
+    return await _run_nansen(
+        ["research", "profiler", "historical-balances",
+         "--address", address, "--chain", chain, "--days", str(days)],
+        endpoint="profiler/historical-balances",
+    )
+
+
+async def get_wallet_pnl(
+    address: str, chain: str = "ethereum", days: int = 30
+) -> ScanResult:
+    """Get detailed PnL and trade performance for a wallet."""
+    return await _run_nansen(
+        ["research", "profiler", "pnl",
+         "--address", address, "--chain", chain, "--days", str(days)],
+        endpoint="profiler/pnl",
+    )
+
+
+# ── NEW: DeFi & Portfolio ───────────────────────────────────────────────────
+
+async def get_portfolio_defi(wallet: str) -> ScanResult:
+    """Get DeFi holdings across protocols for a wallet."""
+    return await _run_nansen(
+        ["research", "portfolio", "defi", "--wallet", wallet],
+        endpoint="portfolio/defi",
+    )
+
+
+# ── NEW: Search ─────────────────────────────────────────────────────────────
+
+async def search_nansen(query: str, limit: int = 10) -> ScanResult:
+    """Semantic search across Nansen data."""
+    return await _run_nansen(
+        ["research", "search", "--query", query, "--limit", str(limit)],
+        endpoint="search",
+    )
+
+
 # ── Multi-Chain Scanner ──────────────────────────────────────────────────────
 
 async def scan_chain(chain: str) -> dict[str, ScanResult]:
