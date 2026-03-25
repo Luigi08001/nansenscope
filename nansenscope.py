@@ -133,8 +133,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated chains to scan",
     )
 
+    # ── network ──
+    net_p = sub.add_parser("network", help="Wallet network & cluster analysis (KILLER FEATURE)")
+    net_p.add_argument("--address", "-a", required=True, help="Seed wallet address")
+    net_p.add_argument("--chain", "-c", default="ethereum", help="Chain (default: ethereum)")
+    net_p.add_argument("--hops", type=int, default=2, help="Network expansion depth (default: 2)")
+    net_p.add_argument("--max-nodes", type=int, default=30, help="Max nodes to discover (default: 30)")
+    net_p.add_argument("--output", "-o", type=str, default=None, help="Save report to file")
+
+    # ── perps ──
+    perp_p = sub.add_parser("perps", help="Smart Money perpetual trading intelligence (Hyperliquid)")
+    perp_p.add_argument("--limit", type=int, default=50, help="Number of recent trades (default: 50)")
+    perp_p.add_argument("--output", "-o", type=str, default=None, help="Save report to file")
+
     # ── daily ──
-    daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> charts -> report")
+    daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> perps -> charts -> report")
     daily_p.add_argument(
         "--chains", type=str, default=",".join(DEFAULT_CHAINS),
         help="Comma-separated chains to scan",
@@ -467,6 +480,152 @@ async def cmd_daily(args: argparse.Namespace):
     console.print(f"\n[bold green]Daily pipeline complete! Report saved:[/bold green] {saved}")
 
 
+async def cmd_network(args: argparse.Namespace):
+    """Wallet network & cluster analysis."""
+    from network import NetworkAnalyzer
+    show_banner()
+
+    console.print(Panel(
+        f"[bold]Wallet Network Analysis[/bold]\n"
+        f"Seed: {args.address}\n"
+        f"Chain: {args.chain} | Hops: {args.hops} | Max nodes: {args.max_nodes}",
+        border_style="magenta",
+    ))
+
+    analyzer = NetworkAnalyzer(max_hops=args.hops, max_nodes=args.max_nodes)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Building wallet network...", total=None)
+        await analyzer.build_network([args.address], args.chain)
+        progress.update(task, completed=True, description="[green]Network built")
+
+    # Display results
+    console.print(f"\n[bold cyan]Network:[/bold cyan] {len(analyzer.nodes)} nodes, {len(analyzer.edges)} edges\n")
+
+    # Smart Money nodes
+    sm_nodes = analyzer.find_smart_money_nodes()
+    if sm_nodes:
+        table = Table(title="Smart Money Nodes", title_style="bold magenta")
+        table.add_column("Address", style="cyan", width=14)
+        table.add_column("Labels", min_width=30)
+        table.add_column("PnL", justify="right", width=14)
+        table.add_column("Connections", justify="right", width=12)
+        for node in sm_nodes[:10]:
+            table.add_row(
+                f"{node.address[:6]}...{node.address[-4:]}",
+                ", ".join(node.labels[:3]) or "—",
+                f"${node.pnl_usd:,.0f}" if node.pnl_usd else "—",
+                str(node.connection_count),
+            )
+        console.print(table)
+
+    # Clusters
+    clusters = analyzer.detect_clusters()
+    if clusters:
+        console.print(f"\n[bold cyan]Wallet Clusters:[/bold cyan] {len(clusters)} detected\n")
+        for cluster in clusters[:5]:
+            labels = ", ".join(f"{k}({v})" for k, v in
+                              sorted(cluster.label_summary.items(),
+                                     key=lambda x: x[1], reverse=True)[:3])
+            console.print(f"  Cluster #{cluster.id}: {cluster.size} wallets | "
+                          f"PnL: ${cluster.total_pnl:,.0f} | {labels or 'unlabeled'}")
+
+    # Central nodes
+    central = analyzer.find_central_nodes()
+    if central:
+        console.print(f"\n[bold cyan]Most Connected:[/bold cyan]")
+        for addr, degree in central:
+            node = analyzer.nodes.get(addr)
+            label = ", ".join(node.labels[:2]) if node and node.labels else "unlabeled"
+            console.print(f"  {addr[:10]}... — {degree} connections ({label})")
+
+    # Save report
+    output_path = args.output or _default_report_path(f"network_{args.address[:8]}")
+    report = analyzer.generate_report()
+    saved = save_report(report, output_path)
+
+    _display_api_stats()
+    console.print(f"\n[bold green]Network report saved:[/bold green] {saved}")
+
+
+async def cmd_perps(args: argparse.Namespace):
+    """Smart Money perpetual trading intelligence."""
+    from scanner import get_smart_money_perp_trades
+    from perps import parse_perp_trades, analyze_perp_activity, detect_perp_signals, generate_perp_report
+    show_banner()
+
+    console.print(Panel(
+        "[bold]Smart Money Perpetual Trading Intelligence[/bold]\n"
+        "Hyperliquid — Real-time SM positions",
+        border_style="red",
+    ))
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching perp trades...", total=None)
+        result = await get_smart_money_perp_trades(limit=args.limit)
+        progress.update(task, completed=True, description="[green]Perp data loaded")
+
+    if not result.success:
+        console.print(f"[red]Error:[/red] {result.error}")
+        return
+
+    positions = parse_perp_trades(result.data)
+    summary = analyze_perp_activity(positions)
+    signals = detect_perp_signals(positions, min_value_usd=500)
+
+    # Display summary
+    sentiment_color = "green" if "bullish" in summary.sentiment else "red" if "bearish" in summary.sentiment else "yellow"
+    console.print(f"\n[bold]Positions:[/bold] {summary.total_positions} | "
+                  f"[bold]Volume:[/bold] ${summary.total_volume_usd:,.0f} | "
+                  f"[bold]Traders:[/bold] {summary.unique_traders}")
+    console.print(f"[bold]L/S Ratio:[/bold] {summary.long_short_ratio:.2f} "
+                  f"[{sentiment_color}]({summary.sentiment})[/{sentiment_color}]\n")
+
+    # Token breakdown
+    if summary.top_tokens:
+        table = Table(title="Top Tokens by Perp Volume", title_style="bold red")
+        table.add_column("Token", style="bold", width=10)
+        table.add_column("Volume", justify="right", width=12)
+        table.add_column("Trades", justify="right", width=8)
+        table.add_column("Long", justify="right", style="green", width=12)
+        table.add_column("Short", justify="right", style="red", width=12)
+        for t in summary.top_tokens[:10]:
+            table.add_row(
+                t["token"],
+                f"${t['total_vol']:,.0f}",
+                str(t["trade_count"]),
+                f"${t['long_vol']:,.0f}",
+                f"${t['short_vol']:,.0f}",
+            )
+        console.print(table)
+
+    # Signals
+    if signals:
+        console.print(f"\n[bold cyan]Perp Signals:[/bold cyan] {len(signals)}")
+        for sig in signals[:10]:
+            icon = "🟢" if "long" in sig.type.lower() else "🔴"
+            console.print(f"  {icon} [{sig.severity.value}] {sig.summary}")
+
+    # Save report
+    if args.output or True:
+        output_path = args.output or _default_report_path("perps")
+        report = generate_perp_report(summary)
+        saved = save_report(report, output_path)
+        console.print(f"\n[bold green]Perp report saved:[/bold green] {saved}")
+
+    _display_api_stats()
+
+
 # ── Display Helpers ──────────────────────────────────────────────────────────
 
 async def _scan_chain_with_display(chain: str) -> dict[str, ScanResult]:
@@ -592,6 +751,8 @@ def main():
         "report": cmd_report,
         "alerts": cmd_alerts,
         "charts": cmd_charts,
+        "network": cmd_network,
+        "perps": cmd_perps,
         "daily": cmd_daily,
     }
 
