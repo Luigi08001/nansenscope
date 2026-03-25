@@ -61,7 +61,10 @@ def detect_netflow_signals(
             continue
 
         token = item.get("token_symbol") or item.get("symbol") or item.get("token", "???")
-        netflow = _to_float(item.get("netflow_usd") or item.get("netflow") or item.get("net_flow", 0))
+        netflow = _to_float(
+            item.get("net_flow_24h_usd") or item.get("net_flow_7d_usd")
+            or item.get("netflow_usd") or item.get("netflow") or item.get("net_flow", 0)
+        )
         inflow = _to_float(item.get("inflow_usd") or item.get("inflow", 0))
         outflow = _to_float(item.get("outflow_usd") or item.get("outflow", 0))
 
@@ -125,20 +128,32 @@ def detect_dex_trade_signals(
         if not isinstance(trade, dict):
             continue
 
+        # Nansen CLI DEX trades use token_bought_symbol / token_sold_symbol
+        bought_token = trade.get("token_bought_symbol") or ""
+        sold_token = trade.get("token_sold_symbol") or ""
         token = (
-            trade.get("token_symbol")
-            or trade.get("bought_token_symbol")
+            bought_token or sold_token
+            or trade.get("token_symbol")
             or trade.get("symbol")
             or trade.get("token", "???")
         )
         amount_usd = _to_float(
-            trade.get("amount_usd")
-            or trade.get("trade_value_usd")
+            trade.get("trade_value_usd")
+            or trade.get("amount_usd")
             or trade.get("value_usd", 0)
         )
-        side = (trade.get("side") or trade.get("type") or "").lower()
-        wallet = trade.get("address") or trade.get("wallet") or trade.get("from", "")
-        label = trade.get("label") or trade.get("entity") or ""
+        # Infer side: if bought_token is not a stablecoin, it's a buy
+        stables = {"USDC", "USDT", "DAI", "BUSD", "TUSD", "FRAX", "LUSD", "USDD", "USDP"}
+        if bought_token and bought_token.upper() not in stables:
+            side = "buy"
+            token = bought_token
+        elif sold_token and sold_token.upper() not in stables:
+            side = "sell"
+            token = sold_token
+        else:
+            side = (trade.get("side") or trade.get("type") or "").lower()
+        wallet = trade.get("trader_address") or trade.get("address") or trade.get("wallet") or ""
+        label = trade.get("trader_address_label") or trade.get("label") or trade.get("entity") or ""
 
         # Whale individual trade
         if amount_usd >= thresholds.dex_trade_whale_usd:
@@ -251,9 +266,18 @@ def detect_holdings_signals(
             continue
 
         token = item.get("token_symbol") or item.get("symbol") or item.get("token", "???")
-        holders = _to_int(item.get("smart_money_holders") or item.get("holder_count") or item.get("holders", 0))
-        value_usd = _to_float(item.get("total_value_usd") or item.get("value_usd") or item.get("balance_usd", 0))
-        pct_change = _to_float(item.get("change_pct") or item.get("pct_change", 0))
+        holders = _to_int(
+            item.get("holders_count") or item.get("smart_money_holders")
+            or item.get("holder_count") or item.get("holders", 0)
+        )
+        value_usd = _to_float(
+            item.get("value_usd") or item.get("total_value_usd")
+            or item.get("balance_usd", 0)
+        )
+        pct_change = _to_float(
+            item.get("balance_24h_percent_change") or item.get("change_pct")
+            or item.get("pct_change", 0)
+        )
 
         if holders >= thresholds.screener_min_smart_holders:
             severity = Severity.HIGH if holders >= thresholds.screener_min_smart_holders * 2 else Severity.MEDIUM
@@ -491,11 +515,15 @@ def rank_signals(all_signals: dict[str, list[Signal]], top_n: int = 20) -> list[
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _extract_data(scan_result) -> Any:
-    """Safely extract data from a ScanResult."""
+    """Safely extract data from a ScanResult, unwrapping nested {data: [...]} envelopes."""
     if scan_result is None:
         return None
     if hasattr(scan_result, "success") and scan_result.success:
-        return scan_result.data
+        data = scan_result.data
+        # Nansen CLI wraps results in {"data": [...], "pagination": {...}}
+        if isinstance(data, dict) and "data" in data:
+            return data["data"]
+        return data
     return None
 
 
