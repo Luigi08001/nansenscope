@@ -160,6 +160,32 @@ tailwind.config = {
 <div class="data-stream" style="right:8%;animation-delay:-12s;animation-duration:22s">0x3E8A 0xC5F1 0x7D2B 0x1A9E 0xE4C6 0x8B3F 0x6D1A 0xF2E7 0x4C8D 0xA7B5</div>
 <div class="data-stream" style="right:18%;animation-delay:-4s;animation-duration:28s">0xB1D3 0x5F8A 0x2E7C 0x9A4F 0xD6B1 0x3C5E 0x8F2A 0xE1D7 0x6B9C 0x4A3E</div>
 
+<!-- Live Signal Ticker -->
+<div class="ticker-bar">
+  <div class="ticker-content">
+    <span class="ticker-item green">🟢 UNI +$144M (29 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 WLD +$60M (22 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 ONDO +$87M (19 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item red">🔴 TAO SHORT $6.2K · hyperliquid</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 VIRTUAL +$757K (27 top traders) · base</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 APE +$8.2M (14 top traders) · apechain</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 JUP +$2.7M (19 top traders) · solana</span><span class="ticker-sep">|</span>
+    <span class="ticker-item warn">⚠️ CONVERGENCE: UNI score 95 · multi-chain</span><span class="ticker-sep">|</span>
+    <span class="ticker-item red">🔴 LINK SHORT $750 @ $8.98 · hyperliquid</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 BORED +$3.4M (11 top traders) · apechain</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 UNI +$144M (29 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 WLD +$60M (22 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 ONDO +$87M (19 top traders) · ethereum</span><span class="ticker-sep">|</span>
+    <span class="ticker-item red">🔴 TAO SHORT $6.2K · hyperliquid</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 VIRTUAL +$757K (27 top traders) · base</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 APE +$8.2M (14 top traders) · apechain</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 JUP +$2.7M (19 top traders) · solana</span><span class="ticker-sep">|</span>
+    <span class="ticker-item warn">⚠️ CONVERGENCE: UNI score 95 · multi-chain</span><span class="ticker-sep">|</span>
+    <span class="ticker-item red">🔴 LINK SHORT $750 @ $8.98 · hyperliquid</span><span class="ticker-sep">|</span>
+    <span class="ticker-item green">🟢 BORED +$3.4M (11 top traders) · apechain</span><span class="ticker-sep">|</span>
+  </div>
+</div>
+
 <!-- Hero -->
 <section class="relative min-h-screen flex items-center overflow-hidden" style="z-index:2">
   <div class="ascii-bg" aria-hidden="true">╔══════════════════════════════════════════════════════╗
@@ -221,14 +247,14 @@ tailwind.config = {
           Built for #NansenCLI Challenge
         </span>
       </div>
-      <div class="flex flex-wrap gap-6 text-sm font-mono text-muted/60 fade-in" style="transition-delay:0.25s">
-        <span class="stat-item"><span class="text-txt font-medium">53</span> signals detected</span>
+      <div class="flex flex-wrap gap-6 text-sm font-mono text-muted/60 fade-in" style="transition-delay:0.25s" id="stats-bar">
+        <span class="stat-item"><span class="text-txt font-medium counter" data-target="53">0</span> signals detected</span>
         <span class="text-border">·</span>
-        <span class="stat-item"><span class="text-txt font-medium">5</span> chains scanned</span>
+        <span class="stat-item"><span class="text-txt font-medium counter" data-target="5">0</span> chains scanned</span>
         <span class="text-border">·</span>
-        <span class="stat-item"><span class="text-txt font-medium">24</span> API calls</span>
+        <span class="stat-item"><span class="text-txt font-medium counter" data-target="24">0</span> API calls</span>
         <span class="text-border">·</span>
-        <span class="stat-item"><span class="text-success font-medium">0</span> errors</span>
+        <span class="stat-item"><span class="text-success font-medium counter" data-target="0">0</span> errors</span>
       </div>
     </div>
   </div>
