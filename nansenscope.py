@@ -282,6 +282,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Save report to file",
     )
 
+    # ── exit-signals ──
+    exit_p = sub.add_parser("exit-signals", help="Detect smart money EXIT signals (tokens being dumped)")
+    exit_p.add_argument(
+        "--chains", type=str, default=",".join(DEFAULT_CHAINS),
+        help=f"Comma-separated chains to scan (default: {','.join(DEFAULT_CHAINS)})",
+    )
+    exit_p.add_argument(
+        "--top", type=int, default=10,
+        help="Show top N exit signals (default: 10)",
+    )
+
+    # ── defi ──
+    defi_p = sub.add_parser("defi", help="DeFi positions analysis for a wallet")
+    defi_p.add_argument("--address", "-a", required=True, help="Wallet address")
+    defi_p.add_argument("--chain", "-c", default="ethereum", help="Chain (default: ethereum)")
+
+    # ── search ──
+    search_p = sub.add_parser("search", help="Search tokens and entities across Nansen")
+    search_p.add_argument("query", help="Search query (e.g. 'ethereum whale buying ONDO')")
+    search_p.add_argument("--limit", type=int, default=10, help="Max results (default: 10)")
+
     # ── history ──
     hist_p = sub.add_parser("history", help="Signal history and trend detection")
     hist_p.add_argument(
@@ -996,6 +1017,345 @@ async def cmd_daily(args: argparse.Namespace):
 
     _display_api_stats()
     console.print(f"\n[bold green]Daily pipeline complete! Report saved:[/bold green] {saved}")
+
+
+async def cmd_exit_signals(args: argparse.Namespace):
+    """Detect smart money EXIT signals — tokens being dumped."""
+    from scanner import get_smart_money_netflows, _run_nansen
+    chains = [c.strip() for c in args.chains.split(",") if c.strip()]
+    show_banner()
+
+    console.print(Panel(
+        "[bold]Smart Money Exit Signal Detection[/bold]\n"
+        f"Chains: {', '.join(chains)} | Top: {args.top}",
+        border_style="red",
+    ))
+
+    exit_signals = []
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        for chain in chains:
+            task = progress.add_task(f"Scanning {chain} for outflows...", total=None)
+
+            # Get netflows and filter for negative (outflows)
+            result = await get_smart_money_netflows(chain)
+            progress.update(task, completed=True, description=f"[green]{chain} done")
+
+            if not result.success or result.is_empty:
+                continue
+
+            data = result.data
+            if isinstance(data, str):
+                continue
+
+            # Normalize to list
+            items = data if isinstance(data, list) else data.get("data", data.get("tokens", [data]))
+            if not isinstance(items, list):
+                items = [items] if isinstance(items, dict) else []
+
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+
+                # Look for negative netflow (outflow)
+                netflow = None
+                for key in ("netflow", "netFlow", "net_flow", "netflow_usd", "netFlowUsd"):
+                    val = item.get(key)
+                    if val is not None:
+                        try:
+                            netflow = float(str(val).replace(",", "").replace("$", ""))
+                        except (ValueError, TypeError):
+                            pass
+                        break
+
+                if netflow is None or netflow >= 0:
+                    continue  # We only want negative = outflows
+
+                token = (
+                    item.get("token", "") or item.get("symbol", "")
+                    or item.get("name", "") or item.get("tokenSymbol", "Unknown")
+                )
+
+                # Seller count from data if available
+                sellers = 0
+                for key in ("sellers", "sellerCount", "seller_count", "uniqueSellers"):
+                    val = item.get(key)
+                    if val is not None:
+                        try:
+                            sellers = int(val)
+                        except (ValueError, TypeError):
+                            pass
+                        break
+
+                # Severity based on outflow magnitude + seller count
+                abs_outflow = abs(netflow)
+                if abs_outflow > 500_000 and sellers >= 3:
+                    severity = "CRITICAL"
+                elif abs_outflow > 100_000 or sellers >= 3:
+                    severity = "HIGH"
+                elif abs_outflow > 25_000 or sellers >= 2:
+                    severity = "MEDIUM"
+                else:
+                    severity = "LOW"
+
+                exit_signals.append({
+                    "token": str(token),
+                    "chain": chain,
+                    "outflow": abs_outflow,
+                    "sellers": sellers,
+                    "severity": severity,
+                })
+
+    # Sort by outflow descending
+    exit_signals.sort(key=lambda x: x["outflow"], reverse=True)
+    exit_signals = exit_signals[:args.top]
+
+    if exit_signals:
+        table = Table(title="Smart Money Exit Signals", title_style="bold red", show_lines=False, padding=(0, 1))
+        table.add_column("#", style="dim", width=3)
+        table.add_column("Token", style="bold", min_width=10)
+        table.add_column("Chain", style="cyan", width=12)
+        table.add_column("Outflow $", justify="right", min_width=14)
+        table.add_column("Sellers", justify="right", width=8)
+        table.add_column("Severity", width=10)
+
+        severity_styles = {
+            "CRITICAL": "[bold red]CRIT[/bold red]",
+            "HIGH": "[bold yellow]HIGH[/bold yellow]",
+            "MEDIUM": "[yellow]MED[/yellow]",
+            "LOW": "[dim]LOW[/dim]",
+        }
+
+        for i, sig in enumerate(exit_signals, 1):
+            table.add_row(
+                str(i),
+                sig["token"][:14],
+                sig["chain"],
+                f"${sig['outflow']:,.0f}",
+                str(sig["sellers"]) if sig["sellers"] else "—",
+                severity_styles.get(sig["severity"], sig["severity"]),
+            )
+
+        console.print(table)
+        console.print(f"\n[bold]{len(exit_signals)} exit signals detected[/bold] — negative netflow = smart money selling")
+    else:
+        console.print("[dim]No exit signals detected (no negative netflows found).[/dim]")
+
+    _display_api_stats()
+
+
+async def cmd_defi(args: argparse.Namespace):
+    """DeFi positions analysis for a wallet."""
+    from scanner import get_portfolio_defi
+    show_banner()
+
+    address = args.address
+    chain = args.chain
+
+    console.print(Panel(
+        f"[bold]DeFi Position Analysis[/bold]\n"
+        f"{address} on {chain}",
+        border_style="green",
+    ))
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching DeFi positions...", total=None)
+        result = await get_portfolio_defi(address)
+        progress.update(task, completed=True, description="[green]DeFi data loaded")
+
+    if not result.success:
+        console.print(f"\n[red]Error:[/red] {result.error}")
+        _display_api_stats()
+        return
+
+    data = result.data
+
+    # Handle string (non-JSON) output
+    if isinstance(data, str):
+        console.print(Panel(data, title="DeFi Positions", border_style="green"))
+        _display_api_stats()
+        return
+
+    # Normalize to list of positions
+    if isinstance(data, dict):
+        positions = data.get("positions", data.get("data", data.get("defi", [data])))
+    elif isinstance(data, list):
+        positions = data
+    else:
+        positions = []
+
+    if not isinstance(positions, list):
+        positions = [positions] if isinstance(positions, dict) else []
+
+    if not positions:
+        console.print("[dim]No DeFi positions found for this wallet.[/dim]")
+        _display_api_stats()
+        return
+
+    # Build display table
+    table = Table(title="DeFi Positions", title_style="bold green", show_lines=True)
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Protocol", style="cyan", min_width=14)
+    table.add_column("Type", min_width=12)
+    table.add_column("Asset", style="bold", min_width=10)
+    table.add_column("Value", justify="right", min_width=14)
+    table.add_column("APY", justify="right", width=8)
+
+    total_value = 0.0
+
+    for i, pos in enumerate(positions, 1):
+        if not isinstance(pos, dict):
+            continue
+
+        protocol = (
+            pos.get("protocol", "") or pos.get("protocolName", "")
+            or pos.get("app", "") or pos.get("dapp", "Unknown")
+        )
+        pos_type = (
+            pos.get("type", "") or pos.get("positionType", "")
+            or pos.get("category", "") or "—"
+        )
+        asset = (
+            pos.get("asset", "") or pos.get("token", "")
+            or pos.get("symbol", "") or pos.get("name", "—")
+        )
+
+        # Value extraction
+        value = 0.0
+        for key in ("value", "valueUsd", "value_usd", "usdValue", "balanceUsd"):
+            val = pos.get(key)
+            if val is not None:
+                try:
+                    value = float(str(val).replace(",", "").replace("$", ""))
+                except (ValueError, TypeError):
+                    pass
+                break
+        total_value += value
+
+        # APY extraction
+        apy_str = "—"
+        for key in ("apy", "apr", "yield", "rewardApy"):
+            val = pos.get(key)
+            if val is not None:
+                try:
+                    apy_val = float(str(val).replace(",", "").replace("%", ""))
+                    apy_str = f"{apy_val:.1f}%"
+                except (ValueError, TypeError):
+                    apy_str = str(val)
+                break
+
+        table.add_row(
+            str(i),
+            str(protocol)[:20],
+            str(pos_type)[:16],
+            str(asset)[:14],
+            f"${value:,.0f}" if value else "—",
+            apy_str,
+        )
+
+    console.print(table)
+    console.print(f"\n[bold]Total DeFi Exposure:[/bold] ${total_value:,.0f}")
+
+    _display_api_stats()
+
+
+async def cmd_search(args: argparse.Namespace):
+    """Search tokens and entities across Nansen."""
+    from scanner import search_nansen
+    show_banner()
+
+    query = args.query
+    limit = args.limit
+
+    console.print(f"[bold cyan]Searching:[/bold cyan] \"{query}\" (limit: {limit})\n")
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Searching Nansen...", total=None)
+        result = await search_nansen(query, limit=limit)
+        progress.update(task, completed=True, description="[green]Search complete")
+
+    if not result.success:
+        console.print(f"\n[red]Error:[/red] {result.error}")
+        _display_api_stats()
+        return
+
+    data = result.data
+
+    # Handle string (non-JSON) output
+    if isinstance(data, str):
+        console.print(Panel(data, title="Search Results", border_style="cyan"))
+        _display_api_stats()
+        return
+
+    # Normalize to list
+    if isinstance(data, dict):
+        items = data.get("results", data.get("data", data.get("items", [data])))
+    elif isinstance(data, list):
+        items = data
+    else:
+        items = []
+
+    if not isinstance(items, list):
+        items = [items] if isinstance(items, dict) else []
+
+    if not items:
+        console.print("[dim]No results found.[/dim]")
+        _display_api_stats()
+        return
+
+    # Build display table
+    table = Table(title=f"Search Results — \"{query}\"", title_style="bold cyan", show_lines=True)
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Name", style="bold", min_width=20)
+    table.add_column("Type", style="cyan", width=14)
+    table.add_column("Chain", width=12)
+    table.add_column("Description", min_width=30)
+
+    for i, item in enumerate(items[:limit], 1):
+        if not isinstance(item, dict):
+            continue
+
+        name = (
+            item.get("name", "") or item.get("title", "")
+            or item.get("symbol", "") or item.get("label", "Unknown")
+        )
+        item_type = (
+            item.get("type", "") or item.get("entityType", "")
+            or item.get("category", "") or "—"
+        )
+        chain = (
+            item.get("chain", "") or item.get("blockchain", "")
+            or item.get("network", "") or "—"
+        )
+        description = (
+            item.get("description", "") or item.get("summary", "")
+            or item.get("address", "") or "—"
+        )
+        # Truncate description
+        if len(str(description)) > 60:
+            description = str(description)[:57] + "..."
+
+        table.add_row(str(i), str(name), str(item_type), str(chain), str(description))
+
+    console.print(table)
+    console.print(f"\n[bold]{len(items)} results found[/bold]")
+
+    _display_api_stats()
 
 
 async def cmd_history(args: argparse.Namespace):
@@ -1777,6 +2137,9 @@ def main():
         "quote": cmd_quote,
         "prediction": cmd_prediction,
         "analyze": cmd_analyze,
+        "exit-signals": cmd_exit_signals,
+        "defi": cmd_defi,
+        "search": cmd_search,
     }
 
     handler = commands.get(args.command)
