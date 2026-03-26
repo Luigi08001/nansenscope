@@ -42,7 +42,43 @@ from scanner import (
 from history import record_signals, load_history, detect_trends, format_trend_table
 from signals import Signal, analyze_all_chains, rank_signals
 
+import json
+
 console = Console()
+
+
+def save_latest_results(signals: list, chains: list, scan_data=None):
+    """Save latest scan results as JSON for landing page rendering."""
+    results = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "chains": chains,
+        "total_signals": len(signals),
+        "signals": [
+            {
+                "chain": s.chain,
+                "token": s.token,
+                "severity": s.severity.value,
+                "score": s.score,
+                "type": s.type,
+                "summary": s.summary,
+            }
+            for s in sorted(signals, key=lambda x: x.score, reverse=True)[:20]
+        ],
+        "chain_summary": {
+            chain: {
+                "signal_count": len([s for s in signals if s.chain == chain]),
+                "top_token": next(
+                    (s.token for s in sorted(signals, key=lambda x: x.score, reverse=True) if s.chain == chain),
+                    None,
+                ),
+            }
+            for chain in chains
+        },
+    }
+
+    output = Path("reports/latest_results.json")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(results, indent=2))
 
 SEVERITY_STYLES = {
     Severity.CRITICAL: "bold red",
@@ -327,6 +363,9 @@ async def cmd_scan(args: argparse.Namespace):
     # Record signals to history
     flat_signals = [sig for sigs in all_signals.values() for sig in sigs]
     record_signals(flat_signals)
+
+    # Save latest results JSON for landing page
+    save_latest_results(flat_signals, chains)
 
     # Save report if requested
     if args.output or True:  # Always save by default
@@ -933,6 +972,9 @@ async def cmd_daily(args: argparse.Namespace):
                 console.print(f"  [yellow]AI analysis failed: {e}[/yellow]")
         else:
             console.print("  [dim]No signals to analyze, skipping AI.[/dim]")
+
+    # Save latest results JSON for landing page
+    save_latest_results(flat_signals, chains)
 
     # Final Step: Report
     report_step = total_steps
