@@ -34,7 +34,10 @@ from reporter import (
     generate_wallet_report,
     save_report,
 )
-from scanner import ScanResult, profile_wallet, scan_all_chains
+from scanner import (
+    ScanResult, profile_wallet, scan_all_chains,
+    get_wallet_labels, get_wallet_balance, get_wallet_profile,
+)
 from signals import Signal, analyze_all_chains, rank_signals
 
 console = Console()
@@ -153,6 +156,31 @@ def build_parser() -> argparse.ArgumentParser:
     perp_p = sub.add_parser("perps", help="Smart Money perpetual trading intelligence (Hyperliquid)")
     perp_p.add_argument("--limit", type=int, default=50, help="Number of recent trades (default: 50)")
     perp_p.add_argument("--output", "-o", type=str, default=None, help="Save report to file")
+
+    # ── watch ──
+    watch_p = sub.add_parser("watch", help="Continuous monitoring — scans every N minutes, alerts on new signals")
+    watch_p.add_argument(
+        "--chains", type=str, default=",".join(DEFAULT_CHAINS),
+        help=f"Comma-separated chains to scan (default: {','.join(DEFAULT_CHAINS)})",
+    )
+    watch_p.add_argument(
+        "--interval", type=int, default=5,
+        help="Minutes between scan cycles (default: 5)",
+    )
+    watch_p.add_argument(
+        "--webhook", type=str, default=None,
+        help="Webhook URL to POST new signal alerts to",
+    )
+    watch_p.add_argument(
+        "--output", "-o", type=str, default=None,
+        help="File to append new signals to (one per line)",
+    )
+
+    # ── portfolio ──
+    port_p = sub.add_parser("portfolio", help="Deep-dive wallet portfolio — holdings, labels, PnL")
+    port_p.add_argument("--address", "-a", required=True, help="Wallet address")
+    port_p.add_argument("--chain", "-c", default="ethereum", help="Chain (default: ethereum)")
+    port_p.add_argument("--top", type=int, default=20, help="Max tokens to show (default: 20)")
 
     # ── daily ──
     daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> perps -> charts -> report")
@@ -419,6 +447,159 @@ async def cmd_charts(args: argparse.Namespace):
     _display_api_stats()
 
 
+async def cmd_watch(args: argparse.Namespace):
+    """Continuous monitoring — scans every N minutes, alerts on new signals."""
+    chains = [c.strip() for c in args.chains.split(",") if c.strip()]
+    interval = args.interval
+    show_banner()
+
+    console.print(Panel(
+        "[bold]Watch Mode — Continuous Smart Money Monitoring[/bold]\n"
+        f"Chains: {', '.join(chains)} | Interval: {interval}min\n"
+        "Press Ctrl+C to stop",
+        border_style="green",
+    ))
+
+    previous_signal_keys: set[tuple[str, str, str]] = set()  # (chain, token, type)
+    cycle = 0
+    total_signals_seen = 0
+    start_time = datetime.now(timezone.utc)
+
+    while True:
+        cycle += 1
+        now = datetime.now(timezone.utc)
+        uptime = now - start_time
+        uptime_str = str(uptime).split(".")[0]  # strip microseconds
+
+        console.print(f"\n[cyan]{'━' * 60}[/cyan]")
+        console.print(
+            f"[cyan]Cycle {cycle}[/cyan] — "
+            f"{now.strftime('%H:%M:%S UTC')} — "
+            f"[dim]uptime {uptime_str}[/dim]"
+        )
+        console.print(f"[cyan]{'━' * 60}[/cyan]")
+
+        # Run scan
+        all_results = {}
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold]{task.description}"),
+            TimeElapsedColumn(),
+            console=console,
+        ) as progress:
+            for chain in chains:
+                task = progress.add_task(f"Scanning {chain}...", total=None)
+                chain_results = await _scan_chain_with_display(chain)
+                all_results[chain] = chain_results
+                progress.update(task, completed=True, description=f"[green]{chain} done")
+
+        # Detect signals
+        all_signals = analyze_all_chains(all_results)
+        flat_signals = [sig for sigs in all_signals.values() for sig in sigs]
+        total_signals_seen += len(flat_signals)
+
+        # Find NEW signals not in previous set
+        current_signal_keys = {(sig.chain, sig.token, sig.type) for sig in flat_signals}
+        new_signals = [
+            sig for sig in flat_signals
+            if (sig.chain, sig.token, sig.type) not in previous_signal_keys
+        ]
+
+        # Dashboard summary
+        console.print(
+            f"Scanned {len(chains)} chains | "
+            f"{len(flat_signals)} total signals | "
+            f"[bold green]{len(new_signals)} NEW[/bold green] | "
+            f"[dim]lifetime: {total_signals_seen}[/dim]"
+        )
+
+        if new_signals:
+            # Sort new signals by score
+            new_signals.sort(key=lambda s: s.score, reverse=True)
+
+            table = Table(title="New Signals Detected", title_style="bold green")
+            table.add_column("#", style="dim", width=3)
+            table.add_column("Sev", width=4)
+            table.add_column("Chain", style="cyan", width=10)
+            table.add_column("Token", style="bold", width=10)
+            table.add_column("Type", width=16)
+            table.add_column("Signal", min_width=40)
+            table.add_column("Score", justify="right", width=6)
+
+            severity_icons = {
+                Severity.CRITICAL: "[bold red]CRIT[/bold red]",
+                Severity.HIGH: "[bold yellow]HIGH[/bold yellow]",
+                Severity.MEDIUM: "[yellow]MED[/yellow]",
+                Severity.LOW: "[dim]LOW[/dim]",
+            }
+
+            for i, sig in enumerate(new_signals, 1):
+                style = SEVERITY_STYLES.get(sig.severity, "")
+                table.add_row(
+                    str(i),
+                    severity_icons.get(sig.severity, ""),
+                    sig.chain,
+                    sig.token[:10],
+                    sig.type,
+                    sig.summary[:80],
+                    f"{sig.score:.0f}",
+                    style=style if sig.severity == Severity.CRITICAL else "",
+                )
+
+            console.print(table)
+
+            # Optional: append to file
+            if args.output:
+                try:
+                    with open(args.output, "a") as f:
+                        for sig in new_signals:
+                            f.write(
+                                f"{now.isoformat()} | {sig.chain} | {sig.token} | "
+                                f"{sig.severity.value} | {sig.type} | {sig.summary}\n"
+                            )
+                    console.print(f"[dim]Appended {len(new_signals)} signals to {args.output}[/dim]")
+                except Exception as e:
+                    console.print(f"[red]File write error: {e}[/red]")
+
+            # Optional: webhook
+            if args.webhook:
+                try:
+                    import aiohttp
+                    payload = {
+                        "text": f"NansenScope: {len(new_signals)} new signals detected",
+                        "cycle": cycle,
+                        "signals": [
+                            {
+                                "chain": sig.chain,
+                                "token": sig.token,
+                                "type": sig.type,
+                                "severity": sig.severity.value,
+                                "summary": sig.summary,
+                                "score": sig.score,
+                            }
+                            for sig in new_signals
+                        ],
+                    }
+                    async with aiohttp.ClientSession() as session:
+                        await session.post(
+                            args.webhook,
+                            json=payload,
+                            timeout=aiohttp.ClientTimeout(total=10),
+                        )
+                    console.print("[dim]Webhook delivered[/dim]")
+                except Exception as e:
+                    console.print(f"[red]Webhook error: {e}[/red]")
+        else:
+            console.print("[dim]No new signals this cycle[/dim]")
+
+        previous_signal_keys = current_signal_keys
+
+        # Wait
+        _display_api_stats()
+        console.print(f"[dim]Next scan in {interval} minutes...[/dim]")
+        await asyncio.sleep(interval * 60)
+
+
 async def cmd_daily(args: argparse.Namespace):
     """Full daily pipeline: scan -> signals -> alerts -> charts -> report."""
     chains = [c.strip() for c in args.chains.split(",") if c.strip()]
@@ -650,6 +831,165 @@ async def cmd_perps(args: argparse.Namespace):
     _display_api_stats()
 
 
+async def cmd_portfolio(args: argparse.Namespace):
+    """Deep-dive wallet portfolio — holdings, labels, PnL."""
+    show_banner()
+    address = args.address
+    chain = args.chain
+
+    console.print(Panel(
+        f"[bold]Wallet Portfolio Analysis[/bold]\n"
+        f"{address} on {chain}",
+        border_style="green",
+    ))
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Loading portfolio...", total=3)
+
+        # 1. Get labels
+        labels_result = await get_wallet_labels(address, chain)
+        progress.update(task, advance=1, description="Labels loaded, fetching holdings...")
+
+        # 2. Get balance/holdings
+        balance_result = await get_wallet_balance(address, chain)
+        progress.update(task, advance=1, description="Holdings loaded, fetching PnL...")
+
+        # 3. Get PnL summary
+        pnl_result = await get_wallet_profile(address, chain)
+        progress.update(task, advance=1, description="[green]Portfolio loaded")
+
+    # ── Display labels ──
+    if labels_result.success and labels_result.data:
+        label_data = labels_result.data
+        if isinstance(label_data, list):
+            label_names = [
+                l.get("label", l.get("name", str(l))) if isinstance(l, dict) else str(l)
+                for l in label_data
+            ]
+        elif isinstance(label_data, dict):
+            label_names = label_data.get("labels", [])
+            if isinstance(label_names, list):
+                label_names = [
+                    l.get("label", l.get("name", str(l))) if isinstance(l, dict) else str(l)
+                    for l in label_names
+                ]
+            else:
+                label_names = [str(label_names)]
+        else:
+            label_names = [str(label_data)]
+
+        if label_names:
+            console.print(f"\n[bold cyan]Labels:[/bold cyan] {', '.join(label_names)}")
+    else:
+        if labels_result.error:
+            console.print(f"\n[dim]Labels: {labels_result.error}[/dim]")
+        else:
+            console.print("\n[dim]Labels: none found[/dim]")
+
+    # ── Display holdings table ──
+    if balance_result.success and balance_result.data:
+        holdings_data = balance_result.data
+
+        # Normalize to list of dicts
+        if isinstance(holdings_data, dict):
+            holdings_data = holdings_data.get("tokens", holdings_data.get("balances", [holdings_data]))
+        if not isinstance(holdings_data, list):
+            holdings_data = [holdings_data] if holdings_data else []
+
+        # Extract and sort by USD value
+        holdings = []
+        for item in holdings_data:
+            if isinstance(item, dict):
+                token = item.get("token", item.get("symbol", item.get("name", "Unknown")))
+                balance = item.get("balance", item.get("amount", "—"))
+                usd = float(item.get("usd_value", item.get("valueUsd", item.get("value", 0))) or 0)
+                holdings.append({"token": str(token), "balance": str(balance), "usd": usd})
+            elif isinstance(item, str):
+                holdings.append({"token": item, "balance": "—", "usd": 0})
+
+        # Sort descending by USD value
+        holdings.sort(key=lambda h: h["usd"], reverse=True)
+
+        # Calculate total for percentage
+        total_usd = sum(h["usd"] for h in holdings) or 1  # avoid div by zero
+
+        # Build table
+        table = Table(
+            title=f"Holdings — Top {args.top}",
+            title_style="bold green",
+            show_lines=False,
+            padding=(0, 1),
+        )
+        table.add_column("Token", style="bold", min_width=10)
+        table.add_column("Balance", justify="right", min_width=14)
+        table.add_column("USD Value", justify="right", min_width=14)
+        table.add_column("% of Portfolio", justify="right", min_width=10)
+
+        for h in holdings[:args.top]:
+            pct = (h["usd"] / total_usd) * 100
+            usd_str = f"${h['usd']:,.0f}" if h["usd"] else "—"
+            pct_str = f"{pct:.1f}%" if h["usd"] else "—"
+            table.add_row(h["token"], h["balance"], usd_str, pct_str)
+
+        console.print(table)
+
+        if len(holdings) > args.top:
+            console.print(f"[dim]  ... and {len(holdings) - args.top} more tokens[/dim]")
+
+        console.print(f"\n[bold]Total Portfolio Value:[/bold] ${total_usd:,.0f}")
+    else:
+        if balance_result.error:
+            console.print(f"\n[red]Holdings error:[/red] {balance_result.error}")
+        else:
+            console.print("\n[dim]No holdings data available.[/dim]")
+
+    # ── Display PnL summary ──
+    if pnl_result.success and pnl_result.data:
+        pnl_data = pnl_result.data
+
+        console.print(f"\n[bold cyan]PnL Summary:[/bold cyan]")
+
+        if isinstance(pnl_data, dict):
+            # Display key PnL metrics
+            metrics = [
+                ("Total PnL", "total_pnl", "totalPnl", "pnl"),
+                ("Realized PnL", "realized_pnl", "realizedPnl"),
+                ("Unrealized PnL", "unrealized_pnl", "unrealizedPnl"),
+                ("Win Rate", "win_rate", "winRate"),
+                ("Total Trades", "total_trades", "totalTrades", "tradeCount"),
+                ("Avg Return", "avg_return", "avgReturn"),
+            ]
+            for label, *keys in metrics:
+                for k in keys:
+                    val = pnl_data.get(k)
+                    if val is not None:
+                        if isinstance(val, (int, float)):
+                            if "rate" in k.lower() or "rate" in label.lower():
+                                console.print(f"  {label}: {val:.1%}" if val < 1 else f"  {label}: {val:.1f}%")
+                            else:
+                                color = "green" if val >= 0 else "red"
+                                console.print(f"  {label}: [{color}]${val:,.0f}[/{color}]")
+                        else:
+                            console.print(f"  {label}: {val}")
+                        break
+        elif isinstance(pnl_data, str):
+            console.print(f"  {pnl_data}")
+        else:
+            console.print(f"  {pnl_data}")
+    else:
+        if pnl_result.error:
+            console.print(f"\n[dim]PnL: {pnl_result.error}[/dim]")
+        else:
+            console.print("\n[dim]PnL data not available.[/dim]")
+
+    _display_api_stats()
+
+
 # ── Display Helpers ──────────────────────────────────────────────────────────
 
 async def _scan_chain_with_display(chain: str) -> dict[str, ScanResult]:
@@ -778,6 +1118,8 @@ def main():
         "network": cmd_network,
         "perps": cmd_perps,
         "daily": cmd_daily,
+        "portfolio": cmd_portfolio,
+        "watch": cmd_watch,
     }
 
     handler = commands.get(args.command)

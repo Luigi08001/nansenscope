@@ -110,6 +110,36 @@ tailwind.config = {
     height: 1px; margin: 0 auto; max-width: 200px;
     background: linear-gradient(90deg, transparent, rgba(1,255,167,0.2), transparent);
   }
+
+  /* Live Signal Ticker */
+  .ticker-bar {
+    position: relative; z-index: 3;
+    background: #111C2E;
+    border-bottom: 1px solid #1A2940;
+    height: 32px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #8895A7;
+    white-space: nowrap;
+  }
+  .ticker-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    animation: tickerScroll 35s linear infinite;
+  }
+  .ticker-item { padding: 0 12px; }
+  .ticker-item.green { color: #00E5A0; }
+  .ticker-item.red { color: #E5484D; }
+  .ticker-item.warn { color: #F5A623; }
+  .ticker-sep { color: #1A2940; padding: 0 4px; user-select: none; }
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 </style>
 </head>
 <body class="antialiased">
