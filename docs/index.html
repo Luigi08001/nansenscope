@@ -49,6 +49,17 @@ section{padding:80px 0}
 .cursor{display:inline-block;width:8px;height:16px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:text-bottom}
 @keyframes blink{50%{opacity:0}}
 
+/* DEMO TABS */
+.demo-tabs{display:flex;gap:0;background:#0D1117;border-radius:8px 8px 0 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.demo-tabs::-webkit-scrollbar{display:none}
+.demo-tab{flex-shrink:0;padding:12px 20px;font-family:inherit;font-size:.78rem;font-weight:500;color:var(--dim);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap}
+.demo-tab:hover{color:var(--text)}
+.demo-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.terminal-title{margin-left:auto;font-size:.7rem;color:var(--dim)}
+#demo-terminal{border-radius:0 0 8px 8px}
+#demo-terminal .terminal-bar{border-radius:0}
+.terminal-body .crit{color:#FF4444}
+
 /* FEATURES */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;transition:all .25s}
@@ -114,13 +125,21 @@ footer a{color:var(--cyan)}
 </div>
 </section>
 
-<!-- LIVE DEMO -->
+<!-- TABBED DEMO -->
 <section id="demo">
 <div class="container">
 <p class="section-title">Live Demo</p>
-<p class="section-sub">Watch NansenScope scan smart money in real-time</p>
-<div class="terminal">
-<div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
+<p class="section-sub">Six intelligence modules — click a tab to explore</p>
+<div class="demo-tabs" role="tablist">
+<button class="demo-tab active" data-tab="0" role="tab">Chain Sweep</button>
+<button class="demo-tab" data-tab="1" role="tab">Syndicate Hunter</button>
+<button class="demo-tab" data-tab="2" role="tab">Leverage Radar</button>
+<button class="demo-tab" data-tab="3" role="tab">Signal Fusion</button>
+<button class="demo-tab" data-tab="4" role="tab">Threat Matrix</button>
+<button class="demo-tab" data-tab="5" role="tab">Morning Brief</button>
+</div>
+<div class="terminal" id="demo-terminal">
+<div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title" id="demo-title">nansenscope scan</span></div>
 <div class="terminal-body" id="term"></div>
 </div>
 </div>
@@ -210,54 +229,233 @@ footer a{color:var(--cyan)}
 </footer>
 
 <script>
-// Terminal typing animation
 (function(){
-  const lines = [
-    {t:'$ nansenscope scan --chains ethereum,base,solana', c:'prompt', d:40},
-    {t:'', c:'', d:600},
-    {t:'Scanning 3 chains: ethereum, base, solana', c:'info', d:20},
-    {t:'', c:'', d:800},
-    {t:'\u2713 ethereum done (11s)', c:'ok', d:30},
-    {t:'\u2713 base done (7s)', c:'ok', d:30},
-    {t:'\u2713 solana done (4s)', c:'ok', d:30},
-    {t:'', c:'', d:400},
-    {t:'Smart Money Signals:', c:'head', d:20},
-    {t:'#  Sev   Chain      Token   Type              Signal', c:'head', d:10},
-    {t:'1  HIGH  ethereum   UNI     high_conviction   29 SM wallets ($144M)', c:'hi', d:15},
-    {t:'2  HIGH  ethereum   WLD     high_conviction   22 SM wallets ($60M)', c:'hi', d:15},
-    {t:'3  HIGH  ethereum   ONDO    high_conviction   19 SM wallets ($87M)', c:'hi', d:15},
-    {t:'4  HIGH  base       VIRTUAL high_conviction   27 SM wallets ($757K)', c:'hi', d:15},
-    {t:'5  HIGH  solana     JUP     high_conviction   19 SM wallets ($2.7M)', c:'hi', d:15},
-    {t:'', c:'', d:300},
-    {t:'API calls: 12 | Errors: 0 | Chains: 3', c:'info', d:20}
-  ];
+var tabs=[
+{title:'nansenscope scan',lines:[
+{t:'$ nansenscope scan --chains ethereum,base,solana',c:'prompt'},
+{t:''},
+{t:'Scanning 3 chains: ethereum, base, solana',c:'info'},
+{t:''},
+{t:'\u2713 ethereum done (11s)',c:'ok'},
+{t:'\u2713 base done (7s)',c:'ok'},
+{t:'\u2713 solana done (4s)',c:'ok'},
+{t:''},
+{t:'                    Smart Money Signals',c:'head'},
+{t:'#   Sev   Chain      Token    Type              Signal',c:'head'},
+{t:'1   HIGH  ethereum   UNI      high_conviction   29 SM wallets ($144M)',c:'hi'},
+{t:'2   HIGH  ethereum   WLD      high_conviction   22 SM wallets ($60M)',c:'hi'},
+{t:'3   HIGH  ethereum   ONDO     high_conviction   19 SM wallets ($87M)',c:'hi'},
+{t:'4   HIGH  base       VIRTUAL  high_conviction   27 SM wallets ($757K)',c:'hi'},
+{t:'5   HIGH  solana     JUP      high_conviction   19 SM wallets ($2.7M)',c:'hi'},
+{t:'6   HIGH  ethereum   ENA      high_conviction   17 SM wallets ($17M)',c:'hi'},
+{t:'7   HIGH  ethereum   SAFE     high_conviction   16 SM wallets ($1.1M)',c:'hi'},
+{t:'8   HIGH  base       FACY     high_conviction   16 SM wallets ($11K)',c:'hi'},
+{t:'9   HIGH  ethereum   SYRUP    high_conviction   15 SM wallets ($15M)',c:'hi'},
+{t:'10  HIGH  solana     PENGU    high_conviction   8 SM wallets ($851K)',c:'hi'},
+{t:''},
+{t:'API calls: 12 | Errors: 0 | Chains: 3',c:'info'}
+]},
+{title:'nansenscope network',lines:[
+{t:'$ nansenscope network --address 0x0ed6...47ff 0xa5d2...fecf --chain ethereum',c:'prompt'},
+{t:''},
+{t:'Building wallet network from 2 seeds, max 2 hops...',c:'info'},
+{t:'\u2713 Network built (13s)',c:'ok'},
+{t:''},
+{t:'Network: 12 nodes, 11 edges',c:'head'},
+{t:''},
+{t:'Wallet Clusters: 2 detected',c:'head'},
+{t:''},
+{t:'  Cluster #1: 8 wallets | $2.1M total PnL',c:'ok'},
+{t:'    Hub: 0xa5d2...fecf (7 connections)',c:''},
+{t:'    Smart Money: 2 nodes detected',c:''},
+{t:'    Relations: funder, counterparty',c:'info'},
+{t:''},
+{t:'  Cluster #0: 4 wallets | $450K total PnL',c:'ok'},
+{t:'    Hub: 0x0ed6...47ff (3 connections)',c:''},
+{t:'    Relations: funder',c:'info'},
+{t:''},
+{t:'  Top Connected Nodes:',c:'head'},
+{t:'    0xa5d2...fecf \u2014 7 connections (counterparty hub)',c:''},
+{t:'    0x0ed6...47ff \u2014 3 connections (funder)',c:''},
+{t:'    0xfa49...2c1a \u2014 2 connections',c:''},
+{t:''},
+{t:'\u2713 Bubble map saved: reports/charts/syndicate_bubble_map.png',c:'ok'},
+{t:'\u2713 Interactive HTML: reports/charts/syndicate_bubble_map.html',c:'ok'}
+]},
+{title:'nansenscope perps',lines:[
+{t:'$ nansenscope perps',c:'prompt'},
+{t:''},
+{t:'Smart Money Perpetual Trading Intelligence',c:'head'},
+{t:'Hyperliquid \u2014 Real-time SM positions',c:'info'},
+{t:''},
+{t:'Positions: 50 | Volume: $208,111 | Traders: 5',c:''},
+{t:'L/S Ratio: 18.91 (strongly bullish)',c:'ok'},
+{t:''},
+{t:'          Top Tokens by Perp Volume',c:'head'},
+{t:'Token      Volume      Trades    Long         Short',c:'head'},
+{t:'xyz:CL     $196,147    11        $196,147     $0',c:''},
+{t:'TAO        $6,228      17        $0           $6,228',c:''},
+{t:'AVAX       $2,146      5         $22          $2,124',c:''},
+{t:'LINK       $1,351      3         $0           $1,351',c:''},
+{t:'AZTEC      $1,194      6         $1,194       $0',c:''},
+{t:'NEAR       $750        4         $0           $750',c:''},
+{t:'SOL        $156        2         $156         $0',c:''},
+{t:'ETH        $137        2         $137         $0',c:''},
+{t:''},
+{t:'\uD83D\uDD34 SM perp Short Open: $750 LINK @ $8.98 \u2014 Smart HL Perps Trader',c:'crit'},
+{t:'\uD83D\uDD34 SM perp Short Open: $614 TAO @ $344.22 \u2014 Smart HL Perps Trader',c:'crit'},
+{t:'\uD83D\uDFE2 SM perp Long Open: $196K xyz:CL \u2014 Smart HL Perps Trader',c:'ok'},
+{t:''},
+{t:'API calls: 1 | Errors: 0',c:'info'}
+]},
+{title:'nansenscope signals',lines:[
+{t:'$ nansenscope signals --chains ethereum,base,solana --top 10',c:'prompt'},
+{t:''},
+{t:'Analyzing cross-chain convergence...',c:'info'},
+{t:''},
+{t:'\u26A0 CONVERGENCE DETECTED: UNI',c:'crit'},
+{t:'  \u2514\u2500 ethereum: 29 SM wallets holding ($144M)',c:''},
+{t:'  \u2514\u2500 base: netflow +$2.1M (24h)',c:''},
+{t:'  \u2514\u2500 Signals: high_conviction + netflow = CONVERGENCE',c:'hi'},
+{t:'  \u2514\u2500 Score: 95 | Severity: CRITICAL',c:'crit'},
+{t:''},
+{t:'\u26A0 CONVERGENCE DETECTED: ONDO',c:'crit'},
+{t:'  \u2514\u2500 ethereum: 19 SM wallets ($87M)',c:''},
+{t:'  \u2514\u2500 arbitrum: 4 SM wallets ($1.2M)',c:''},
+{t:'  \u2514\u2500 Signals: high_conviction + cross_chain = CONVERGENCE',c:'hi'},
+{t:'  \u2514\u2500 Score: 88 | Severity: CRITICAL',c:'crit'},
+{t:''},
+{t:'Ranked Signals (top 10):',c:'head'},
+{t:'#  Score  Token    Chain      Type',c:'head'},
+{t:'1  95     UNI      multi      convergence',c:'crit'},
+{t:'2  88     ONDO     multi      convergence',c:'crit'},
+{t:'3  82     WLD      ethereum   high_conviction',c:'hi'},
+{t:'4  78     VIRTUAL  base       high_conviction',c:'hi'},
+{t:'5  75     JUP      solana     high_conviction',c:'hi'}
+]},
+{title:'nansenscope alerts',lines:[
+{t:'$ nansenscope alerts --chains ethereum,base,solana',c:'prompt'},
+{t:''},
+{t:'Running 5 alert rules across 3 chains...',c:'info'},
+{t:''},
+{t:'\uD83D\uDEA8 CRITICAL \u2014 Whale Accumulation',c:'crit'},
+{t:'   UNI: SM buying across ethereum + base',c:''},
+{t:'   29 wallets, $144M total | Cooldown: 60min',c:'info'},
+{t:''},
+{t:'\uD83D\uDEA8 CRITICAL \u2014 Convergence Spike',c:'crit'},
+{t:'   ONDO: convergence score 88 > threshold 80',c:''},
+{t:'   Cross-chain activity detected | Cooldown: 30min',c:'info'},
+{t:''},
+{t:'\u26A0 HIGH \u2014 Cross-Chain Flow',c:'hi'},
+{t:'   WETH: flowing into base + arbitrum',c:''},
+{t:'   $2.1M netflow detected | Cooldown: 45min',c:'info'},
+{t:''},
+{t:'Alerts triggered: 3 | Rules checked: 5',c:''},
+{t:'History saved: reports/alert_history.json',c:'ok'}
+]},
+{title:'nansenscope daily',lines:[
+{t:'$ nansenscope daily --chains ethereum,base,solana,arbitrum,bnb',c:'prompt'},
+{t:''},
+{t:'Daily Intelligence Pipeline',c:'head'},
+{t:'scan \u2192 signals \u2192 alerts \u2192 charts \u2192 report',c:'info'},
+{t:''},
+{t:'Step 1/5: Scanning 5 chains...',c:''},
+{t:'  \u2713 ethereum (11s) | \u2713 base (7s) | \u2713 solana (4s)',c:'ok'},
+{t:'  \u2713 arbitrum (5s) | \u2713 bnb (6s)',c:'ok'},
+{t:''},
+{t:'Step 2/5: Analyzing signals...',c:''},
+{t:'  53 signals detected (2 convergence, 41 high, 10 medium)',c:'hi'},
+{t:''},
+{t:'Step 3/5: Running alerts...',c:''},
+{t:'  3 alerts triggered (2 critical, 1 high)',c:'crit'},
+{t:''},
+{t:'Step 4/5: Generating charts...',c:''},
+{t:'  \u2713 signal_timeline.png',c:'ok'},
+{t:'  \u2713 chain_comparison.png',c:'ok'},
+{t:'  \u2713 syndicate_bubble_map.png + .html',c:'ok'},
+{t:''},
+{t:'Step 5/5: Building report...',c:''},
+{t:'  \u2713 reports/daily_2026-03-26.md',c:'ok'},
+{t:''},
+{t:'API calls: 24 | Errors: 0 | Chains: 5',c:'info'},
+{t:'Daily pipeline complete!',c:'ok'}
+]}
+];
 
-  const el = document.getElementById('term');
-  let li = 0, ci = 0, started = false;
+var el=document.getElementById('term');
+var titleEl=document.getElementById('demo-title');
+var tabBtns=document.querySelectorAll('.demo-tab');
+var activeTab=0,typing=false,typingTimer=null,typed=false;
 
-  function typeLine(){
-    if(li >= lines.length){el.innerHTML += '<span class="cursor"></span>';return}
-    const line = lines[li];
-    if(ci === 0 && line.t === ''){el.innerHTML += '\n';li++;setTimeout(typeLine, line.d);return}
-    if(ci === 0) el.innerHTML += '<span class="'+line.c+'">';
-    if(ci < line.t.length){
-      el.innerHTML = el.innerHTML + line.t[ci];
+function renderTab(idx,animate){
+  activeTab=idx;
+  if(typingTimer){clearTimeout(typingTimer);typingTimer=null}
+  typing=false;
+  var tab=tabs[idx];
+  titleEl.textContent=tab.title;
+  tabBtns.forEach(function(b,i){b.classList.toggle('active',i===idx)});
+  if(animate&&!typed){
+    typed=true;
+    typeTab(tab.lines);
+  } else {
+    el.innerHTML=buildStatic(tab.lines)+'<span class="cursor"></span>';
+  }
+}
+
+function buildStatic(lines){
+  var h='';
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i];
+    if(!l.t){h+='\n';continue}
+    if(l.c){h+='<span class="'+l.c+'">'+esc(l.t)+'</span>\n'}
+    else{h+=esc(l.t)+'\n'}
+  }
+  return h;
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function typeTab(lines){
+  typing=true;
+  el.innerHTML='';
+  var li=0,ci=0;
+  function step(){
+    if(!typing)return;
+    if(li>=lines.length){el.innerHTML+='<span class="cursor"></span>';typing=false;return}
+    var line=lines[li];
+    if(!line.t){el.innerHTML+='\n';li++;typingTimer=setTimeout(step,80);return}
+    if(ci===0){el.innerHTML+='<span class="'+(line.c||'')+'">';}
+    if(ci<line.t.length){
+      // append char safely
+      var sp=el.querySelector('span:last-of-type');
+      if(sp){sp.textContent+=line.t[ci]}else{el.innerHTML+=esc(line.t[ci])}
       ci++;
-      setTimeout(typeLine, line.d);
+      var d=line.c==='prompt'?30:8;
+      typingTimer=setTimeout(step,d);
     } else {
-      el.innerHTML += '</span>\n';
-      ci = 0; li++;
-      setTimeout(typeLine, 200);
+      el.innerHTML+='</span>\n';
+      ci=0;li++;
+      typingTimer=setTimeout(step,60);
     }
   }
+  step();
+}
 
-  const obs = new IntersectionObserver(function(entries){
-    if(entries[0].isIntersecting && !started){started=true;typeLine()}
-  },{threshold:0.3});
-  obs.observe(el);
+tabBtns.forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var idx=parseInt(this.getAttribute('data-tab'));
+    if(idx===activeTab)return;
+    renderTab(idx,false);
+  });
+});
 
-  // Fallback: start after 2s if hero is in view
-  setTimeout(function(){if(!started){started=true;typeLine()}},2000);
+// Trigger typing on first scroll into view
+var obs=new IntersectionObserver(function(entries){
+  if(entries[0].isIntersecting&&!typed){renderTab(0,true)}
+},{threshold:0.3});
+obs.observe(el);
+// Fallback
+setTimeout(function(){if(!typed){renderTab(0,true)}},3000);
 })();
 </script>
 </body>
