@@ -216,13 +216,23 @@ tailwind.config = {
     Relations: funder
 
 <span class="text-success">✓</span> Interactive HTML: <span class="text-accent">reports/charts/network_map.html</span></pre>
-<!-- Syndicate Hunter Bubble Map -->
+<!-- Syndicate Hunter: Arkham-style Force-Directed Network Graph -->
 <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1F2937">
   <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Interactive Network Map</p>
-  <div style="position:relative;width:100%;height:300px;background:#0A0D14;border-radius:8px;overflow:hidden" id="network-map-container">
-    <svg id="network-svg" width="100%" height="100%" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet" style="display:block"></svg>
+  <div style="position:relative;width:100%;height:400px;background:#0A0D14;border-radius:8px;overflow:hidden" id="network-map-container">
+    <canvas id="network-canvas" style="display:block;width:100%;height:100%"></canvas>
+    <!-- Legend -->
+    <div style="position:absolute;top:12px;right:12px;background:rgba(10,13,20,0.85);border:1px solid #1F2937;border-radius:6px;padding:10px 14px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#9CA3AF;line-height:1.8;pointer-events:none">
+      <div><span style="display:inline-block;width:18px;height:2px;background:#EF4444;vertical-align:middle;margin-right:6px;border-radius:1px"></span>Fund Flow</div>
+      <div><span style="display:inline-block;width:18px;height:2px;background:#F59E0B;vertical-align:middle;margin-right:6px;border-radius:1px"></span>Counterparty</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#4B5563;border-radius:50%;vertical-align:middle;margin-right:6px"></span>Unknown Wallet</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#06B6D4;border-radius:50%;vertical-align:middle;margin-right:6px;box-shadow:0 0 4px #06B6D4"></span>Smart Money</div>
+      <div><span style="display:inline-block;width:12px;height:12px;background:#06B6D4;border-radius:50%;vertical-align:middle;margin-right:4px;box-shadow:0 0 6px #06B6D4"></span>Cluster Hub</div>
+    </div>
+    <!-- Tooltip -->
     <div id="net-tooltip" style="position:absolute;display:none;background:#111827;border:1px solid #1F2937;border-radius:6px;padding:8px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#F3F4F6;pointer-events:none;z-index:10;white-space:nowrap"></div>
   </div>
+  <p style="text-align:center;font-size:12px;color:#6B7280;margin-top:8px;font-family:'JetBrains Mono',monospace">12 core nodes &bull; 78 related wallets &bull; 2 clusters detected</p>
 </div></pre></div>
 
         <div class="term-content" data-tab="2"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope perps</span>
@@ -529,6 +539,10 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
   document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
+  // Trigger network graph init when syndicate tab (tab 1) is shown
+  if (tab === '1' && typeof initNetworkGraph === 'function') {
+    setTimeout(initNetworkGraph, 100);
+  }
 });
 
 // Feature list
@@ -565,108 +579,203 @@ const obs = new IntersectionObserver((entries) => {
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-// Network Map
-(function(){
-  const svg = document.getElementById('network-svg');
-  if(!svg) return;
-  const tt = document.getElementById('net-tooltip');
+// Force-Directed Network Graph (Arkham-style)
+var _networkInitialized = false;
+function initNetworkGraph(){
+  if(_networkInitialized) return;
+  const canvas = document.getElementById('network-canvas');
+  if(!canvas) return;
   const container = document.getElementById('network-map-container');
-  const nodes = [
-    {id:'hub1',x:300,y:150,r:40,label:'0xa5d2...fecf',color:'#06B6D4',sm:false,conn:7,type:'Hub'},
-    {id:'sm1',x:320,y:40,r:20,label:'0x7c3f...a12b',color:'#06B6D4',sm:true,conn:2,type:'Smart Money'},
-    {id:'n1',x:170,y:80,r:18,label:'0x9e1a...c4d7',color:'#06B6D4',sm:false,conn:2,type:'Unknown'},
-    {id:'n2',x:430,y:70,r:22,label:'0xb4f8...91e3',color:'#06B6D4',sm:false,conn:2,type:'Unknown'},
-    {id:'n3',x:140,y:170,r:15,label:'0x2d6c...f8a0',color:'#06B6D4',sm:false,conn:1,type:'Unknown'},
-    {id:'n4',x:460,y:160,r:20,label:'0x8a12...5bc9',color:'#06B6D4',sm:false,conn:2,type:'Unknown'},
-    {id:'n7',x:190,y:250,r:16,label:'0xf1e9...7d43',color:'#06B6D4',sm:false,conn:1,type:'Unknown'},
-    {id:'sm2',x:420,y:250,r:22,label:'0x5b8d...e6f2',color:'#06B6D4',sm:true,conn:2,type:'Smart Money'},
-    {id:'hub0',x:620,y:150,r:30,label:'0x0ed6...47ff',color:'#F59E0B',sm:false,conn:3,type:'Hub'},
-    {id:'n5',x:560,y:70,r:18,label:'0xc3a7...14d8',color:'#F59E0B',sm:false,conn:1,type:'Unknown'},
-    {id:'n6',x:720,y:120,r:15,label:'0x6f4e...b2c1',color:'#F59E0B',sm:false,conn:1,type:'Unknown'},
-    {id:'n8',x:680,y:240,r:17,label:'0x1a9f...83e5',color:'#F59E0B',sm:false,conn:1,type:'Unknown'},
-  ];
-  const edges = [
-    {from:'hub1',to:'sm1',rel:'funder'},{from:'hub1',to:'n1',rel:'counterparty'},
-    {from:'hub1',to:'n2',rel:'funder'},{from:'hub1',to:'n3',rel:'counterparty'},
-    {from:'hub1',to:'n4',rel:'funder'},{from:'hub1',to:'n7',rel:'counterparty'},
-    {from:'hub1',to:'sm2',rel:'funder'},{from:'n4',to:'hub0',rel:'counterparty'},
-    {from:'hub0',to:'n5',rel:'funder'},{from:'hub0',to:'n6',rel:'funder'},
-    {from:'hub0',to:'n8',rel:'funder'},
-  ];
-  const ns = 'http://www.w3.org/2000/svg';
-  // defs for glow
-  const defs = document.createElementNS(ns,'defs');
-  const filter = document.createElementNS(ns,'filter');
-  filter.setAttribute('id','glow');filter.setAttribute('x','-50%');filter.setAttribute('y','-50%');filter.setAttribute('width','200%');filter.setAttribute('height','200%');
-  const gb = document.createElementNS(ns,'feGaussianBlur');gb.setAttribute('stdDeviation','4');gb.setAttribute('result','blur');
-  const merge = document.createElementNS(ns,'feMerge');
-  const m1 = document.createElementNS(ns,'feMergeNode');m1.setAttribute('in','blur');
-  const m2 = document.createElementNS(ns,'feMergeNode');m2.setAttribute('in','SourceGraphic');
-  merge.append(m1,m2);filter.append(gb,merge);defs.append(filter);svg.append(defs);
-  // edge labels group
-  const edgeLabels = [];
-  edges.forEach(e => {
-    const a = nodes.find(n=>n.id===e.from), b = nodes.find(n=>n.id===e.to);
-    const line = document.createElementNS(ns,'line');
-    line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);
-    line.setAttribute('stroke','#1F2937');line.setAttribute('stroke-width','1.5');
-    line.style.transition='stroke 0.2s';
-    const lbl = document.createElementNS(ns,'text');
-    lbl.setAttribute('x',(a.x+b.x)/2);lbl.setAttribute('y',(a.y+b.y)/2-6);
-    lbl.setAttribute('text-anchor','middle');lbl.setAttribute('fill','#9CA3AF');
-    lbl.setAttribute('font-size','9');lbl.setAttribute('font-family','JetBrains Mono,monospace');
-    lbl.setAttribute('opacity','0');lbl.textContent=e.rel;lbl.style.transition='opacity 0.2s';
-    line.addEventListener('mouseenter',()=>{line.setAttribute('stroke','#06B6D4');lbl.setAttribute('opacity','1')});
-    line.addEventListener('mouseleave',()=>{line.setAttribute('stroke','#1F2937');lbl.setAttribute('opacity','0')});
-    svg.append(line);edgeLabels.push(lbl);
-  });
-  edgeLabels.forEach(l=>svg.append(l));
-  // nodes
-  const circles = [];
-  nodes.forEach(n => {
-    const g = document.createElementNS(ns,'g');
-    g.style.cursor='pointer';
-    const c = document.createElementNS(ns,'circle');
-    c.setAttribute('cx',n.x);c.setAttribute('cy',n.y);c.setAttribute('r',n.r);
-    c.setAttribute('fill',n.color+(n.sm?'':'33'));c.setAttribute('stroke',n.color);c.setAttribute('stroke-width',n.sm?2:1);
-    if(n.sm) c.setAttribute('filter','url(#glow)');
-    g.append(c);
-    if(n.r>=30){
-      const t = document.createElementNS(ns,'text');
-      t.setAttribute('x',n.x);t.setAttribute('y',n.y+4);t.setAttribute('text-anchor','middle');
-      t.setAttribute('fill','#F3F4F6');t.setAttribute('font-size','9');t.setAttribute('font-family','JetBrains Mono,monospace');
-      t.textContent=n.label;g.append(t);
+  if(!container || container.offsetWidth < 10) return; // tab still hidden
+  _networkInitialized = true;
+  const tt = document.getElementById('net-tooltip');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let W = container.offsetWidth || 900, H = 400;
+  let initialized = false;
+
+  function resize(){
+    const rect = container.getBoundingClientRect();
+    if(rect.width > 10 && rect.height > 10){
+      // Rescale node positions if W changed
+      const oldW = W, oldH = H;
+      W = rect.width; H = rect.height;
+      if(initialized && oldW > 10){
+        const sx = W/oldW, sy = H/oldH;
+        nodes.forEach(n=>{ n.x*=sx; n.y*=sy; });
+      }
     }
-    if(n.sm){
-      const t = document.createElementNS(ns,'text');
-      t.setAttribute('x',n.x);t.setAttribute('y',n.y+4);t.setAttribute('text-anchor','middle');
-      t.setAttribute('fill','#06B6D4');t.setAttribute('font-size','9');t.setAttribute('font-weight','bold');
-      t.setAttribute('font-family','JetBrains Mono,monospace');t.textContent='SM';g.append(t);
-    }
-    g.addEventListener('mouseenter',(ev)=>{
-      const rect=container.getBoundingClientRect();const svgRect=svg.getBoundingClientRect();
-      const scaleX=svgRect.width/800;const scaleY=svgRect.height/300;
-      tt.innerHTML=`<span style="color:${n.color}">${n.label}</span><br>${n.type}<br>${n.conn} connections`;
-      tt.style.display='block';
-      tt.style.left=(n.x*scaleX-40)+'px';tt.style.top=(n.y*scaleY-60)+'px';
-    });
-    g.addEventListener('mouseleave',()=>{tt.style.display='none'});
-    svg.append(g);
-    circles.push({el:c,ox:n.x,oy:n.y,phase:Math.random()*Math.PI*2,speed:0.5+Math.random()*0.5,amp:0.5+Math.random()*0.5});
-  });
-  // breathing animation
-  let t0=performance.now();
-  function breathe(ts){
-    const dt=(ts-t0)/1000;
-    circles.forEach(c=>{
-      const dx=Math.sin(dt*c.speed+c.phase)*c.amp;
-      const dy=Math.cos(dt*c.speed*0.7+c.phase)*c.amp;
-      c.el.setAttribute('cx',c.ox+dx);c.el.setAttribute('cy',c.oy+dy);
-    });
-    requestAnimationFrame(breathe);
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  requestAnimationFrame(breathe);
-})();
+
+  function rAddr(){ return '0x'+Array.from({length:4},()=>Math.floor(Math.random()*65536).toString(16).padStart(4,'0')).join('').slice(0,4)+'...'+Math.floor(Math.random()*65536).toString(16).padStart(4,'0'); }
+
+  const nodes = [];
+  const edges = [];
+  const CX = W/2, CY = H/2;
+  // 2 hubs
+  nodes.push({id:0, x:CX-80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:14, label:'0xa5d2...fecf', color:'#06B6D4', type:'hub', cluster:1});
+  nodes.push({id:1, x:CX+80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:12, label:'0x0ed6...47ff', color:'#F59E0B', type:'hub', cluster:0});
+  // 6 SM nodes
+  for(let i=0;i<6;i++){
+    const cl=i<4?1:0, hub=cl===1?0:1;
+    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*100, y:CY+(Math.random()-0.5)*80, vx:0, vy:0, r:6+Math.random()*2, label:rAddr(), color:'#06B6D4', type:'sm', cluster:cl});
+    edges.push({s:hub, t:nodes.length-1, type:'hub-sm'});
+  }
+  // 20 known wallets
+  for(let i=0;i<20;i++){
+    const cl=i<12?1:0, hub=cl===1?0:1;
+    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*200, y:CY+(Math.random()-0.5)*150, vx:0, vy:0, r:4+Math.random(), label:rAddr(), color:'#4B5563', type:'known', cluster:cl});
+    edges.push({s:hub, t:nodes.length-1, type:'hub-known'});
+    if(Math.random()<0.3){ edges.push({s:2+Math.floor(Math.random()*6), t:nodes.length-1, type:'hub-known'}); }
+  }
+  // 60 peripheral nodes
+  for(let i=0;i<60;i++){
+    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*300, y:CY+(Math.random()-0.5)*200, vx:0, vy:0, r:1.5+Math.random()*1.5, label:rAddr(), color:'#374151', type:'peripheral', cluster:Math.random()<0.6?1:0});
+    const pool=nodes.filter(n=>n.type==='known'||n.type==='sm');
+    const p=pool[Math.floor(Math.random()*pool.length)];
+    edges.push({s:p.id, t:nodes.length-1, type:'peripheral'});
+    if(Math.random()<0.15){ const o=pool[Math.floor(Math.random()*pool.length)]; if(o.id!==p.id) edges.push({s:o.id, t:nodes.length-1, type:'peripheral'}); }
+  }
+  edges.push({s:0, t:1, type:'hub-sm'});
+  nodes.forEach(n=>n.conn=0);
+  edges.forEach(e=>{nodes[e.s].conn++;nodes[e.t].conn++;});
+
+  // Force simulation
+  let iteration=0, settled=false;
+  function simulate(){
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        let dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+        let d2=dx*dx+dy*dy; if(d2<1)d2=1;
+        let d=Math.sqrt(d2), f=600/d2;
+        let fx=dx/d*f, fy=dy/d*f;
+        nodes[i].vx-=fx; nodes[i].vy-=fy;
+        nodes[j].vx+=fx; nodes[j].vy+=fy;
+      }
+    }
+    edges.forEach(e=>{
+      const a=nodes[e.s],b=nodes[e.t];
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      let rest=e.type==='peripheral'?60:e.type==='hub-known'?90:100;
+      let f=0.03*(d-rest), fx=dx/d*f, fy=dy/d*f;
+      a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+    });
+    nodes.forEach(n=>{
+      n.vx+=(W/2-n.x)*0.012; n.vy+=(H/2-n.y)*0.012;
+      n.vx*=0.9; n.vy*=0.9;
+      n.x+=n.vx; n.y+=n.vy;
+      n.x=Math.max(n.r+8,Math.min(W-n.r-8,n.x));
+      n.y=Math.max(n.r+8,Math.min(H-n.r-8,n.y));
+    });
+    iteration++;
+  }
+
+  // Save settled positions for drift
+  let settledPos=[];
+  function draw(time){
+    ctx.clearRect(0,0,W,H);
+    const t=time||0;
+    // Subtle drift after settling
+    if(settled && settledPos.length){
+      nodes.forEach((n,i)=>{
+        const sp=settledPos[i];
+        n.x=sp.ox+Math.sin(t*0.0008*sp.sx+sp.px)*sp.ax;
+        n.y=sp.oy+Math.cos(t*0.0006*sp.sy+sp.py)*sp.ay;
+      });
+    }
+    // Edges
+    edges.forEach(e=>{
+      const a=nodes[e.s],b=nodes[e.t];
+      ctx.beginPath();
+      if(e.type==='hub-sm'){
+        ctx.strokeStyle='rgba(239,68,68,0.55)';ctx.lineWidth=1.5;
+        const mx=(a.x+b.x)/2+(a.y-b.y)*0.15,my=(a.y+b.y)/2+(b.x-a.x)*0.15;
+        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
+      } else if(e.type==='hub-known'){
+        ctx.strokeStyle='rgba(245,158,11,0.25)';ctx.lineWidth=0.8;
+        const mx=(a.x+b.x)/2+(a.y-b.y)*0.08,my=(a.y+b.y)/2+(b.x-a.x)*0.08;
+        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
+      } else {
+        ctx.strokeStyle='rgba(31,41,55,0.45)';ctx.lineWidth=0.4;
+        ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      }
+      ctx.stroke();
+    });
+    // Nodes
+    nodes.forEach(n=>{
+      if(n.type==='hub'){
+        ctx.beginPath();
+        const pulse=1+0.15*Math.sin(t*0.003+(n.cluster===1?0:Math.PI));
+        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.3,n.x,n.y,n.r*2.8*pulse);
+        grad.addColorStop(0,n.color+'50');grad.addColorStop(1,n.color+'00');
+        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2.8*pulse,0,Math.PI*2);ctx.fill();
+      }
+      if(n.type==='sm'){
+        ctx.beginPath();
+        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.5,n.x,n.y,n.r*2.2);
+        grad.addColorStop(0,'#06B6D425');grad.addColorStop(1,'#06B6D400');
+        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2.2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      if(n.type==='hub'){ctx.fillStyle=n.color;ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.fill();ctx.stroke();}
+      else if(n.type==='sm'){ctx.fillStyle='#06B6D4';ctx.fill();}
+      else if(n.type==='known'){ctx.fillStyle='#4B5563';ctx.fill();}
+      else{ctx.fillStyle='#374151';ctx.fill();}
+    });
+    ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+    nodes.forEach(n=>{
+      if(n.type==='hub'){ctx.fillStyle='#E5E7EB';ctx.fillText(n.label,n.x,n.y+n.r+14);}
+      else if(n.type==='sm'){ctx.fillStyle='#06B6D4';ctx.font='bold 8px JetBrains Mono,monospace';ctx.fillText('SM',n.x,n.y+3);ctx.font='9px JetBrains Mono,monospace';}
+    });
+  }
+
+  let animFrame=null, running=false;
+  function loop(time){
+    if(!settled){
+      for(let s=0;s<3;s++) simulate(); // 3 steps per frame for faster convergence
+      if(iteration>=250){
+        settled=true;
+        settledPos=nodes.map(n=>({ox:n.x,oy:n.y,px:Math.random()*6.28,py:Math.random()*6.28,sx:0.3+Math.random()*0.5,sy:0.25+Math.random()*0.4,ax:0.4+Math.random()*0.6,ay:0.4+Math.random()*0.6}));
+      }
+    }
+    draw(time);
+    animFrame=requestAnimationFrame(loop);
+  }
+
+  function start(){
+    if(running) return;
+    running=true;
+    resize();
+    initialized=true;
+    loop(0);
+  }
+
+  // Hover
+  canvas.addEventListener('mousemove',function(ev){
+    const rect=canvas.getBoundingClientRect();
+    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
+    let found=null;
+    for(let i=nodes.length-1;i>=0;i--){
+      const n=nodes[i],dx=mx-n.x,dy=my-n.y;
+      if(dx*dx+dy*dy<Math.max(n.r*n.r*4,64)){found=n;break;}
+    }
+    if(found){
+      const n=found;
+      const lbl=n.type==='hub'?'Cluster Hub':n.type==='sm'?'Smart Money':n.type==='known'?'Known Wallet':'Unknown';
+      tt.innerHTML='<span style="color:'+n.color+'">'+n.label+'</span><br>'+lbl+'<br>'+n.conn+' connections';
+      tt.style.display='block';tt.style.left=Math.min(n.x+15,W-170)+'px';tt.style.top=Math.max(n.y-55,4)+'px';
+      canvas.style.cursor='pointer';
+    } else { tt.style.display='none';canvas.style.cursor='default'; }
+  });
+  canvas.addEventListener('mouseleave',function(){tt.style.display='none';});
+
+  // Start immediately since we're called when tab is visible
+  start();
+  window.addEventListener('resize',()=>{ if(running) resize(); });
+}
 
 // Copy
 function copyCode(btn) {
