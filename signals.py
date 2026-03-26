@@ -360,6 +360,112 @@ def detect_screener_signals(
     return signals
 
 
+# ── DCA Signal Detector ──────────────────────────────────────────────────────
+
+def detect_dca_signals(
+    data: Any, chain: str, thresholds: SignalThresholds = DEFAULT_THRESHOLDS
+) -> list[Signal]:
+    """
+    Analyze Smart Money DCA (Dollar Cost Averaging) activity.
+
+    DCA = strong conviction — smart money systematically buying over time.
+    Jupiter DCA strategies (Solana). Signals are HIGH or CRITICAL severity
+    because DCA implies deliberate, high-conviction accumulation.
+
+    Looks for:
+    - Tokens being DCA'd by multiple wallets
+    - Large total USD committed via DCA
+    - High-frequency DCA orders
+    """
+    signals = []
+    if not data:
+        return signals
+
+    # Handle both list and dict formats
+    items = data if isinstance(data, list) else [data] if isinstance(data, dict) else []
+    if not items:
+        return signals
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+
+        token = (
+            item.get("token_symbol") or item.get("symbol")
+            or item.get("output_token_symbol") or item.get("output_token")
+            or item.get("token") or "???"
+        )
+        wallet_count = _to_int(
+            item.get("wallet_count") or item.get("wallets")
+            or item.get("unique_wallets") or item.get("num_wallets", 0)
+        )
+        total_usd = _to_float(
+            item.get("total_usd") or item.get("total_value_usd")
+            or item.get("volume_usd") or item.get("amount_usd")
+            or item.get("total_amount_usd", 0)
+        )
+        order_count = _to_int(
+            item.get("order_count") or item.get("orders")
+            or item.get("num_orders") or item.get("dca_count", 0)
+        )
+        frequency = item.get("frequency") or item.get("interval") or ""
+        input_token = (
+            item.get("input_token_symbol") or item.get("input_token")
+            or item.get("from_token") or ""
+        )
+
+        # Skip entries with no meaningful data
+        if not token or token == "???":
+            continue
+
+        # Determine severity: CRITICAL if multiple wallets or large USD commitment
+        if wallet_count >= 3 or total_usd >= 100_000:
+            severity = Severity.CRITICAL
+        else:
+            severity = Severity.HIGH
+
+        # Build summary
+        parts = [f"Smart money DCA into {token}"]
+        if wallet_count:
+            parts.append(f"{wallet_count} wallets")
+        if total_usd:
+            parts.append(f"${total_usd:,.0f} committed")
+        if order_count:
+            parts.append(f"{order_count} orders")
+        if frequency:
+            parts.append(f"freq: {frequency}")
+        summary = " | ".join(parts)
+
+        # Score: DCA is high-conviction by nature
+        score = 70.0
+        if wallet_count:
+            score += min(wallet_count * 5, 15)
+        if total_usd >= 50_000:
+            score += 10
+        if total_usd >= 500_000:
+            score += 5
+        score = min(score, 100)
+
+        signals.append(Signal(
+            type="smart_money_dca",
+            severity=severity,
+            chain=chain,
+            token=token,
+            summary=summary,
+            details={
+                "wallet_count": wallet_count,
+                "total_usd": total_usd,
+                "order_count": order_count,
+                "frequency": frequency,
+                "input_token": input_token,
+            },
+            score=score,
+        ))
+
+    log.info("Detected %d DCA signals on %s", len(signals), chain)
+    return signals
+
+
 # ── Cross-Signal Convergence ─────────────────────────────────────────────────
 
 def detect_convergence(
@@ -476,12 +582,14 @@ def analyze_chain_data(
     dex_data = _extract_data(scan_results.get("dex_trades"))
     holdings_data = _extract_data(scan_results.get("holdings"))
     screener_data = _extract_data(scan_results.get("token_screener"))
+    dca_data = _extract_data(scan_results.get("dcas"))
 
     # Run individual detectors
     signals.extend(detect_netflow_signals(netflow_data, chain, thresholds))
     signals.extend(detect_dex_trade_signals(dex_data, chain, thresholds))
     signals.extend(detect_holdings_signals(holdings_data, chain, thresholds))
     signals.extend(detect_screener_signals(screener_data, chain, thresholds))
+    signals.extend(detect_dca_signals(dca_data, chain, thresholds))
 
     # Detect cross-signal convergence
     convergence = detect_convergence(signals, thresholds.convergence_min_signals)

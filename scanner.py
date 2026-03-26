@@ -326,11 +326,44 @@ async def get_wallet_counterparties(address: str, chain: str = "ethereum", days:
 
 # ── Extended Endpoints (bonus coverage) ──────────────────────────────────────
 
-async def get_smart_money_dcas(chain: str) -> ScanResult:
-    """Get DCA (Dollar Cost Averaging) activity from smart money."""
+async def get_smart_money_dcas(chain: str = "") -> ScanResult:
+    """
+    Get DCA (Dollar Cost Averaging) activity from smart money.
+    Jupiter DCA strategies — chain param is ignored (Solana-only endpoint).
+    """
     return await _run_nansen(
-        ["research", "smart-money", "dcas", "--chain", chain],
+        ["research", "smart-money", "dcas"],
         endpoint="smart-money/dcas",
+    )
+
+
+# ── Prediction Market Endpoints ──────────────────────────────────────────────
+
+async def get_prediction_markets(top: int = 10, query: str = "") -> ScanResult:
+    """
+    Get Polymarket prediction market screener data.
+    Returns active markets with probability, volume, and category info.
+    """
+    cmd_args = ["research", "prediction-market", "market-screener"]
+    if query:
+        cmd_args.extend(["--query", query])
+    return await _run_nansen(
+        cmd_args,
+        endpoint="prediction-market/market-screener",
+    )
+
+
+async def get_prediction_events(query: str = "") -> ScanResult:
+    """
+    Get Polymarket prediction event screener data.
+    Returns events (groups of markets) with aggregate volume and categories.
+    """
+    cmd_args = ["research", "prediction-market", "event-screener"]
+    if query:
+        cmd_args.extend(["--query", query])
+    return await _run_nansen(
+        cmd_args,
+        endpoint="prediction-market/event-screener",
     )
 
 
@@ -466,6 +499,7 @@ async def scan_chain(chain: str) -> dict[str, ScanResult]:
         "dex_trades": get_smart_money_dex_trades(chain),
         "holdings": get_smart_money_holdings(chain),
         "token_screener": get_token_screener(chain),
+        "dcas": get_smart_money_dcas(chain),
     }
 
     results = await asyncio.gather(*tasks.values(), return_exceptions=True)

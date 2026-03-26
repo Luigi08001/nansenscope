@@ -37,6 +37,7 @@ from reporter import (
 from scanner import (
     ScanResult, profile_wallet, scan_all_chains,
     get_wallet_labels, get_wallet_balance, get_wallet_profile,
+    get_prediction_markets, get_prediction_events,
 )
 from history import record_signals, load_history, detect_trends, format_trend_table
 from signals import Signal, analyze_all_chains, rank_signals
@@ -208,7 +209,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # ── daily ──
-    daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> perps -> charts -> report")
+    daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> charts -> AI analysis -> report")
     daily_p.add_argument(
         "--chains", type=str, default=",".join(DEFAULT_CHAINS),
         help="Comma-separated chains to scan",
@@ -216,6 +217,33 @@ def build_parser() -> argparse.ArgumentParser:
     daily_p.add_argument(
         "--output", "-o", type=str, default=None,
         help="Output path (default: reports/daily_YYYY-MM-DD.md)",
+    )
+    daily_p.add_argument(
+        "--no-ai", action="store_true", default=False,
+        help="Skip AI narrative analysis step",
+    )
+    daily_p.add_argument(
+        "--ai-mode", type=str, default="fast", choices=["fast", "expert"],
+        help="AI agent mode: fast (default) or expert (deeper analysis)",
+    )
+
+    # ── analyze ──
+    analyze_p = sub.add_parser("analyze", help="Scan chains and synthesize a narrative with Nansen AI agent")
+    analyze_p.add_argument(
+        "--chains", type=str, default=",".join(DEFAULT_CHAINS),
+        help="Comma-separated chains to scan",
+    )
+    analyze_p.add_argument(
+        "--mode", type=str, default="fast", choices=["fast", "expert"],
+        help="AI agent mode: fast (default) or expert (deeper analysis)",
+    )
+    analyze_p.add_argument(
+        "--top", type=int, default=10,
+        help="Number of top signals to send to AI (default: 10)",
+    )
+    analyze_p.add_argument(
+        "--output", "-o", type=str, default=None,
+        help="Save report to file",
     )
 
     # ── history ──
@@ -235,6 +263,26 @@ def build_parser() -> argparse.ArgumentParser:
     hist_p.add_argument(
         "--record", action="store_true", default=False,
         help="Run a scan and record signals to history before displaying trends",
+    )
+
+    # ── prediction ──
+    pred_p = sub.add_parser("prediction", help="Prediction market intelligence (Polymarket)")
+    pred_p.add_argument(
+        "--top", type=int, default=10,
+        help="Number of markets/events to display (default: 10)",
+    )
+    pred_p.add_argument(
+        "--sort", type=str, default="volume",
+        choices=["volume", "probability", "name"],
+        help="Sort results by (default: volume)",
+    )
+    pred_p.add_argument(
+        "--query", "-q", type=str, default="",
+        help="Search query to filter markets/events",
+    )
+    pred_p.add_argument(
+        "--events", action="store_true", default=False,
+        help="Show event-level screener instead of individual markets",
     )
 
     return parser
@@ -648,20 +696,71 @@ async def cmd_watch(args: argparse.Namespace):
         await asyncio.sleep(interval * 60)
 
 
-async def cmd_daily(args: argparse.Namespace):
-    """Full daily pipeline: scan -> signals -> alerts -> charts -> report."""
+async def ask_nansen_agent(prompt: str, mode: str = "fast") -> str | None:
+    """
+    Ask Nansen's AI agent a question.
+
+    Args:
+        prompt: The question/prompt to send to Nansen agent.
+        mode: 'fast' (default, cheaper) or 'expert' (deeper analysis).
+
+    Returns:
+        The agent's response text, or None if the call failed.
+    """
+    from scanner import _run_nansen
+
+    cmd_args = ["agent", prompt]
+    if mode == "expert":
+        cmd_args.append("--expert")
+
+    result = await _run_nansen(cmd_args=cmd_args, endpoint="agent")
+
+    if not result.success:
+        log.warning("Nansen agent call failed: %s", result.error)
+        return None
+
+    # The agent returns text (not JSON), so result.data is a string
+    if isinstance(result.data, str):
+        return result.data.strip() if result.data.strip() else None
+    elif isinstance(result.data, dict):
+        # If it returns JSON, extract the response text
+        return result.data.get("response", result.data.get("answer", str(result.data)))
+    return str(result.data) if result.data else None
+
+
+def _format_signals_for_prompt(signals: list[Signal], chains: list[str], max_signals: int = 10) -> str:
+    """Format top signals into a prompt for Nansen AI agent."""
+    signal_lines = []
+    for sig in signals[:max_signals]:
+        signal_lines.append(
+            f"- [{sig.severity.value.upper()}] {sig.chain}/{sig.token}: "
+            f"{sig.type} — {sig.summary} (score: {sig.score:.0f})"
+        )
+    signal_list = "\n".join(signal_lines)
+    chain_str = ", ".join(chains)
+
+    return (
+        f"Analyze these smart money signals detected across {chain_str}:\n\n"
+        f"{signal_list}\n\n"
+        f"What's the narrative? What are smart money traders positioning for? "
+        f"Identify key themes, correlations between signals, and actionable insights."
+    )
+
+
+async def cmd_analyze(args: argparse.Namespace):
+    """Scan chains and synthesize a narrative with Nansen AI agent."""
     chains = [c.strip() for c in args.chains.split(",") if c.strip()]
     show_banner()
 
     console.print(Panel(
-        "[bold]Daily Intelligence Pipeline[/bold]\n"
-        "scan → signals → alerts → charts → report",
-        border_style="green",
+        "[bold]AI-Powered Signal Analysis[/bold]\n"
+        f"scan → signals → Nansen AI ({args.mode} mode)",
+        border_style="cyan",
     ))
     console.print(f"[bold cyan]Chains:[/bold cyan] {', '.join(chains)}\n")
 
     # Step 1: Scan
-    console.print("[bold cyan]Step 1/5:[/bold cyan] Scanning chains...")
+    console.print("[bold cyan]Step 1/3:[/bold cyan] Scanning chains...")
     all_results = {}
     with Progress(
         SpinnerColumn(),
@@ -676,13 +775,105 @@ async def cmd_daily(args: argparse.Namespace):
             progress.update(task, completed=True, description=f"[green]{chain} done")
 
     # Step 2: Signals
-    console.print("\n[bold cyan]Step 2/5:[/bold cyan] Analyzing signals...")
+    console.print("\n[bold cyan]Step 2/3:[/bold cyan] Detecting signals...")
+    all_signals = analyze_all_chains(all_results)
+    ranked = rank_signals(all_signals, args.top)
+    _display_signal_table(ranked)
+
+    if not ranked:
+        console.print("[yellow]No signals to analyze. Skipping AI synthesis.[/yellow]")
+        _display_api_stats()
+        return
+
+    # Step 3: AI Analysis
+    console.print(f"\n[bold cyan]Step 3/3:[/bold cyan] AI narrative synthesis ({args.mode} mode)...")
+    prompt = _format_signals_for_prompt(ranked, chains, max_signals=args.top)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Asking Nansen AI agent...", total=None)
+        narrative = await ask_nansen_agent(prompt, mode=args.mode)
+        progress.update(task, completed=True, description="[green]AI analysis complete")
+
+    if narrative:
+        console.print(Panel(
+            narrative,
+            title="Nansen AI — Narrative Analysis",
+            title_align="left",
+            border_style="cyan",
+            padding=(1, 2),
+        ))
+    else:
+        console.print("[yellow]AI agent unavailable or returned no response. Skipping narrative.[/yellow]")
+
+    _display_api_stats()
+
+    # Save report if requested
+    if args.output:
+        report_parts = [
+            f"# NansenScope AI Analysis — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
+            f"\n## Chains: {', '.join(chains)}",
+            f"\n## Top Signals ({len(ranked)})\n",
+        ]
+        for sig in ranked:
+            report_parts.append(
+                f"- **[{sig.severity.value.upper()}]** {sig.chain}/{sig.token}: "
+                f"{sig.type} — {sig.summary} (score: {sig.score:.0f})"
+            )
+        if narrative:
+            report_parts.append(f"\n## AI Narrative Analysis\n\n{narrative}")
+        else:
+            report_parts.append("\n## AI Narrative Analysis\n\n*AI agent unavailable.*")
+
+        report = "\n".join(report_parts)
+        saved = save_report(report, args.output)
+        console.print(f"\n[bold green]Report saved:[/bold green] {saved}")
+
+
+async def cmd_daily(args: argparse.Namespace):
+    """Full daily pipeline: scan -> signals -> alerts -> charts -> AI analysis -> report."""
+    chains = [c.strip() for c in args.chains.split(",") if c.strip()]
+    show_banner()
+
+    total_steps = 5 if getattr(args, "no_ai", False) else 6
+    pipeline_desc = "scan → signals → alerts → charts → report"
+    if total_steps == 6:
+        pipeline_desc = "scan → signals → alerts → charts → AI analysis → report"
+
+    console.print(Panel(
+        "[bold]Daily Intelligence Pipeline[/bold]\n"
+        f"{pipeline_desc}",
+        border_style="green",
+    ))
+    console.print(f"[bold cyan]Chains:[/bold cyan] {', '.join(chains)}\n")
+
+    # Step 1: Scan
+    console.print(f"[bold cyan]Step 1/{total_steps}:[/bold cyan] Scanning chains...")
+    all_results = {}
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        for chain in chains:
+            task = progress.add_task(f"Scanning {chain}...", total=None)
+            chain_results = await _scan_chain_with_display(chain)
+            all_results[chain] = chain_results
+            progress.update(task, completed=True, description=f"[green]{chain} done")
+
+    # Step 2: Signals
+    console.print(f"\n[bold cyan]Step 2/{total_steps}:[/bold cyan] Analyzing signals...")
     all_signals = analyze_all_chains(all_results)
     ranked = rank_signals(all_signals)
     _display_signal_table(ranked[:10])
 
     # Step 3: Alerts
-    console.print("\n[bold cyan]Step 3/5:[/bold cyan] Running alert engine...")
+    console.print(f"\n[bold cyan]Step 3/{total_steps}:[/bold cyan] Running alert engine...")
     engine = AlertEngine()
     alerts = await engine.run(
         chains=chains,
@@ -696,7 +887,7 @@ async def cmd_daily(args: argparse.Namespace):
         console.print("  [dim]No new alerts triggered.[/dim]")
 
     # Step 4: Charts
-    console.print("\n[bold cyan]Step 4/5:[/bold cyan] Generating charts...")
+    console.print(f"\n[bold cyan]Step 4/{total_steps}:[/bold cyan] Generating charts...")
     try:
         chart_paths = generate_all_charts(all_results, all_signals)
         for name, path in chart_paths.items():
@@ -709,8 +900,43 @@ async def cmd_daily(args: argparse.Namespace):
     flat_signals = [sig for sigs in all_signals.values() for sig in sigs]
     record_signals(flat_signals)
 
-    # Step 5: Report
-    console.print("\n[bold cyan]Step 5/5:[/bold cyan] Building report...")
+    # Step 5 (optional): AI Analysis
+    ai_narrative = None
+    if not getattr(args, "no_ai", False):
+        ai_mode = getattr(args, "ai_mode", "fast")
+        console.print(f"\n[bold cyan]Step 5/{total_steps}:[/bold cyan] AI narrative synthesis ({ai_mode} mode)...")
+
+        if ranked:
+            prompt = _format_signals_for_prompt(ranked[:10], chains)
+            try:
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[bold]{task.description}"),
+                    TimeElapsedColumn(),
+                    console=console,
+                ) as progress:
+                    task = progress.add_task("Asking Nansen AI agent...", total=None)
+                    ai_narrative = await ask_nansen_agent(prompt, mode=ai_mode)
+                    progress.update(task, completed=True, description="[green]AI analysis complete")
+
+                if ai_narrative:
+                    console.print(Panel(
+                        ai_narrative,
+                        title="Nansen AI — Narrative Analysis",
+                        title_align="left",
+                        border_style="cyan",
+                        padding=(1, 2),
+                    ))
+                else:
+                    console.print("  [yellow]AI agent returned no response.[/yellow]")
+            except Exception as e:
+                console.print(f"  [yellow]AI analysis failed: {e}[/yellow]")
+        else:
+            console.print("  [dim]No signals to analyze, skipping AI.[/dim]")
+
+    # Final Step: Report
+    report_step = total_steps
+    console.print(f"\n[bold cyan]Step {report_step}/{total_steps}:[/bold cyan] Building report...")
     output_path = args.output or _default_report_path("daily")
     report = generate_scan_report(
         all_signals=all_signals,
@@ -719,6 +945,11 @@ async def cmd_daily(args: argparse.Namespace):
         chart_paths=chart_paths,
         alerts=alerts,
     )
+
+    # Append AI narrative to report if available
+    if ai_narrative:
+        report += "\n\n## AI Narrative Analysis\n\n" + ai_narrative + "\n"
+
     saved = save_report(report, output_path)
 
     _display_api_stats()
@@ -1237,6 +1468,139 @@ async def cmd_portfolio(args: argparse.Namespace):
     _display_api_stats()
 
 
+async def cmd_prediction(args: argparse.Namespace):
+    """Prediction market intelligence (Polymarket)."""
+    show_banner()
+
+    mode = "events" if args.events else "markets"
+    console.print(Panel(
+        "[bold]Prediction Market Intelligence[/bold]\n"
+        f"Source: Polymarket | Mode: {mode} | Top: {args.top}",
+        border_style="magenta",
+    ))
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task(f"Fetching prediction {mode}...", total=None)
+        if args.events:
+            result = await get_prediction_events(query=args.query)
+        else:
+            result = await get_prediction_markets(top=args.top, query=args.query)
+        progress.update(task, completed=True, description=f"[green]Prediction data loaded")
+
+    if not result.success:
+        console.print(f"\n[red]Error:[/red] {result.error}")
+        _display_api_stats()
+        return
+
+    data = result.data
+
+    # Unwrap nested data envelope if present
+    if isinstance(data, dict) and "data" in data:
+        data = data["data"]
+
+    # Handle string (non-JSON) output
+    if isinstance(data, str):
+        console.print(Panel(data, title="Prediction Market Data", border_style="magenta"))
+        _display_api_stats()
+        return
+
+    if not isinstance(data, list):
+        data = [data] if isinstance(data, dict) else []
+
+    if not data:
+        console.print("[dim]No prediction market data available.[/dim]")
+        _display_api_stats()
+        return
+
+    # Sort results
+    sort_keys = {
+        "volume": lambda x: _to_float_safe(x.get("volume") or x.get("volume_usd") or x.get("totalVolume", 0)),
+        "probability": lambda x: _to_float_safe(x.get("probability") or x.get("outcomeProbability") or x.get("yes_price", 0)),
+        "name": lambda x: (x.get("title") or x.get("question") or x.get("name") or "").lower(),
+    }
+    sort_fn = sort_keys.get(args.sort, sort_keys["volume"])
+    data.sort(key=sort_fn, reverse=(args.sort != "name"))
+
+    # Limit to top N
+    data = data[:args.top]
+
+    # Build display table
+    table = Table(
+        title=f"Polymarket — Top {len(data)} {mode.capitalize()}",
+        title_style="bold magenta",
+        show_lines=True,
+    )
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Event / Market", min_width=30)
+    table.add_column("Probability", justify="right", width=12)
+    table.add_column("Volume", justify="right", width=14)
+    table.add_column("Category", width=16)
+
+    for i, item in enumerate(data, 1):
+        name = (
+            item.get("title") or item.get("question")
+            or item.get("name") or item.get("description") or "—"
+        )
+        # Truncate long names
+        if len(name) > 60:
+            name = name[:57] + "..."
+
+        prob = _to_float_safe(
+            item.get("probability") or item.get("outcomeProbability")
+            or item.get("yes_price") or item.get("bestAsk", 0)
+        )
+        prob_str = f"{prob * 100:.1f}%" if 0 < prob <= 1 else f"{prob:.1f}%" if prob > 1 else "—"
+
+        vol = _to_float_safe(
+            item.get("volume") or item.get("volume_usd")
+            or item.get("totalVolume") or item.get("total_volume", 0)
+        )
+        vol_str = f"${vol:,.0f}" if vol else "—"
+
+        category = (
+            item.get("category") or item.get("tag")
+            or item.get("tags", [""])[0] if isinstance(item.get("tags"), list) and item.get("tags") else
+            item.get("category_name") or "—"
+        )
+        if isinstance(category, list):
+            category = category[0] if category else "—"
+
+        table.add_row(str(i), name, prob_str, vol_str, str(category))
+
+    console.print(table)
+
+    # Cross-reference with scan data if available
+    # Check if there are recent scan reports we can reference
+    try:
+        from pathlib import Path
+        import glob
+        report_files = sorted(glob.glob("reports/scan_*.md"), reverse=True)
+        if report_files:
+            console.print(
+                f"\n[dim]Tip: Cross-reference with latest scan data: "
+                f"{Path(report_files[0]).name}[/dim]"
+            )
+    except Exception:
+        pass
+
+    _display_api_stats()
+
+
+def _to_float_safe(val) -> float:
+    """Safe float conversion for prediction market data."""
+    if val is None:
+        return 0.0
+    try:
+        return float(str(val).replace(",", "").replace("$", "").replace("%", ""))
+    except (ValueError, TypeError):
+        return 0.0
+
+
 # ── Display Helpers ──────────────────────────────────────────────────────────
 
 async def _scan_chain_with_display(chain: str) -> dict[str, ScanResult]:
@@ -1369,6 +1733,8 @@ def main():
         "portfolio": cmd_portfolio,
         "watch": cmd_watch,
         "quote": cmd_quote,
+        "prediction": cmd_prediction,
+        "analyze": cmd_analyze,
     }
 
     handler = commands.get(args.command)
