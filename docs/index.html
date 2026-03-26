@@ -130,6 +130,10 @@ tailwind.config = {
   .ticker-item.red { color: #E5484D; }
   .ticker-item.warn { color: #F5A623; }
   .ticker-sep { color: #1A2940; padding: 0 4px; user-select: none; }
+  .ent-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:11px;font-family:'JetBrains Mono',monospace; }
+  .ent-badge.purple { background:#A855F715;border:1px solid #A855F730;color:#D8B4FE; }
+  .ent-badge.green { background:#00E5A015;border:1px solid #00E5A030;color:#5EEAD4; }
+  .ent-badge.amber { background:#F5A62315;border:1px solid #F5A62330;color:#FCD34D; }
   @keyframes tickerScroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -360,13 +364,13 @@ who they trade with, and which exchanges they use.
       <span style="color:#6B7280">12 core nodes &bull; 78 related wallets &bull; 2 clusters</span>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Binance</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Coinbase</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Uniswap V3</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Aave</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Lido</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#00E5A015;border:1px solid #00E5A030;border-radius:4px;color:#5EEAD4"><span style="width:6px;height:6px;background:#00E5A0;border-radius:50%;display:inline-block"></span>DeFi Whale #1 · $2.1M portfolio</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#F5A62315;border:1px solid #F5A62330;border-radius:4px;color:#FCD34D"><span style="width:6px;height:6px;background:#F5A623;border-radius:50%;display:inline-block"></span>Fund Deployer · $450K deployed</span>
+      <span class="ent-badge purple">Binance</span>
+      <span class="ent-badge purple">Coinbase</span>
+      <span class="ent-badge purple">Uniswap V3</span>
+      <span class="ent-badge purple">Aave</span>
+      <span class="ent-badge purple">Lido</span>
+      <span class="ent-badge green">DeFi Whale #1 · $2.1M</span>
+      <span class="ent-badge amber">Fund Deployer · $450K</span>
     </div>
   </div>
 </div></pre></div>
