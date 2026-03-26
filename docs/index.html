@@ -541,7 +541,7 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
         </div>
         <div class="feature-item py-4" data-feat="8">
           <p class="feat-name text-txt font-medium mb-1">quote</p>
-          <p class="text-muted text-sm">DEX trade quotes. Best route, price impact, slippage.</p>
+          <p class="text-muted text-sm">DEX trade quotes via Nansen.</p>
         </div>
         <div class="feature-item py-4" data-feat="9">
           <p class="feat-name text-txt font-medium mb-1">watch</p>
@@ -676,6 +676,7 @@ const featCodes = [
   `<span class="text-muted">$</span> nansenscope quote --from-token ETH --to-token USDC --amount 1.5\n\n<span class="text-txt">Route: Uniswap V3 (ETH → USDC)</span>\n<span class="text-txt">Price impact: 0.02% · Slippage: 0.5%</span>\n<span class="text-accent">Est. output: 5,107.23 USDC</span>`,
   `<span class="text-muted">$</span> nansenscope watch --chains ethereum,base --interval 5\n\n<span class="text-success">✓</span> Watch mode active · 2 chains\n<span class="text-txt">Cycle 2: 1 NEW signal</span>\n<span class="text-critical">HIGH</span> <span class="text-accent">VIRTUAL — 28 top traders ($812K)</span>`,
   `<span class="text-muted">$</span> nansenscope portfolio --address 0xa5d2...fecf\n\n<span class="text-txt">Holdings: 6 tokens ($2.08M)</span>\n<span class="text-txt">Labels: Smart Trader, 30D Smart Trader</span>\n<span class="text-success">30D PnL: +$340K (+19.5%)</span>`,
+  `<span class="text-muted">$</span> nansenscope quote --from-token ETH --to-token USDC --amount 1.5\n\n<span class="text-txt">Route: Uniswap V3 · Impact: 0.02%</span>\n<span class="text-accent">5,107.23 USDC</span> · Gas: ~$0.12\n<span class="text-success">Min output: 5,081.69 USDC</span>`,
 ];
 document.getElementById('feature-list').addEventListener('click', (e) => {
   const item = e.target.closest('.feature-item');
