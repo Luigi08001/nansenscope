@@ -102,10 +102,18 @@ tailwind.config = {
       <p class="text-xl md:text-2xl text-muted font-medium mb-4 fade-in" style="transition-delay:0.1s">
         Autonomous Smart Money Intelligence
       </p>
-      <p class="text-base md:text-lg text-muted/70 mb-10 max-w-lg leading-relaxed fade-in" style="transition-delay:0.15s">
+      <p class="text-base md:text-lg text-muted/70 mb-4 max-w-xl leading-relaxed fade-in" style="transition-delay:0.15s">
         Track what smart money does — before the market moves.<br>
-        9 commands. 18 chains. Real alpha.
+        Scan 18 chains. Detect wallet clusters. Spot convergence signals. Get alerts.
       </p>
+      <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs font-mono text-muted/50 mb-10 max-w-xl fade-in" style="transition-delay:0.18s">
+        <span><span class="text-accent">scan</span> finds where smart money flows</span>
+        <span><span class="text-accent">network</span> maps who funds who</span>
+        <span><span class="text-accent">perps</span> tracks leveraged bets</span>
+        <span><span class="text-accent">signals</span> detects cross-chain convergence</span>
+        <span><span class="text-accent">alerts</span> notifies before the crowd</span>
+        <span><span class="text-accent">daily</span> runs the full pipeline autonomously</span>
+      </div>
       <div class="flex flex-wrap gap-4 mb-12 fade-in" style="transition-delay:0.2s">
         <a href="https://github.com/Luigi08001/nansenscope" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-txt text-sm font-medium hover:border-accent hover:text-accent transition-colors duration-200">
           View on GitHub
@@ -628,10 +636,44 @@ function initNetworkGraph(){
   let zoom = 1, panX = 0, panY = 0, dragging = false, dragStartX = 0, dragStartY = 0, dragPanX = 0, dragPanY = 0;
   window.netZoom = function(factor){ zoom *= factor; zoom = Math.max(0.3, Math.min(5, zoom)); draw(); };
   window.netReset = function(){ zoom = 1; panX = 0; panY = 0; draw(); };
+  let dragNode = null; // node being dragged
+  function screenToWorld(sx, sy){ return { x: (sx - panX - W/2*(1-zoom))/zoom, y: (sy - panY - H/2*(1-zoom))/zoom }; }
+  function findNodeAt(sx, sy){ const p=screenToWorld(sx,sy); for(let i=nodes.length-1;i>=0;i--){ const n=nodes[i],dx=p.x-n.x,dy=p.y-n.y; if(dx*dx+dy*dy<Math.max(n.r*n.r*4,100)) return n; } return null; }
   container.addEventListener('wheel', function(ev){ ev.preventDefault(); const f = ev.deltaY > 0 ? 0.9 : 1.1; zoom *= f; zoom = Math.max(0.3, Math.min(5, zoom)); draw(); }, {passive:false});
-  container.addEventListener('mousedown', function(ev){ dragging=true; dragStartX=ev.clientX; dragStartY=ev.clientY; dragPanX=panX; dragPanY=panY; container.style.cursor='grabbing'; });
-  window.addEventListener('mousemove', function(ev){ if(!dragging) return; panX = dragPanX + (ev.clientX - dragStartX); panY = dragPanY + (ev.clientY - dragStartY); draw(); });
-  window.addEventListener('mouseup', function(){ if(dragging){ dragging=false; container.style.cursor='grab'; }});
+  container.addEventListener('mousedown', function(ev){
+    const rect=canvas.getBoundingClientRect();
+    const sx=ev.clientX-rect.left, sy=ev.clientY-rect.top;
+    const hit = findNodeAt(sx, sy);
+    if(hit){ dragNode=hit; dragNode._pinned=true; container.style.cursor='grabbing'; }
+    else { dragging=true; dragStartX=ev.clientX; dragStartY=ev.clientY; dragPanX=panX; dragPanY=panY; container.style.cursor='grabbing'; }
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(dragNode){
+      const rect=canvas.getBoundingClientRect();
+      const p=screenToWorld(ev.clientX-rect.left, ev.clientY-rect.top);
+      dragNode.x=p.x; dragNode.y=p.y; dragNode.vx=0; dragNode.vy=0;
+      // Update settled position so drift doesn't snap back
+      if(settled && settledPos[dragNode.id]){ settledPos[dragNode.id].ox=p.x; settledPos[dragNode.id].oy=p.y; }
+      draw();
+    } else if(dragging){ panX = dragPanX + (ev.clientX - dragStartX); panY = dragPanY + (ev.clientY - dragStartY); draw(); }
+  });
+  window.addEventListener('mouseup', function(){ if(dragNode){ dragNode._pinned=false; dragNode=null; } if(dragging){ dragging=false; } container.style.cursor='grab'; });
+  // Touch support for mobile
+  container.addEventListener('touchstart', function(ev){
+    if(ev.touches.length!==1) return;
+    const t=ev.touches[0], rect=canvas.getBoundingClientRect();
+    const sx=t.clientX-rect.left, sy=t.clientY-rect.top;
+    const hit=findNodeAt(sx,sy);
+    if(hit){ dragNode=hit; dragNode._pinned=true; ev.preventDefault(); }
+    else { dragging=true; dragStartX=t.clientX; dragStartY=t.clientY; dragPanX=panX; dragPanY=panY; }
+  }, {passive:false});
+  container.addEventListener('touchmove', function(ev){
+    if(ev.touches.length!==1) return;
+    const t=ev.touches[0];
+    if(dragNode){ ev.preventDefault(); const rect=canvas.getBoundingClientRect(); const p=screenToWorld(t.clientX-rect.left,t.clientY-rect.top); dragNode.x=p.x; dragNode.y=p.y; dragNode.vx=0; dragNode.vy=0; if(settled&&settledPos[dragNode.id]){settledPos[dragNode.id].ox=p.x;settledPos[dragNode.id].oy=p.y;} draw(); }
+    else if(dragging){ panX=dragPanX+(t.clientX-dragStartX); panY=dragPanY+(t.clientY-dragStartY); draw(); }
+  }, {passive:false});
+  container.addEventListener('touchend', function(){ if(dragNode){dragNode._pinned=false;dragNode=null;} dragging=false; });
 
   // Force simulation
   let iteration=0, settled=false;
@@ -681,19 +723,21 @@ function initNetworkGraph(){
     ctx.translate(panX + W/2*(1-zoom), panY + H/2*(1-zoom));
     ctx.scale(zoom, zoom);
     // Edges
+    const highlightNode = dragNode || null;
     edges.forEach(e=>{
       const a=nodes[e.s],b=nodes[e.t];
+      const isHighlighted = highlightNode && (e.s===highlightNode.id || e.t===highlightNode.id);
       ctx.beginPath();
       if(e.type==='hub-sm'){
-        ctx.strokeStyle='rgba(239,68,68,0.55)';ctx.lineWidth=1.5;
+        ctx.strokeStyle=isHighlighted?'rgba(239,68,68,0.95)':'rgba(239,68,68,0.55)';ctx.lineWidth=isHighlighted?2.5:1.5;
         const mx=(a.x+b.x)/2+(a.y-b.y)*0.15,my=(a.y+b.y)/2+(b.x-a.x)*0.15;
         ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
       } else if(e.type==='hub-known'){
-        ctx.strokeStyle='rgba(245,158,11,0.25)';ctx.lineWidth=0.8;
+        ctx.strokeStyle=isHighlighted?'rgba(245,158,11,0.8)':'rgba(245,158,11,0.25)';ctx.lineWidth=isHighlighted?2:0.8;
         const mx=(a.x+b.x)/2+(a.y-b.y)*0.08,my=(a.y+b.y)/2+(b.x-a.x)*0.08;
         ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
       } else {
-        ctx.strokeStyle='rgba(31,41,55,0.45)';ctx.lineWidth=0.4;
+        ctx.strokeStyle=isHighlighted?'rgba(156,163,175,0.6)':'rgba(31,41,55,0.45)';ctx.lineWidth=isHighlighted?1:0.4;
         ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
       }
       ctx.stroke();
