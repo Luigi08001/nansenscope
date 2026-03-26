@@ -44,7 +44,7 @@ LAYOUT_DEFAULTS = dict(
     paper_bgcolor="#0D1117",
     plot_bgcolor="#161B22",
     font=dict(family="Courier New, monospace", color="#C9D1D9"),
-    margin=dict(l=60, r=40, t=80, b=60),
+    margin=dict(l=100, r=50, t=80, b=60),
 )
 
 
@@ -151,9 +151,10 @@ def signal_timeline(signals: list[Signal]) -> str:
                 opacity=0.8,
                 line=dict(width=1, color="rgba(255,255,255,0.3)"),
             ),
-            text=[s.token[:6] for s in sev_signals],
+            text=[s.token[:6] if s.score >= sorted([x.score for x in signals], reverse=True)[min(7, len(signals)-1)] else "" 
+                 for s in sev_signals],
             textposition="top center",
-            textfont=dict(size=9, color="#E0E6ED"),
+            textfont=dict(size=10, color="#E0E6ED"),
             hovertext=[
                 f"<b>{s.token}</b> ({s.chain})<br>"
                 f"Type: {s.type}<br>"
@@ -177,10 +178,12 @@ def signal_timeline(signals: list[Signal]) -> str:
             showgrid=True,
             gridcolor="rgba(150,150,150,0.1)",
         ),
-        yaxis=dict(title="Signal Score", range=[0, max(s.score for s in signals) * 1.15],
+        yaxis=dict(title="Signal Score",
+                    range=[max(0, min(s.score for s in signals) * 0.85),
+                           max(s.score for s in signals) * 1.1],
                     showgrid=True, gridcolor="rgba(150,150,150,0.1)"),
-        width=1000,
-        height=550,
+        width=1100,
+        height=600,
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(size=11)),
     )
@@ -253,8 +256,8 @@ def chain_comparison(data: dict[str, dict[str, Any]]) -> str:
                     gridcolor="rgba(150,150,150,0.1)"),
         yaxis=dict(title=""),
         barmode="stack",
-        width=900,
-        height=max(350, len(sorted_chains) * 60 + 150),
+        width=950,
+        height=max(350, len(sorted_chains) * 65 + 150),
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     font=dict(size=11)),
