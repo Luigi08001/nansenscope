@@ -482,6 +482,385 @@ class NetworkAnalyzer:
 
 # ── Convenience Functions ────────────────────────────────────────────────────
 
+def generate_network_html(
+    nodes: dict[str, "WalletNode"],
+    edges: list["NetworkEdge"],
+    clusters: list["WalletCluster"],
+    output_path: str = "reports/charts/network_map.html",
+) -> str:
+    """
+    Generate a self-contained interactive HTML network map.
+    Uses Canvas + inline JS for force-directed graph with zoom/pan/drag.
+    Returns the path where the file was saved.
+    """
+    import json
+    from pathlib import Path
+
+    # Build cluster lookup: address -> cluster_id
+    cluster_map: dict[str, int] = {}
+    for cl in clusters:
+        for addr in cl.wallets:
+            cluster_map[addr] = cl.id
+
+    # Find hub nodes (top 20% by connection count)
+    connection_counts = {addr: n.connection_count for addr, n in nodes.items()}
+    sorted_counts = sorted(connection_counts.values(), reverse=True)
+    hub_threshold = sorted_counts[max(0, len(sorted_counts) // 5)] if sorted_counts else 3
+
+    # Build JSON-serializable node list
+    node_list = []
+    addr_to_idx: dict[str, int] = {}
+    for i, (addr, node) in enumerate(nodes.items()):
+        addr_to_idx[addr] = i
+        is_hub = node.connection_count >= max(hub_threshold, 3)
+        node_list.append({
+            "id": i,
+            "addr": addr,
+            "short": f"{addr[:6]}...{addr[-4:]}",
+            "labels": node.labels[:4],
+            "pnl": node.pnl_usd,
+            "sm": node.is_smart_money,
+            "hub": is_hub,
+            "cc": node.connection_count,
+            "cl": cluster_map.get(addr, -1),
+            "depth": node.depth,
+        })
+
+    # Build JSON-serializable edge list
+    edge_list = []
+    for e in edges:
+        si = addr_to_idx.get(e.source)
+        ti = addr_to_idx.get(e.target)
+        if si is not None and ti is not None:
+            edge_list.append({
+                "s": si,
+                "t": ti,
+                "r": e.relation,
+                "v": e.volume_usd,
+            })
+
+    nodes_json = json.dumps(node_list)
+    edges_json = json.dumps(edge_list)
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NansenScope — Network Map</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#060B14;font-family:'Courier New',monospace;color:#c0c0c0;overflow:hidden}}
+canvas{{display:block;cursor:grab}}
+canvas.dragging{{cursor:grabbing}}
+#tooltip{{
+  position:fixed;display:none;background:rgba(6,11,20,0.95);
+  border:1px solid #00E5A0;border-radius:6px;padding:10px 14px;
+  font-size:12px;pointer-events:none;z-index:100;max-width:320px;
+  box-shadow:0 4px 20px rgba(0,229,160,0.15)
+}}
+#tooltip .addr{{color:#00E5A0;font-size:13px;font-weight:bold;margin-bottom:4px}}
+#tooltip .lbl{{color:#FFD700;margin:2px 0}}
+#tooltip .stat{{color:#8888aa}}
+#legend{{
+  position:fixed;bottom:20px;left:20px;background:rgba(6,11,20,0.9);
+  border:1px solid #1a2340;border-radius:8px;padding:14px 18px;
+  font-size:11px;z-index:50
+}}
+#legend h3{{color:#00E5A0;margin-bottom:8px;font-size:13px}}
+.leg-row{{display:flex;align-items:center;margin:4px 0}}
+.leg-dot{{width:10px;height:10px;border-radius:50%;margin-right:8px;flex-shrink:0}}
+.leg-line{{width:20px;height:2px;margin-right:8px;flex-shrink:0}}
+#controls{{
+  position:fixed;top:20px;right:20px;display:flex;gap:8px;z-index:50
+}}
+#controls button{{
+  background:#0d1a2e;border:1px solid #1a2840;color:#00E5A0;
+  padding:6px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px
+}}
+#controls button:hover{{background:#142240;border-color:#00E5A0}}
+#title{{
+  position:fixed;top:20px;left:20px;z-index:50
+}}
+#title h1{{color:#00E5A0;font-size:18px;letter-spacing:2px}}
+#title p{{color:#556;font-size:11px;margin-top:4px}}
+#stats{{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  background:rgba(6,11,20,0.85);border:1px solid #1a2340;
+  border-radius:8px;padding:8px 20px;font-size:12px;z-index:50;
+  display:flex;gap:20px
+}}
+.stat-val{{color:#00E5A0;font-weight:bold}}
+</style>
+</head>
+<body>
+<canvas id="graph"></canvas>
+
+<div id="title">
+  <h1>NANSENSCOPE</h1>
+  <p>Interactive Wallet Network Map</p>
+</div>
+
+<div id="stats">
+  <span>Nodes: <span class="stat-val">{len(node_list)}</span></span>
+  <span>Edges: <span class="stat-val">{len(edge_list)}</span></span>
+  <span>Clusters: <span class="stat-val">{len(clusters)}</span></span>
+</div>
+
+<div id="controls">
+  <button onclick="zoomIn()">+</button>
+  <button onclick="zoomOut()">−</button>
+  <button onclick="resetView()">Reset</button>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="legend">
+  <h3>LEGEND</h3>
+  <div class="leg-row"><div class="leg-dot" style="background:#FF4444;width:14px;height:14px"></div> Hub Node</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#00E5FF"></div> Smart Money</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#556677;width:7px;height:7px"></div> Other Wallet</div>
+  <div style="margin-top:8px"></div>
+  <div class="leg-row"><div class="leg-line" style="background:#FF4444"></div> Fund Flow</div>
+  <div class="leg-row"><div class="leg-line" style="background:#FF8C00"></div> Counterparty</div>
+  <div class="leg-row"><div class="leg-line" style="background:#334455"></div> Related</div>
+</div>
+
+<script>
+const NODES={nodes_json};
+const EDGES={edges_json};
+
+const canvas=document.getElementById('graph');
+const ctx=canvas.getContext('2d');
+const tip=document.getElementById('tooltip');
+
+let W,H;
+function resize(){{W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}}
+resize();window.addEventListener('resize',resize);
+
+// Cluster colors
+const CCOLORS=['#00E5A0','#FF6B6B','#4ECDC4','#FFE66D','#A78BFA','#F97316','#06B6D4','#EC4899','#84CC16','#8B5CF6'];
+
+// Init node positions with some spread
+const rng=(s)=>{{let x=Math.sin(s)*10000;return x-Math.floor(x)}};
+NODES.forEach((n,i)=>{{
+  const a=2*Math.PI*i/NODES.length;
+  const r=120+rng(i*137)*80;
+  n.x=W/2+Math.cos(a)*r;
+  n.y=H/2+Math.sin(a)*r;
+  n.vx=0;n.vy=0;
+  n.fx=null;n.fy=null;
+}});
+
+// Camera
+let cam={{x:0,y:0,z:1}};
+
+function zoomIn(){{cam.z=Math.min(cam.z*1.3,8)}}
+function zoomOut(){{cam.z=Math.max(cam.z/1.3,0.1)}}
+function resetView(){{cam.x=0;cam.y=0;cam.z=1}}
+
+function toScreen(x,y){{return[(x+cam.x)*cam.z+W/2,(y+cam.y)*cam.z+H/2]}}
+function fromScreen(sx,sy){{return[(sx-W/2)/cam.z-cam.x,(sy-H/2)/cam.z-cam.y]}}
+
+// Force simulation
+const SIM_STEPS=200;
+let simStep=0;
+
+function simulate(){{
+  if(simStep>=SIM_STEPS)return;
+  const alpha=1-simStep/SIM_STEPS;
+  const k=0.008*alpha;
+
+  // Center gravity
+  let cx=0,cy=0;
+  NODES.forEach(n=>{{cx+=n.x;cy+=n.y}});
+  cx/=NODES.length||1;cy/=NODES.length||1;
+  NODES.forEach(n=>{{n.vx+=(W/2-cx-n.x)*0.0003;n.vy+=(H/2-cy-n.y)*0.0003}});
+
+  // Repulsion (Barnes-Hut would be better but N<100 is fine)
+  for(let i=0;i<NODES.length;i++){{
+    for(let j=i+1;j<NODES.length;j++){{
+      let dx=NODES[j].x-NODES[i].x;
+      let dy=NODES[j].y-NODES[i].y;
+      let d2=dx*dx+dy*dy;
+      if(d2<1)d2=1;
+      let f=800/d2;
+      NODES[i].vx-=dx*f;NODES[i].vy-=dy*f;
+      NODES[j].vx+=dx*f;NODES[j].vy+=dy*f;
+    }}
+  }}
+
+  // Attraction along edges
+  EDGES.forEach(e=>{{
+    const a=NODES[e.s],b=NODES[e.t];
+    if(!a||!b)return;
+    let dx=b.x-a.x,dy=b.y-a.y;
+    let d=Math.sqrt(dx*dx+dy*dy)||1;
+    let f=(d-150)*0.003;
+    a.vx+=dx/d*f;a.vy+=dy/d*f;
+    b.vx-=dx/d*f;b.vy-=dy/d*f;
+  }});
+
+  // Integrate
+  NODES.forEach(n=>{{
+    if(n.fx!==null){{n.x=n.fx;n.y=n.fy;n.vx=0;n.vy=0;return}}
+    n.vx*=0.6;n.vy*=0.6;
+    n.x+=n.vx;n.y+=n.vy;
+  }});
+  simStep++;
+}}
+
+// Drawing
+function nodeRadius(n){{
+  if(n.hub)return 12;
+  if(n.sm)return 8;
+  return 5;
+}}
+
+function nodeColor(n){{
+  if(n.hub)return n.cl>=0?CCOLORS[n.cl%CCOLORS.length]:'#FF4444';
+  if(n.sm)return '#00E5FF';
+  return '#556677';
+}}
+
+function edgeColor(e){{
+  const r=e.r.toLowerCase();
+  if(r.includes('fund')||r.includes('first'))return 'rgba(255,68,68,0.5)';
+  if(r.includes('counter'))return 'rgba(255,140,0,0.5)';
+  return 'rgba(51,68,85,0.4)';
+}}
+
+function draw(){{
+  ctx.fillStyle='#060B14';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle='#0a1225';ctx.lineWidth=1;
+  const gs=80*cam.z;
+  const ox=(cam.x*cam.z+W/2)%gs;
+  const oy=(cam.y*cam.z+H/2)%gs;
+  for(let x=ox;x<W;x+=gs){{ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}}
+  for(let y=oy;y<H;y+=gs){{ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}}
+
+  // Edges
+  EDGES.forEach(e=>{{
+    const a=NODES[e.s],b=NODES[e.t];
+    if(!a||!b)return;
+    const[x1,y1]=toScreen(a.x-W/2,a.y-H/2);
+    const[x2,y2]=toScreen(b.x-W/2,b.y-H/2);
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+    ctx.strokeStyle=edgeColor(e);
+    ctx.lineWidth=Math.max(0.5,cam.z*(e.v>0?2:1));
+    ctx.stroke();
+  }});
+
+  // Nodes
+  NODES.forEach(n=>{{
+    const[sx,sy]=toScreen(n.x-W/2,n.y-H/2);
+    const r=nodeRadius(n)*cam.z;
+    const col=nodeColor(n);
+
+    // Glow for hubs
+    if(n.hub&&cam.z>0.3){{
+      const g=ctx.createRadialGradient(sx,sy,r*0.5,sx,sy,r*3);
+      g.addColorStop(0,col+'44');g.addColorStop(1,'transparent');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,r*3,0,Math.PI*2);ctx.fill();
+    }}
+
+    ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='#060B14';ctx.lineWidth=1.5;ctx.stroke();
+
+    // Label for large zoom
+    if(cam.z>1.2&&(n.hub||n.sm)){{
+      ctx.fillStyle='#ffffff';ctx.font=Math.round(9*cam.z)+'px Courier New';
+      ctx.textAlign='center';
+      ctx.fillText(n.short,sx,sy+r+12*cam.z);
+    }}
+  }});
+}}
+
+// Interaction
+let dragNode=null,isPanning=false,lastMouse={{x:0,y:0}};
+
+canvas.addEventListener('mousedown',e=>{{
+  const[mx,my]=fromScreen(e.clientX,e.clientY);
+  // Check if clicking a node
+  for(let n of NODES){{
+    const dx=n.x-W/2-mx,dy=n.y-H/2-my;
+    if(dx*dx+dy*dy<(nodeRadius(n)+4)**2){{
+      dragNode=n;n.fx=n.x;n.fy=n.y;
+      canvas.classList.add('dragging');
+      return;
+    }}
+  }}
+  isPanning=true;lastMouse.x=e.clientX;lastMouse.y=e.clientY;
+  canvas.classList.add('dragging');
+}});
+
+canvas.addEventListener('mousemove',e=>{{
+  if(dragNode){{
+    const[mx,my]=fromScreen(e.clientX,e.clientY);
+    dragNode.fx=mx+W/2;dragNode.fy=my+H/2;
+    dragNode.x=dragNode.fx;dragNode.y=dragNode.fy;
+  }}else if(isPanning){{
+    cam.x+=(e.clientX-lastMouse.x)/cam.z;
+    cam.y+=(e.clientY-lastMouse.y)/cam.z;
+    lastMouse.x=e.clientX;lastMouse.y=e.clientY;
+  }}else{{
+    // Tooltip
+    const[mx,my]=fromScreen(e.clientX,e.clientY);
+    let found=null;
+    for(let n of NODES){{
+      const dx=n.x-W/2-mx,dy=n.y-H/2-my;
+      if(dx*dx+dy*dy<(nodeRadius(n)+6)**2){{found=n;break}}
+    }}
+    if(found){{
+      const labels=found.labels.length?found.labels.join(', '):'unlabeled';
+      const pnl=found.pnl?'$'+found.pnl.toLocaleString():'N/A';
+      const typ=found.hub?'Hub':found.sm?'Smart Money':'Wallet';
+      tip.innerHTML=`<div class="addr">${{found.addr}}</div>`+
+        `<div class="lbl">${{labels}}</div>`+
+        `<div class="stat">${{typ}} · ${{found.cc}} connections · PnL: ${{pnl}}</div>`+
+        (found.cl>=0?`<div class="stat">Cluster #${{found.cl}}</div>`:'');
+      tip.style.display='block';
+      tip.style.left=Math.min(e.clientX+15,W-330)+'px';
+      tip.style.top=Math.min(e.clientY+15,H-100)+'px';
+    }}else{{
+      tip.style.display='none';
+    }}
+  }}
+}});
+
+canvas.addEventListener('mouseup',()=>{{
+  if(dragNode){{dragNode.fx=null;dragNode.fy=null;dragNode=null}}
+  isPanning=false;canvas.classList.remove('dragging');
+}});
+
+canvas.addEventListener('wheel',e=>{{
+  e.preventDefault();
+  const f=e.deltaY>0?0.9:1.1;
+  cam.z=Math.max(0.1,Math.min(8,cam.z*f));
+}},{{passive:false}});
+
+// Animation loop
+function loop(){{
+  simulate();
+  draw();
+  requestAnimationFrame(loop);
+}}
+loop();
+</script>
+</body>
+</html>"""
+
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+    log.info("Interactive network map saved: %s", out)
+    return str(out)
+
+
 async def analyze_wallet_network(
     seed_addresses: list[str],
     chain: str = "ethereum",

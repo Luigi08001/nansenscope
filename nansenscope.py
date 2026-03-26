@@ -38,6 +38,7 @@ from scanner import (
     ScanResult, profile_wallet, scan_all_chains,
     get_wallet_labels, get_wallet_balance, get_wallet_profile,
 )
+from history import record_signals, load_history, detect_trends, format_trend_table
 from signals import Signal, analyze_all_chains, rank_signals
 
 console = Console()
@@ -217,6 +218,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output path (default: reports/daily_YYYY-MM-DD.md)",
     )
 
+    # ── history ──
+    hist_p = sub.add_parser("history", help="Signal history and trend detection")
+    hist_p.add_argument(
+        "--days", type=int, default=7,
+        help="Lookback window in days (default: 7)",
+    )
+    hist_p.add_argument(
+        "--min", type=int, default=3, dest="min_appearances",
+        help="Minimum appearances to count as trending (default: 3)",
+    )
+    hist_p.add_argument(
+        "--chain", type=str, default=None,
+        help="Filter history to a specific chain",
+    )
+    hist_p.add_argument(
+        "--record", action="store_true", default=False,
+        help="Run a scan and record signals to history before displaying trends",
+    )
+
     return parser
 
 
@@ -255,6 +275,10 @@ async def cmd_scan(args: argparse.Namespace):
     # Display results
     _display_signal_table(ranked)
     _display_api_stats()
+
+    # Record signals to history
+    flat_signals = [sig for sigs in all_signals.values() for sig in sigs]
+    record_signals(flat_signals)
 
     # Save report if requested
     if args.output or True:  # Always save by default
@@ -681,6 +705,10 @@ async def cmd_daily(args: argparse.Namespace):
         console.print(f"  [yellow]Chart generation failed: {e}[/yellow]")
         chart_paths = {}
 
+    # Record signals to history
+    flat_signals = [sig for sigs in all_signals.values() for sig in sigs]
+    record_signals(flat_signals)
+
     # Step 5: Report
     console.print("\n[bold cyan]Step 5/5:[/bold cyan] Building report...")
     output_path = args.output or _default_report_path("daily")
@@ -695,6 +723,76 @@ async def cmd_daily(args: argparse.Namespace):
 
     _display_api_stats()
     console.print(f"\n[bold green]Daily pipeline complete! Report saved:[/bold green] {saved}")
+
+
+async def cmd_history(args: argparse.Namespace):
+    """Signal history and trend detection."""
+    show_banner()
+
+    # Optional: run a scan and record signals first
+    if args.record:
+        chains = DEFAULT_CHAINS
+        console.print(f"[bold cyan]Recording scan signals to history...[/bold cyan] ({', '.join(chains)})\n")
+
+        all_results = {}
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold]{task.description}"),
+            TimeElapsedColumn(),
+            console=console,
+        ) as progress:
+            for chain in chains:
+                task = progress.add_task(f"Scanning {chain}...", total=None)
+                chain_results = await _scan_chain_with_display(chain)
+                all_results[chain] = chain_results
+                progress.update(task, completed=True, description=f"[green]{chain} done")
+
+        all_signals = analyze_all_chains(all_results)
+        flat = [sig for sigs in all_signals.values() for sig in sigs]
+        recorded = record_signals(flat)
+        console.print(f"[green]Recorded {recorded} signals to history.[/green]\n")
+
+    # Load and display history
+    console.print(f"[bold cyan]Signal History[/bold cyan] — last {args.days} days\n")
+    history = load_history(days=args.days)
+
+    # Optional chain filter
+    if args.chain:
+        history = [h for h in history if h.get("chain") == args.chain]
+
+    if not history:
+        console.print("[dim]No signals in history for this period.[/dim]")
+        return
+
+    # Detect trends
+    trends = detect_trends(history, min_appearances=args.min_appearances)
+
+    if trends:
+        table = format_trend_table(trends)
+        console.print(table)
+    else:
+        console.print(f"[dim]No tokens with >= {args.min_appearances} appearances in the last {args.days} days.[/dim]")
+
+    # Summary stats
+    unique_tokens = len({h.get("token") for h in history})
+    unique_chains = sorted({h.get("chain") for h in history})
+    timestamps = []
+    for h in history:
+        try:
+            ts = datetime.fromisoformat(h["timestamp"].replace("Z", "+00:00"))
+            timestamps.append(ts)
+        except (KeyError, ValueError, TypeError):
+            continue
+
+    console.print(f"\n[bold]Summary:[/bold]")
+    console.print(f"  Total signals: {len(history)}")
+    console.print(f"  Unique tokens: {unique_tokens}")
+    console.print(f"  Chains: {', '.join(unique_chains)}")
+    if timestamps:
+        span = max(timestamps) - min(timestamps)
+        console.print(f"  Time span: {span.days}d {span.seconds // 3600}h")
+    if trends:
+        console.print(f"  Trending tokens: {len(trends)}")
 
 
 async def cmd_quote(args: argparse.Namespace):
@@ -889,6 +987,19 @@ async def cmd_network(args: argparse.Namespace):
             console.print(f"\n[green]✓[/green] Bubble map saved: {bubble_path}")
     except Exception as e:
         console.print(f"\n[yellow]Bubble map generation failed: {e}[/yellow]")
+
+    # Generate interactive HTML network map
+    try:
+        from network import generate_network_html
+        html_path = generate_network_html(
+            nodes=analyzer.nodes,
+            edges=analyzer.edges,
+            clusters=clusters,
+            output_path="reports/charts/network_map.html",
+        )
+        console.print(f"[green]✓[/green] Interactive map: {html_path}")
+    except Exception as e:
+        console.print(f"[yellow]HTML map generation failed: {e}[/yellow]")
 
     # Save report
     output_path = args.output or _default_report_path(f"network_{seeds[0][:8]}")
@@ -1260,6 +1371,7 @@ def main():
         "network": cmd_network,
         "perps": cmd_perps,
         "daily": cmd_daily,
+        "history": cmd_history,
         "portfolio": cmd_portfolio,
         "watch": cmd_watch,
         "quote": cmd_quote,
