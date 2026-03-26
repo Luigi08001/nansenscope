@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NansenScope — Autonomous Smart Money Intelligence Agent</title>
+<meta name="description" content="NansenScope: 9 commands, 18 chains, real alpha. Autonomous smart money intelligence for the #NansenCLI Challenge.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0B0E13;--bg2:#111620;--bg3:#161C28;--cyan:#00D4FF;--orange:#FF8C00;--green:#00FF88;--text:#C9D1D9;--dim:#6B7280;--border:#1E2A3A}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.06) 0%,transparent 60%);pointer-events:none}
+.ascii-art{font-size:clamp(.45rem,.9vw,.85rem);line-height:1.2;color:var(--cyan);white-space:pre;margin-bottom:24px;text-shadow:0 0 20px rgba(0,212,255,.3)}
+.hero h2{font-size:clamp(1rem,2.5vw,1.5rem);font-weight:500;color:var(--text);margin-bottom:8px}
+.hero .sub{color:var(--dim);font-size:.9rem;margin-bottom:32px}
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 24px;border-radius:4px;font-family:inherit;font-size:.85rem;font-weight:700;border:1px solid var(--cyan);color:var(--cyan);background:transparent;cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--cyan);color:var(--bg);text-decoration:none}
+.btn--ghost{border-color:var(--dim);color:var(--dim)}
+.btn--ghost:hover{border-color:var(--orange);color:var(--orange);background:transparent}
+
+/* SECTION */
+section{padding:80px 0}
+.section-title{font-size:1.3rem;font-weight:700;color:var(--cyan);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px}
+.section-sub{color:var(--dim);margin-bottom:40px;font-size:.85rem}
+
+/* TERMINAL */
+.terminal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;max-width:780px;margin:0 auto}
+.terminal-bar{background:var(--bg3);padding:8px 14px;display:flex;gap:6px;align-items:center}
+.terminal-dot{width:10px;height:10px;border-radius:50%}
+.terminal-dot:nth-child(1){background:#FF5F56}
+.terminal-dot:nth-child(2){background:#FFBD2E}
+.terminal-dot:nth-child(3){background:#27C93F}
+.terminal-body{padding:20px;font-size:clamp(.65rem,1.2vw,.82rem);line-height:1.7;min-height:320px;white-space:pre-wrap;word-break:break-word}
+.terminal-body .prompt{color:var(--green)}
+.terminal-body .info{color:var(--dim)}
+.terminal-body .ok{color:var(--green)}
+.terminal-body .hi{color:var(--orange)}
+.terminal-body .head{color:var(--cyan)}
+.cursor{display:inline-block;width:8px;height:16px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{50%{opacity:0}}
+
+/* FEATURES */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;transition:all .25s}
+.card:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(0,212,255,.08)}
+.card-icon{font-size:1.6rem;margin-bottom:10px}
+.card h3{font-size:1rem;color:var(--cyan);margin-bottom:6px}
+.card p{font-size:.8rem;color:var(--dim);line-height:1.5}
+
+/* ARCHITECTURE */
+.arch{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:20px 0;overflow-x:auto}
+.arch-node{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-size:.75rem;text-align:center;color:var(--text);white-space:nowrap;position:relative;flex-shrink:0}
+.arch-node span{display:block;color:var(--dim);font-size:.65rem;margin-top:2px}
+.arch-arrow{color:var(--cyan);font-size:1.2rem;padding:0 4px;flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.arch-flow{width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);margin:24px 0;animation:flowLine 3s linear infinite;background-size:200% 100%}
+@keyframes flowLine{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* TABLE */
+.compare-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:640px}
+th{background:var(--bg3);color:var(--cyan);text-align:left;padding:10px 14px;font-weight:700;border-bottom:2px solid var(--cyan)}
+td{padding:10px 14px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(0,212,255,.03)}
+.yes{color:var(--green)}
+.no{color:#FF5F56}
+
+/* QUICKSTART */
+.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;font-size:.82rem;line-height:1.8;max-width:700px;margin:0 auto;overflow-x:auto;white-space:pre-wrap}
+.code-block .c{color:var(--dim)}
+.code-block .g{color:var(--green)}
+
+/* FOOTER */
+footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--dim);font-size:.78rem}
+footer a{color:var(--cyan)}
+
+/* MOBILE */
+@media(max-width:600px){
+  .ascii-art{font-size:.38rem}
+  .grid{grid-template-columns:1fr}
+  .arch{flex-direction:column;gap:0}
+  .arch-arrow{transform:rotate(90deg)}
+  section{padding:50px 0}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" id="top">
+<div>
+<pre class="ascii-art"> _   _                            ____
+| \ | | __ _ _ __  ___  ___ _ __ / ___|  ___ ___  _ __   ___
+|  \| |/ _` | '_ \/ __|/ _ \ '_ \\___ \ / __/ _ \| '_ \ / _ \
+| |\  | (_| | | | \__ \  __/ | | |___) | (_| (_) | |_) |  __/
+|_| \_|\__,_|_| |_|___/\___|_| |_|____/ \___\___/| .__/ \___|
+                                                  |_|</pre>
+<h2>Autonomous Smart Money Intelligence Agent</h2>
+<p class="sub">9 commands. 18 chains. Real alpha.</p>
+<div class="cta-row">
+<a href="https://github.com/Luigi08001/nansenscope" class="btn" target="_blank">View on GitHub</a>
+<a href="https://x.com/hashtag/NansenCLI" class="btn btn--ghost" target="_blank">Built for #NansenCLI Challenge</a>
+</div>
+</div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+<div class="container">
+<p class="section-title">Live Demo</p>
+<p class="section-sub">Watch NansenScope scan smart money in real-time</p>
+<div class="terminal">
+<div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
+<div class="terminal-body" id="term"></div>
+</div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+<div class="container">
+<p class="section-title">Capabilities</p>
+<p class="section-sub">Six integrated intelligence modules</p>
+<div class="grid">
+<div class="card"><div class="card-icon">&#x1F30D;</div><h3>Chain Sweep</h3><p>Multi-chain SM scanning across 18 blockchains. Ethereum, Solana, Base, Arbitrum, BNB, Polygon, + 12 more.</p></div>
+<div class="card"><div class="card-icon">&#x1F578;&#xFE0F;</div><h3>Syndicate Hunter</h3><p>Wallet cluster detection via BFS graph traversal. Counterparties, related wallets, centrality scoring. Interactive bubble maps.</p></div>
+<div class="card"><div class="card-icon">&#x1F4C8;</div><h3>Leverage Radar</h3><p>Hyperliquid perpetual position intelligence. SM short/long tracking in real-time across all markets.</p></div>
+<div class="card"><div class="card-icon">&#x26A1;</div><h3>Signal Fusion</h3><p>Cross-chain convergence detection. Multiple data sources pointing at the same token across chains = highest conviction.</p></div>
+<div class="card"><div class="card-icon">&#x1F6A8;</div><h3>Threat Matrix</h3><p>Alert engine with cooldown system. 5 built-in rules, persistent history, zero spam. Never miss a signal.</p></div>
+<div class="card"><div class="card-icon">&#x2615;</div><h3>Morning Brief</h3><p>One command daily intelligence pipeline: scan &rarr; signals &rarr; alerts &rarr; charts &rarr; report. Start every day informed.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="arch">
+<div class="container">
+<p class="section-title">Architecture</p>
+<p class="section-sub">End-to-end intelligence pipeline</p>
+<div class="arch-flow"></div>
+<div class="arch">
+<div class="arch-node"><strong>Nansen CLI</strong><span>API Layer</span></div>
+<div class="arch-arrow">&#x25B6;</div>
+<div class="arch-node"><strong>Scanner</strong><span>18 Chains</span></div>
+<div class="arch-arrow">&#x25B6;</div>
+<div class="arch-node"><strong>Signal Detectors</strong><span>5 Strategies</span></div>
+<div class="arch-arrow">&#x25B6;</div>
+<div class="arch-node"><strong>Convergence Engine</strong><span>Cross-chain</span></div>
+<div class="arch-arrow">&#x25B6;</div>
+<div class="arch-node"><strong>Alert Engine</strong><span>Threat Matrix</span></div>
+<div class="arch-arrow">&#x25B6;</div>
+<div class="arch-node"><strong>Charts + Reports</strong><span>HTML / PNG</span></div>
+</div>
+<div class="arch-flow"></div>
+</div>
+</section>
+
+<!-- COMPARISON -->
+<section id="compare">
+<div class="container">
+<p class="section-title">Week 1 Winner vs NansenScope</p>
+<p class="section-sub">Feature-by-feature breakdown</p>
+<div class="compare-wrap">
+<table>
+<thead><tr><th>Feature</th><th>@HeavyOT (Week 1 Winner)</th><th>NansenScope</th></tr></thead>
+<tbody>
+<tr><td>Network Analysis</td><td class="no">Syndicate Mapper (1 feature)</td><td class="yes">&#x2714; Syndicate Hunter (BFS + clusters + centrality + bubble maps)</td></tr>
+<tr><td>Chains</td><td class="no">Polygon only</td><td class="yes">&#x2714; 18 chains</td></tr>
+<tr><td>Perps Intel</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Leverage Radar (Hyperliquid)</td></tr>
+<tr><td>Cross-chain</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Signal Fusion (convergence detection)</td></tr>
+<tr><td>Visualizations</td><td class="no">Screenshots</td><td class="yes">&#x2714; Interactive HTML + PNG charts</td></tr>
+<tr><td>CLI Commands</td><td class="no">Single-purpose bot</td><td class="yes">&#x2714; 9 commands</td></tr>
+<tr><td>Alert System</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Threat Matrix (5 rules, cooldowns)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="start">
+<div class="container">
+<p class="section-title">Quick Start</p>
+<p class="section-sub">From zero to smart money intel in 60 seconds</p>
+<div class="code-block"><span class="c"># Install Nansen CLI</span>
+<span class="g">$</span> npm install -g nansen-cli
+<span class="g">$</span> nansen wallet create
+
+<span class="c"># Clone and run NansenScope</span>
+<span class="g">$</span> git clone https://github.com/Luigi08001/nansenscope
+<span class="g">$</span> cd nansenscope && pip install -r requirements.txt
+<span class="g">$</span> python nansenscope.py daily --chains ethereum,base,solana</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<p>Built for <a href="https://x.com/hashtag/NansenCLI" target="_blank">#NansenCLI Challenge</a> Week 2 &mdash; by <a href="https://x.com/luigi08002" target="_blank">@luigi08002</a></p>
+<p style="margin-top:8px"><a href="https://github.com/Luigi08001/nansenscope" target="_blank">github.com/Luigi08001/nansenscope</a></p>
+</footer>
+
+<script>
+// Terminal typing animation
+(function(){
+  const lines = [
+    {t:'$ nansenscope scan --chains ethereum,base,solana', c:'prompt', d:40},
+    {t:'', c:'', d:600},
+    {t:'Scanning 3 chains: ethereum, base, solana', c:'info', d:20},
+    {t:'', c:'', d:800},
+    {t:'\u2713 ethereum done (11s)', c:'ok', d:30},
+    {t:'\u2713 base done (7s)', c:'ok', d:30},
+    {t:'\u2713 solana done (4s)', c:'ok', d:30},
+    {t:'', c:'', d:400},
+    {t:'Smart Money Signals:', c:'head', d:20},
+    {t:'#  Sev   Chain      Token   Type              Signal', c:'head', d:10},
+    {t:'1  HIGH  ethereum   UNI     high_conviction   29 SM wallets ($144M)', c:'hi', d:15},
+    {t:'2  HIGH  ethereum   WLD     high_conviction   22 SM wallets ($60M)', c:'hi', d:15},
+    {t:'3  HIGH  ethereum   ONDO    high_conviction   19 SM wallets ($87M)', c:'hi', d:15},
+    {t:'4  HIGH  base       VIRTUAL high_conviction   27 SM wallets ($757K)', c:'hi', d:15},
+    {t:'5  HIGH  solana     JUP     high_conviction   19 SM wallets ($2.7M)', c:'hi', d:15},
+    {t:'', c:'', d:300},
+    {t:'API calls: 12 | Errors: 0 | Chains: 3', c:'info', d:20}
+  ];
+
+  const el = document.getElementById('term');
+  let li = 0, ci = 0, started = false;
+
+  function typeLine(){
+    if(li >= lines.length){el.innerHTML += '<span class="cursor"></span>';return}
+    const line = lines[li];
+    if(ci === 0 && line.t === ''){el.innerHTML += '\n';li++;setTimeout(typeLine, line.d);return}
+    if(ci === 0) el.innerHTML += '<span class="'+line.c+'">';
+    if(ci < line.t.length){
+      el.innerHTML = el.innerHTML + line.t[ci];
+      ci++;
+      setTimeout(typeLine, line.d);
+    } else {
+      el.innerHTML += '</span>\n';
+      ci = 0; li++;
+      setTimeout(typeLine, 200);
+    }
+  }
+
+  const obs = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting && !started){started=true;typeLine()}
+  },{threshold:0.3});
+  obs.observe(el);
+
+  // Fallback: start after 2s if hero is in view
+  setTimeout(function(){if(!started){started=true;typeLine()}},2000);
+})();
+</script>
+</body>
+</html>
