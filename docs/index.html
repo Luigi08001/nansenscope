@@ -157,12 +157,16 @@ tailwind.config = {
       </div>
       <!-- Tabs -->
       <div class="flex border-b border-border px-4 overflow-x-auto" id="term-tabs">
-        <button class="term-tab active font-mono" data-tab="0">Chain Sweep</button>
-        <button class="term-tab font-mono" data-tab="1">Syndicate Hunter</button>
-        <button class="term-tab font-mono" data-tab="2">Leverage Radar</button>
-        <button class="term-tab font-mono" data-tab="3">Signal Fusion</button>
-        <button class="term-tab font-mono" data-tab="4">Threat Matrix</button>
-        <button class="term-tab font-mono" data-tab="5">Morning Brief</button>
+        <button class="term-tab active font-mono" data-tab="0" data-desc="scan finds where smart money flows">Chain Sweep</button>
+        <button class="term-tab font-mono" data-tab="1" data-desc="network maps who funds who">Syndicate Hunter</button>
+        <button class="term-tab font-mono" data-tab="2" data-desc="perps tracks leveraged bets">Leverage Radar</button>
+        <button class="term-tab font-mono" data-tab="3" data-desc="signals detects cross-chain convergence">Signal Fusion</button>
+        <button class="term-tab font-mono" data-tab="4" data-desc="alerts notifies before the crowd">Threat Matrix</button>
+        <button class="term-tab font-mono" data-tab="5" data-desc="daily runs the full pipeline autonomously">Morning Brief</button>
+      </div>
+      <!-- Feature description bar -->
+      <div class="px-4 py-2 border-b border-border/50 bg-card/50" id="tab-desc">
+        <span class="text-xs font-mono"><span class="text-accent">scan</span> <span class="text-muted">finds where smart money flows</span></span>
       </div>
       <!-- Content -->
       <div class="p-6 font-mono text-[13px] leading-relaxed min-h-[420px]" id="term-body">
@@ -254,7 +258,22 @@ tailwind.config = {
     <!-- Tooltip -->
     <div id="net-tooltip" style="position:absolute;display:none;background:#111827;border:1px solid #1F2937;border-radius:6px;padding:8px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#F3F4F6;pointer-events:none;z-index:10;white-space:nowrap"></div>
   </div>
-  <p style="text-align:center;font-size:12px;color:#6B7280;margin-top:8px;font-family:'JetBrains Mono',monospace">12 core nodes &bull; 78 related wallets &bull; 5 entities identified &bull; 2 clusters detected</p>
+  <div style="margin-top:10px;padding:10px 14px;background:#0A0D14;border:1px solid #1F2937;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="color:#9CA3AF">Identified Entities</span>
+      <span style="color:#374151">|</span>
+      <span style="color:#6B7280">12 core nodes &bull; 78 related wallets &bull; 2 clusters</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Binance</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Coinbase</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Uniswap V3</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Aave</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Lido</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#06B6D415;border:1px solid #06B6D430;border-radius:4px;color:#67E8F9"><span style="width:6px;height:6px;background:#06B6D4;border-radius:50%;display:inline-block"></span>SM: 0xa5d2...fecf</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#F59E0B15;border:1px solid #F59E0B30;border-radius:4px;color:#FCD34D"><span style="width:6px;height:6px;background:#F59E0B;border-radius:50%;display:inline-block"></span>SM: 0x0ed6...47ff</span>
+    </div>
+  </div>
 </div></pre></div>
 
         <div class="term-content" data-tab="2"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope perps</span>
@@ -507,6 +526,12 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
   document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
+  // Update feature description
+  const desc = btn.dataset.desc || '';
+  const parts = desc.split(' ');
+  const cmd = parts[0];
+  const rest = parts.slice(1).join(' ');
+  document.getElementById('tab-desc').innerHTML = `<span class="text-xs font-mono"><span class="text-accent">${cmd}</span> <span class="text-muted">${rest}</span></span>`;
   // Trigger network graph init when syndicate tab (tab 1) is shown
   if (tab === '1' && typeof initNetworkGraph === 'function') {
     setTimeout(initNetworkGraph, 100);
@@ -607,13 +632,13 @@ function initNetworkGraph(){
     edges.push({s:p.id, t:nodes.length-1, type:'peripheral'});
     if(Math.random()<0.15){ const o=pool[Math.floor(Math.random()*pool.length)]; if(o.id!==p.id) edges.push({s:o.id, t:nodes.length-1, type:'peripheral'}); }
   }
-  // Exchange/DEX entity nodes
+  // Exchange/DEX entity nodes — positioned mixed into the graph, not bottom-row
   const entities = [
-    {label:'Binance', x:CX-180, y:CY-120},
-    {label:'Coinbase', x:CX+200, y:CY-100},
-    {label:'Uniswap V3', x:CX-150, y:CY+130},
-    {label:'Aave', x:CX+170, y:CY+110},
-    {label:'Lido', x:CX+50, y:CY-160}
+    {label:'Binance', x:CX-120, y:CY-60},
+    {label:'Coinbase', x:CX+140, y:CY-40},
+    {label:'Uniswap V3', x:CX-60, y:CY+80},
+    {label:'Aave', x:CX+100, y:CY+70},
+    {label:'Lido', x:CX+30, y:CY-100}
   ];
   entities.forEach(e=>{
     nodes.push({id:nodes.length, x:e.x+(Math.random()-0.5)*30, y:e.y+(Math.random()-0.5)*30, vx:0, vy:0, r:9, label:e.label, color:'#A855F7', type:'entity', cluster:-1, isSquare:true});
@@ -622,11 +647,14 @@ function initNetworkGraph(){
   const entIds = nodes.filter(n=>n.type==='entity').map(n=>n.id);
   const smKnown = nodes.filter(n=>n.type==='sm'||n.type==='known');
   entIds.forEach(eid=>{
-    const count = 2+Math.floor(Math.random()*4);
+    const count = 3+Math.floor(Math.random()*5);
     for(let i=0;i<count;i++){
       const t=smKnown[Math.floor(Math.random()*smKnown.length)];
       edges.push({s:eid, t:t.id, type:'hub-known'});
     }
+    // Also connect some entities to hub nodes
+    if(Math.random()<0.7) edges.push({s:eid, t:0, type:'hub-known'});
+    if(Math.random()<0.5) edges.push({s:eid, t:1, type:'hub-known'});
   });
   edges.push({s:0, t:1, type:'hub-sm'});
   nodes.forEach(n=>n.conn=0);
