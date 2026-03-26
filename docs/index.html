@@ -3,460 +3,528 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NansenScope — Autonomous Smart Money Intelligence Agent</title>
-<meta name="description" content="NansenScope: 9 commands, 18 chains, real alpha. Autonomous smart money intelligence for the #NansenCLI Challenge.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0B0E13;--bg2:#111620;--bg3:#161C28;--cyan:#00D4FF;--orange:#FF8C00;--green:#00FF88;--text:#C9D1D9;--dim:#6B7280;--border:#1E2A3A}
-html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-a{color:var(--cyan);text-decoration:none}
-a:hover{text-decoration:underline}
-.container{max-width:1100px;margin:0 auto;padding:0 24px}
-
-/* HERO */
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.06) 0%,transparent 60%);pointer-events:none}
-.ascii-art{font-size:clamp(.45rem,.9vw,.85rem);line-height:1.2;color:var(--cyan);white-space:pre;margin-bottom:24px;text-shadow:0 0 20px rgba(0,212,255,.3)}
-.hero h2{font-size:clamp(1rem,2.5vw,1.5rem);font-weight:500;color:var(--text);margin-bottom:8px}
-.hero .sub{color:var(--dim);font-size:.9rem;margin-bottom:32px}
-.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-block;padding:10px 24px;border-radius:4px;font-family:inherit;font-size:.85rem;font-weight:700;border:1px solid var(--cyan);color:var(--cyan);background:transparent;cursor:pointer;transition:all .2s}
-.btn:hover{background:var(--cyan);color:var(--bg);text-decoration:none}
-.btn--ghost{border-color:var(--dim);color:var(--dim)}
-.btn--ghost:hover{border-color:var(--orange);color:var(--orange);background:transparent}
-
-/* SECTION */
-section{padding:80px 0}
-.section-title{font-size:1.3rem;font-weight:700;color:var(--cyan);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px}
-.section-sub{color:var(--dim);margin-bottom:40px;font-size:.85rem}
-
-/* TERMINAL */
-.terminal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;max-width:780px;margin:0 auto}
-.terminal-bar{background:var(--bg3);padding:8px 14px;display:flex;gap:6px;align-items:center}
-.terminal-dot{width:10px;height:10px;border-radius:50%}
-.terminal-dot:nth-child(1){background:#FF5F56}
-.terminal-dot:nth-child(2){background:#FFBD2E}
-.terminal-dot:nth-child(3){background:#27C93F}
-.terminal-body{padding:20px;font-size:clamp(.65rem,1.2vw,.82rem);line-height:1.7;min-height:320px;white-space:pre-wrap;word-break:break-word}
-.terminal-body .prompt{color:var(--green)}
-.terminal-body .info{color:var(--dim)}
-.terminal-body .ok{color:var(--green)}
-.terminal-body .hi{color:var(--orange)}
-.terminal-body .head{color:var(--cyan)}
-.cursor{display:inline-block;width:8px;height:16px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:text-bottom}
-@keyframes blink{50%{opacity:0}}
-
-/* DEMO TABS */
-.demo-tabs{display:flex;gap:0;background:#0D1117;border-radius:8px 8px 0 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.demo-tabs::-webkit-scrollbar{display:none}
-.demo-tab{flex-shrink:0;padding:12px 20px;font-family:inherit;font-size:.78rem;font-weight:500;color:var(--dim);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap}
-.demo-tab:hover{color:var(--text)}
-.demo-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
-.terminal-title{margin-left:auto;font-size:.7rem;color:var(--dim)}
-#demo-terminal{border-radius:0 0 8px 8px}
-#demo-terminal .terminal-bar{border-radius:0}
-.terminal-body .crit{color:#FF4444}
-
-/* FEATURES */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;transition:all .25s}
-.card:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(0,212,255,.08)}
-.card-icon{font-size:1.6rem;margin-bottom:10px}
-.card h3{font-size:1rem;color:var(--cyan);margin-bottom:6px}
-.card p{font-size:.8rem;color:var(--dim);line-height:1.5}
-
-/* ARCHITECTURE */
-.arch{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:20px 0;overflow-x:auto}
-.arch-node{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-size:.75rem;text-align:center;color:var(--text);white-space:nowrap;position:relative;flex-shrink:0}
-.arch-node span{display:block;color:var(--dim);font-size:.65rem;margin-top:2px}
-.arch-arrow{color:var(--cyan);font-size:1.2rem;padding:0 4px;flex-shrink:0;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-.arch-flow{width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);margin:24px 0;animation:flowLine 3s linear infinite;background-size:200% 100%}
-@keyframes flowLine{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* TABLE */
-.compare-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:640px}
-th{background:var(--bg3);color:var(--cyan);text-align:left;padding:10px 14px;font-weight:700;border-bottom:2px solid var(--cyan)}
-td{padding:10px 14px;border-bottom:1px solid var(--border)}
-tr:hover td{background:rgba(0,212,255,.03)}
-.yes{color:var(--green)}
-.no{color:#FF5F56}
-
-/* QUICKSTART */
-.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;font-size:.82rem;line-height:1.8;max-width:700px;margin:0 auto;overflow-x:auto;white-space:pre-wrap}
-.code-block .c{color:var(--dim)}
-.code-block .g{color:var(--green)}
-
-/* FOOTER */
-footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--dim);font-size:.78rem}
-footer a{color:var(--cyan)}
-
-/* MOBILE */
-@media(max-width:600px){
-  .ascii-art{font-size:.38rem}
-  .grid{grid-template-columns:1fr}
-  .arch{flex-direction:column;gap:0}
-  .arch-arrow{transform:rotate(90deg)}
-  section{padding:50px 0}
+<title>NansenScope — Autonomous Smart Money Intelligence</title>
+<meta name="description" content="Track what smart money does before the market moves. 9 commands. 18 chains. Real alpha.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bg: '#050508',
+        surface: '#0A0D14',
+        card: '#111827',
+        border: '#1F2937',
+        accent: '#06B6D4',
+        amber: '#F59E0B',
+        success: '#10B981',
+        critical: '#EF4444',
+        txt: '#F3F4F6',
+        muted: '#9CA3AF',
+      },
+      fontFamily: {
+        display: ['Satoshi', 'Inter', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      }
+    }
+  }
 }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #050508; color: #F3F4F6; font-family: 'Inter', sans-serif; }
+  ::selection { background: #06B6D4; color: #050508; }
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+  .term-tab { cursor: pointer; padding: 6px 16px; font-size: 13px; border-bottom: 2px solid transparent; color: #9CA3AF; transition: color 0.15s, border-color 0.15s; }
+  .term-tab:hover { color: #F3F4F6; }
+  .term-tab.active { color: #F3F4F6; border-color: #06B6D4; }
+  .term-content { display: none; }
+  .term-content.active { display: block; }
+  .feature-item { border-left: 2px solid transparent; padding-left: 20px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .feature-item:hover, .feature-item.active { border-color: #06B6D4; background: rgba(6,182,212,0.03); }
+  .feature-item.active .feat-name { color: #06B6D4; }
+  .pipeline-step { position: relative; }
+  .pipeline-line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, #1F2937, #06B6D4, #1F2937); background-size: 200% 100%; animation: pulseLine 3s ease infinite; z-index: 0; }
+  @keyframes pulseLine { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .typed-cursor { display: inline-block; width: 8px; height: 18px; background: #06B6D4; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .copy-btn:hover { color: #06B6D4; }
+  .stat-item { letter-spacing: 0.02em; }
+  pre { tab-size: 2; }
+  .ascii-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.025; font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.3; white-space: pre; color: #F3F4F6; z-index: 0; }
 </style>
 </head>
-<body>
+<body class="antialiased">
 
-<!-- HERO -->
-<section class="hero" id="top">
-<div>
-<pre class="ascii-art"> _   _                            ____
-| \ | | __ _ _ __  ___  ___ _ __ / ___|  ___ ___  _ __   ___
-|  \| |/ _` | '_ \/ __|/ _ \ '_ \\___ \ / __/ _ \| '_ \ / _ \
-| |\  | (_| | | | \__ \  __/ | | |___) | (_| (_) | |_) |  __/
-|_| \_|\__,_|_| |_|___/\___|_| |_|____/ \___\___/| .__/ \___|
-                                                  |_|</pre>
-<h2>Autonomous Smart Money Intelligence Agent</h2>
-<p class="sub">9 commands. 18 chains. Real alpha.</p>
-<div class="cta-row">
-<a href="https://github.com/Luigi08001/nansenscope" class="btn" target="_blank">View on GitHub</a>
-<a href="https://x.com/hashtag/NansenCLI" class="btn btn--ghost" target="_blank">Built for #NansenCLI Challenge</a>
-</div>
-</div>
+<!-- Hero -->
+<section class="relative min-h-screen flex items-center overflow-hidden">
+  <div class="ascii-bg" aria-hidden="true">╔══════════════════════════════════════════════════════╗
+║  ███╗   ██╗ █████╗ ███╗   ██╗███████╗███████╗███╗   ██╗  ║
+║  ████╗  ██║██╔══██╗████╗  ██║██╔════╝██╔════╝████╗  ██║  ║
+║  ██╔██╗ ██║███████║██╔██╗ ██║███████╗█████╗  ██╔██╗ ██║  ║
+║  ██║╚██╗██║██╔══██║██║╚██╗██║╚════██║██╔══╝  ██║╚██╗██║  ║
+║  ██║ ╚████║██║  ██║██║ ╚████║███████║███████╗██║ ╚████║  ║
+║  ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═══╝  ║
+╚══════════════════════════════════════════════════════╝
+    ┌─────────────────────────────────────────┐
+    │  SCANNING: ethereum, base, solana       │
+    │  ████████████████████░░░░  78%          │
+    │  Signals: 53 | Chains: 5 | Errors: 0   │
+    └─────────────────────────────────────────┘
+  0xa5d2...fecf ──► 0x0ed6...47ff ──► 0x3b1c...92aa
+       │                 │                 │
+       ▼                 ▼                 ▼
+  [SM: $2.1M]      [SM: $450K]      [SM: $89K]
+       │                 │
+       └────────┬────────┘
+                ▼
+         CLUSTER #1: 8 wallets
+╔══════════════════════════════════════════════════════╗
+║  ███╗   ██╗ █████╗ ███╗   ██╗███████╗███████╗███╗   ██╗  ║
+║  ████╗  ██║██╔══██╗████╗  ██║██╔════╝██╔════╝████╗  ██║  ║
+║  ██╔██╗ ██║███████║██╔██╗ ██║███████╗█████╗  ██╔██╗ ██║  ║
+║  ██║╚██╗██║██╔══██║██║╚██╗██║╚════██║██╔══╝  ██║╚██╗██║  ║
+║  ██║ ╚████║██║  ██║██║ ╚████║███████║███████╗██║ ╚████║  ║
+║  ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═══╝  ║
+╚══════════════════════════════════════════════════════╝</div>
+  <div class="relative z-10 max-w-6xl mx-auto px-6 md:px-12 w-full">
+    <div class="max-w-2xl">
+      <p class="text-muted font-mono text-sm mb-6 fade-in">v2.0 — Week 2 Submission</p>
+      <h1 class="font-display text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6 fade-in" style="font-family:'Satoshi',sans-serif">
+        NansenScope
+      </h1>
+      <p class="text-xl md:text-2xl text-muted font-medium mb-4 fade-in" style="transition-delay:0.1s">
+        Autonomous Smart Money Intelligence
+      </p>
+      <p class="text-base md:text-lg text-muted/70 mb-10 max-w-lg leading-relaxed fade-in" style="transition-delay:0.15s">
+        Track what smart money does — before the market moves.<br>
+        9 commands. 18 chains. Real alpha.
+      </p>
+      <div class="flex flex-wrap gap-4 mb-12 fade-in" style="transition-delay:0.2s">
+        <a href="https://github.com/Luigi08001/nansenscope" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-txt text-sm font-medium hover:border-accent hover:text-accent transition-colors duration-200">
+          View on GitHub
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <span class="inline-flex items-center px-5 py-2.5 text-muted text-sm font-mono">
+          Built for #NansenCLI Challenge
+        </span>
+      </div>
+      <div class="flex flex-wrap gap-6 text-sm font-mono text-muted/60 fade-in" style="transition-delay:0.25s">
+        <span class="stat-item"><span class="text-txt font-medium">53</span> signals detected</span>
+        <span class="text-border">·</span>
+        <span class="stat-item"><span class="text-txt font-medium">5</span> chains scanned</span>
+        <span class="text-border">·</span>
+        <span class="stat-item"><span class="text-txt font-medium">24</span> API calls</span>
+        <span class="text-border">·</span>
+        <span class="stat-item"><span class="text-success font-medium">0</span> errors</span>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- TABBED DEMO -->
-<section id="demo">
-<div class="container">
-<p class="section-title">Live Demo</p>
-<p class="section-sub">Six intelligence modules — click a tab to explore</p>
-<div class="demo-tabs" role="tablist">
-<button class="demo-tab active" data-tab="0" role="tab">Chain Sweep</button>
-<button class="demo-tab" data-tab="1" role="tab">Syndicate Hunter</button>
-<button class="demo-tab" data-tab="2" role="tab">Leverage Radar</button>
-<button class="demo-tab" data-tab="3" role="tab">Signal Fusion</button>
-<button class="demo-tab" data-tab="4" role="tab">Threat Matrix</button>
-<button class="demo-tab" data-tab="5" role="tab">Morning Brief</button>
-</div>
-<div class="terminal" id="demo-terminal">
-<div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title" id="demo-title">nansenscope scan</span></div>
-<div class="terminal-body" id="term"></div>
-</div>
-</div>
+<!-- Terminal Demo -->
+<section class="py-24 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-muted text-sm font-mono mb-6 fade-in">LIVE DEMO</p>
+    <div class="border border-border bg-surface rounded-lg overflow-hidden fade-in" style="transition-delay:0.05s">
+      <!-- Title bar -->
+      <div class="flex items-center gap-2 px-4 py-3 bg-card border-b border-border">
+        <span class="w-3 h-3 rounded-full bg-[#FF5F57]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#FEBC2E]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#28C840]"></span>
+        <span class="ml-4 text-xs text-muted font-mono">nansenscope — zsh</span>
+      </div>
+      <!-- Tabs -->
+      <div class="flex border-b border-border px-4 overflow-x-auto" id="term-tabs">
+        <button class="term-tab active font-mono" data-tab="0">Chain Sweep</button>
+        <button class="term-tab font-mono" data-tab="1">Syndicate Hunter</button>
+        <button class="term-tab font-mono" data-tab="2">Leverage Radar</button>
+        <button class="term-tab font-mono" data-tab="3">Signal Fusion</button>
+        <button class="term-tab font-mono" data-tab="4">Threat Matrix</button>
+        <button class="term-tab font-mono" data-tab="5">Morning Brief</button>
+      </div>
+      <!-- Content -->
+      <div class="p-6 font-mono text-[13px] leading-relaxed min-h-[420px]" id="term-body">
+        <div class="term-content active" data-tab="0"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope scan --chains ethereum,base,solana</span>
+
+<span class="text-muted">Scanning 3 chains: ethereum, base, solana</span>
+<span class="text-success">✓</span> ethereum done (11s)
+<span class="text-success">✓</span> base done (7s)
+<span class="text-success">✓</span> solana done (4s)
+
+<span class="text-txt font-medium">                    Smart Money Signals</span>
+<span class="text-muted"> #   Sev    Chain      Token    Type              Signal</span>
+ <span class="text-txt">1</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">UNI</span>      high_conviction   <span class="text-accent">29 SM wallets ($144M)</span>
+ <span class="text-txt">2</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">WLD</span>      high_conviction   <span class="text-accent">22 SM wallets ($60M)</span>
+ <span class="text-txt">3</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">ONDO</span>     high_conviction   <span class="text-accent">19 SM wallets ($87M)</span>
+ <span class="text-txt">4</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">VIRTUAL</span>  high_conviction   <span class="text-accent">27 SM wallets ($757K)</span>
+ <span class="text-txt">5</span>   <span class="text-critical">HIGH</span>   solana     <span class="text-txt font-medium">JUP</span>      high_conviction   <span class="text-accent">19 SM wallets ($2.7M)</span>
+ <span class="text-txt">6</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">ENA</span>      high_conviction   <span class="text-accent">17 SM wallets ($17M)</span>
+ <span class="text-txt">7</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">SAFE</span>     high_conviction   <span class="text-accent">16 SM wallets ($1.1M)</span>
+ <span class="text-txt">8</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">FACY</span>     high_conviction   <span class="text-accent">16 SM wallets ($11K)</span>
+ <span class="text-txt">9</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">SYRUP</span>    high_conviction   <span class="text-accent">15 SM wallets ($15M)</span>
+<span class="text-txt">10</span>   <span class="text-critical">HIGH</span>   solana     <span class="text-txt font-medium">PENGU</span>    high_conviction   <span class="text-accent">8 SM wallets ($851K)</span>
+
+<span class="text-muted">API calls: 12 | Errors: 0 | Chains: 3</span></pre></div>
+
+        <div class="term-content" data-tab="1"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope network --address 0x0ed6...47ff 0xa5d2...fecf --chain ethereum</span>
+
+<span class="text-muted">Building wallet network from 2 seeds, max 2 hops...</span>
+<span class="text-success">✓</span> Network built (13s)
+
+<span class="text-txt font-medium">Network: 12 nodes, 11 edges</span>
+
+<span class="text-txt font-medium">Wallet Clusters: 2 detected</span>
+
+  <span class="text-accent">Cluster #1:</span> 8 wallets | $2.1M total PnL
+    Hub: <span class="text-muted">0xa5d2...fecf</span> (7 connections)
+    Smart Money: 2 wallets
+    Relations: funder, counterparty
+
+  <span class="text-accent">Cluster #0:</span> 4 wallets | $450K total PnL
+    Hub: <span class="text-muted">0x0ed6...47ff</span> (3 connections)
+    Relations: funder
+
+<span class="text-success">✓</span> Interactive HTML: <span class="text-accent">reports/charts/network_map.html</span></pre></div>
+
+        <div class="term-content" data-tab="2"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope perps</span>
+
+<span class="text-txt font-medium">Smart Money Perpetual Trading Intelligence</span>
+<span class="text-muted">Hyperliquid — Real-time SM positions</span>
+
+Positions: <span class="text-txt">50</span> | Volume: <span class="text-txt">$208,111</span> | Traders: <span class="text-txt">5</span>
+L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
+
+<span class="text-txt font-medium">          Top Tokens by Perp Volume</span>
+<span class="text-muted"> Token      Volume      Trades    Long         Short</span>
+ <span class="text-txt">xyz:CL</span>     $196,147    11        <span class="text-success">$196,147</span>     $0
+ <span class="text-txt">TAO</span>        $6,228      17        $0           <span class="text-critical">$6,228</span>
+ <span class="text-txt">AVAX</span>       $2,146      5         $22          <span class="text-critical">$2,124</span>
+ <span class="text-txt">LINK</span>       $1,351      3         $0           <span class="text-critical">$1,351</span>
+ <span class="text-txt">AZTEC</span>      $1,194      6         <span class="text-success">$1,194</span>       $0
+
+<span class="text-critical">●</span> SM Short Open: $750 LINK @ $8.98
+<span class="text-critical">●</span> SM Short Open: $614 TAO @ $344.22
+<span class="text-success">●</span> SM Long Open: $196K xyz:CL</pre></div>
+
+        <div class="term-content" data-tab="3"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope signals --chains ethereum,base,solana --top 5</span>
+
+<span class="text-muted">Analyzing cross-chain convergence...</span>
+
+<span class="text-amber">⚠ CONVERGENCE: <span class="text-txt font-medium">UNI</span></span>
+  ethereum: 29 SM wallets ($144M)
+  base: netflow +$2.1M (24h)
+  Score: <span class="text-critical">95</span> | <span class="text-critical">CRITICAL</span>
+
+<span class="text-amber">⚠ CONVERGENCE: <span class="text-txt font-medium">ONDO</span></span>
+  ethereum: 19 SM wallets ($87M)
+  arbitrum: 4 SM wallets ($1.2M)
+  Score: <span class="text-critical">88</span> | <span class="text-critical">CRITICAL</span>
+
+<span class="text-muted"> #  Score  Token    Chain      Type</span>
+ <span class="text-txt">1</span>  <span class="text-critical">95</span>     <span class="text-txt font-medium">UNI</span>      multi      convergence
+ <span class="text-txt">2</span>  <span class="text-critical">88</span>     <span class="text-txt font-medium">ONDO</span>     multi      convergence
+ <span class="text-txt">3</span>  <span class="text-amber">82</span>     <span class="text-txt font-medium">WLD</span>      ethereum   high_conviction
+ <span class="text-txt">4</span>  <span class="text-amber">78</span>     <span class="text-txt font-medium">VIRTUAL</span>  base       high_conviction
+ <span class="text-txt">5</span>  <span class="text-amber">75</span>     <span class="text-txt font-medium">JUP</span>      solana     high_conviction</pre></div>
+
+        <div class="term-content" data-tab="4"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope alerts --chains ethereum,base,solana</span>
+
+<span class="text-muted">Running 5 alert rules across 3 chains...</span>
+
+<span class="text-critical">🚨 CRITICAL — Whale Accumulation</span>
+   UNI: 29 wallets, $144M | Cooldown: 60min
+
+<span class="text-critical">🚨 CRITICAL — Convergence Spike</span>
+   ONDO: score 88 &gt; threshold 80 | Cooldown: 30min
+
+<span class="text-amber">⚠ HIGH — Cross-Chain Flow</span>
+   WETH: $2.1M netflow | Cooldown: 45min
+
+<span class="text-muted">Alerts: 3 | Rules: 5 | History saved</span></pre></div>
+
+        <div class="term-content" data-tab="5"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope daily --chains ethereum,base,solana,arbitrum,bnb</span>
+
+<span class="text-txt font-medium">Step 1/5:</span> Scanning 5 chains...
+  <span class="text-success">✓</span> ethereum <span class="text-success">✓</span> base <span class="text-success">✓</span> solana <span class="text-success">✓</span> arbitrum <span class="text-success">✓</span> bnb
+
+<span class="text-txt font-medium">Step 2/5:</span> Analyzing signals...
+  53 signals (2 convergence, 41 high, 10 medium)
+
+<span class="text-txt font-medium">Step 3/5:</span> Running alerts...
+  3 alerts (<span class="text-critical">2 critical</span>, <span class="text-amber">1 high</span>)
+
+<span class="text-txt font-medium">Step 4/5:</span> Generating charts...
+  <span class="text-success">✓</span> signal_timeline.png
+  <span class="text-success">✓</span> chain_comparison.png
+
+<span class="text-txt font-medium">Step 5/5:</span> Building report...
+  <span class="text-success">✓</span> reports/daily_2026-03-26.md
+
+<span class="text-muted">API calls: 24 | Errors: 0 | Chains: 5</span></pre></div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- FEATURES -->
-<section id="features">
-<div class="container">
-<p class="section-title">Capabilities</p>
-<p class="section-sub">Six integrated intelligence modules</p>
-<div class="grid">
-<div class="card"><div class="card-icon">&#x1F30D;</div><h3>Chain Sweep</h3><p>Multi-chain SM scanning across 18 blockchains. Ethereum, Solana, Base, Arbitrum, BNB, Polygon, + 12 more.</p></div>
-<div class="card"><div class="card-icon">&#x1F578;&#xFE0F;</div><h3>Syndicate Hunter</h3><p>Wallet cluster detection via BFS graph traversal. Counterparties, related wallets, centrality scoring. Interactive bubble maps.</p></div>
-<div class="card"><div class="card-icon">&#x1F4C8;</div><h3>Leverage Radar</h3><p>Hyperliquid perpetual position intelligence. SM short/long tracking in real-time across all markets.</p></div>
-<div class="card"><div class="card-icon">&#x26A1;</div><h3>Signal Fusion</h3><p>Cross-chain convergence detection. Multiple data sources pointing at the same token across chains = highest conviction.</p></div>
-<div class="card"><div class="card-icon">&#x1F6A8;</div><h3>Threat Matrix</h3><p>Alert engine with cooldown system. 5 built-in rules, persistent history, zero spam. Never miss a signal.</p></div>
-<div class="card"><div class="card-icon">&#x2615;</div><h3>Morning Brief</h3><p>One command daily intelligence pipeline: scan &rarr; signals &rarr; alerts &rarr; charts &rarr; report. Start every day informed.</p></div>
-</div>
-</div>
+<!-- Features -->
+<section class="py-24 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-muted text-sm font-mono mb-3 fade-in">CAPABILITIES</p>
+    <h2 class="font-display text-3xl md:text-4xl font-black mb-16 fade-in" style="font-family:'Satoshi',sans-serif">9 commands. Full autonomy.</h2>
+    <div class="grid md:grid-cols-2 gap-12 md:gap-16">
+      <!-- Left: feature list -->
+      <div class="space-y-1 fade-in" id="feature-list">
+        <div class="feature-item active py-4" data-feat="0">
+          <p class="feat-name text-txt font-medium mb-1 text-accent">scan</p>
+          <p class="text-muted text-sm">Multi-chain smart money scanning. 18 chains, parallel async.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="1">
+          <p class="feat-name text-txt font-medium mb-1">network</p>
+          <p class="text-muted text-sm">Wallet graph analysis via BFS. Clusters, centrality, bubble maps.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="2">
+          <p class="feat-name text-txt font-medium mb-1">perps</p>
+          <p class="text-muted text-sm">Hyperliquid perpetual positions. L/S ratios, SM traders.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="3">
+          <p class="feat-name text-txt font-medium mb-1">signals</p>
+          <p class="text-muted text-sm">Cross-chain convergence detection. Multiple data sources, one score.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="4">
+          <p class="feat-name text-txt font-medium mb-1">alerts</p>
+          <p class="text-muted text-sm">5 built-in rules, cooldown engine, persistent history.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="5">
+          <p class="feat-name text-txt font-medium mb-1">daily</p>
+          <p class="text-muted text-sm">Full pipeline: scan → signals → alerts → charts → report.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="6">
+          <p class="feat-name text-txt font-medium mb-1">charts</p>
+          <p class="text-muted text-sm">Plotly-powered dark charts. Timeline + chain comparison.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="7">
+          <p class="feat-name text-txt font-medium mb-1">profiler</p>
+          <p class="text-muted text-sm">Wallet deep dive. Holdings, labels, PnL.</p>
+        </div>
+        <div class="feature-item py-4" data-feat="8">
+          <p class="feat-name text-txt font-medium mb-1">quote</p>
+          <p class="text-muted text-sm">DEX trade quotes via Nansen.</p>
+        </div>
+      </div>
+      <!-- Right: code preview -->
+      <div class="fade-in" style="transition-delay:0.1s">
+        <div class="border border-border bg-surface rounded-lg overflow-hidden sticky top-8">
+          <div class="flex items-center gap-2 px-4 py-2.5 bg-card border-b border-border">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#28C840]"></span>
+          </div>
+          <div class="p-5 font-mono text-[13px] leading-relaxed min-h-[200px]" id="feature-preview">
+            <pre class="whitespace-pre-wrap" id="feat-code"><span class="text-muted">$</span> nansenscope scan --chains ethereum,base,solana
+
+<span class="text-success">✓</span> 3 chains scanned in 22s
+<span class="text-txt">10 HIGH signals detected</span>
+<span class="text-accent">Top: UNI — 29 SM wallets ($144M)</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- ARCHITECTURE -->
-<section id="arch">
-<div class="container">
-<p class="section-title">Architecture</p>
-<p class="section-sub">End-to-end intelligence pipeline</p>
-<div class="arch-flow"></div>
-<div class="arch">
-<div class="arch-node"><strong>Nansen CLI</strong><span>API Layer</span></div>
-<div class="arch-arrow">&#x25B6;</div>
-<div class="arch-node"><strong>Scanner</strong><span>18 Chains</span></div>
-<div class="arch-arrow">&#x25B6;</div>
-<div class="arch-node"><strong>Signal Detectors</strong><span>5 Strategies</span></div>
-<div class="arch-arrow">&#x25B6;</div>
-<div class="arch-node"><strong>Convergence Engine</strong><span>Cross-chain</span></div>
-<div class="arch-arrow">&#x25B6;</div>
-<div class="arch-node"><strong>Alert Engine</strong><span>Threat Matrix</span></div>
-<div class="arch-arrow">&#x25B6;</div>
-<div class="arch-node"><strong>Charts + Reports</strong><span>HTML / PNG</span></div>
-</div>
-<div class="arch-flow"></div>
-</div>
+<!-- Architecture -->
+<section class="py-24 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-muted text-sm font-mono mb-3 fade-in">ARCHITECTURE</p>
+    <h2 class="font-display text-3xl md:text-4xl font-black mb-16 fade-in" style="font-family:'Satoshi',sans-serif">From API call to alpha</h2>
+    <div class="relative fade-in" style="transition-delay:0.05s">
+      <div class="overflow-x-auto pb-4">
+        <div class="relative flex items-center justify-between min-w-[720px] gap-0">
+          <div class="pipeline-line"></div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">01</p>
+            <p class="text-txt text-sm font-medium">Nansen CLI API</p>
+          </div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">02</p>
+            <p class="text-txt text-sm font-medium">Multi-chain Scanner</p>
+          </div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">03</p>
+            <p class="text-txt text-sm font-medium">5 Signal Detectors</p>
+          </div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">04</p>
+            <p class="text-txt text-sm font-medium">Convergence Engine</p>
+          </div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">05</p>
+            <p class="text-txt text-sm font-medium">Alert Rules</p>
+          </div>
+          <div class="pipeline-step relative z-10 bg-card border border-border px-5 py-4 text-center min-w-[130px]">
+            <p class="text-accent text-xs font-mono mb-1">06</p>
+            <p class="text-txt text-sm font-medium">Charts & Reports</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- COMPARISON -->
-<section id="compare">
-<div class="container">
-<p class="section-title">Week 1 Winner vs NansenScope</p>
-<p class="section-sub">Feature-by-feature breakdown</p>
-<div class="compare-wrap">
-<table>
-<thead><tr><th>Feature</th><th>@HeavyOT (Week 1 Winner)</th><th>NansenScope</th></tr></thead>
-<tbody>
-<tr><td>Network Analysis</td><td class="no">Syndicate Mapper (1 feature)</td><td class="yes">&#x2714; Syndicate Hunter (BFS + clusters + centrality + bubble maps)</td></tr>
-<tr><td>Chains</td><td class="no">Polygon only</td><td class="yes">&#x2714; 18 chains</td></tr>
-<tr><td>Perps Intel</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Leverage Radar (Hyperliquid)</td></tr>
-<tr><td>Cross-chain</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Signal Fusion (convergence detection)</td></tr>
-<tr><td>Visualizations</td><td class="no">Screenshots</td><td class="yes">&#x2714; Interactive HTML + PNG charts</td></tr>
-<tr><td>CLI Commands</td><td class="no">Single-purpose bot</td><td class="yes">&#x2714; 9 commands</td></tr>
-<tr><td>Alert System</td><td class="no">&#x2718; None</td><td class="yes">&#x2714; Threat Matrix (5 rules, cooldowns)</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+<!-- Comparison -->
+<section class="py-24 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-muted text-sm font-mono mb-3 fade-in">COMPARISON</p>
+    <h2 class="font-display text-3xl md:text-4xl font-black mb-16 fade-in" style="font-family:'Satoshi',sans-serif">Week 1 Winner vs NansenScope</h2>
+    <div class="overflow-x-auto fade-in" style="transition-delay:0.05s">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border text-left">
+            <th class="py-3 pr-8 text-muted font-medium">Feature</th>
+            <th class="py-3 pr-8 text-muted font-medium">@HeavyOT</th>
+            <th class="py-3 text-muted font-medium">NansenScope</th>
+          </tr>
+        </thead>
+        <tbody class="text-muted">
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">Network Analysis</td>
+            <td class="py-3.5 pr-8">Basic</td>
+            <td class="py-3.5 text-accent">BFS + clusters + centrality</td>
+          </tr>
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">Chains Supported</td>
+            <td class="py-3.5 pr-8">1 (Polygon)</td>
+            <td class="py-3.5 text-accent">18</td>
+          </tr>
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">Perps Intelligence</td>
+            <td class="py-3.5 pr-8"><span class="text-border">—</span></td>
+            <td class="py-3.5 text-accent">Hyperliquid SM tracking</td>
+          </tr>
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">Cross-chain Detection</td>
+            <td class="py-3.5 pr-8"><span class="text-border">—</span></td>
+            <td class="py-3.5 text-accent">Signal Fusion</td>
+          </tr>
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">Visualization</td>
+            <td class="py-3.5 pr-8">Screenshots</td>
+            <td class="py-3.5 text-accent">Interactive HTML + PNG</td>
+          </tr>
+          <tr class="border-b border-border/50">
+            <td class="py-3.5 pr-8 text-txt">CLI Commands</td>
+            <td class="py-3.5 pr-8">1</td>
+            <td class="py-3.5 text-accent">9</td>
+          </tr>
+          <tr>
+            <td class="py-3.5 pr-8 text-txt">Alert System</td>
+            <td class="py-3.5 pr-8"><span class="text-border">—</span></td>
+            <td class="py-3.5 text-accent">5 rules + cooldowns</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
-<!-- QUICKSTART -->
-<section id="start">
-<div class="container">
-<p class="section-title">Quick Start</p>
-<p class="section-sub">From zero to smart money intel in 60 seconds</p>
-<div class="code-block"><span class="c"># Install Nansen CLI</span>
-<span class="g">$</span> npm install -g nansen-cli
-<span class="g">$</span> nansen wallet create
+<!-- Quick Start -->
+<section class="py-24 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-muted text-sm font-mono mb-3 fade-in">GET STARTED</p>
+    <h2 class="font-display text-3xl md:text-4xl font-black mb-12 fade-in" style="font-family:'Satoshi',sans-serif">Quick Start</h2>
+    <div class="relative border border-border bg-surface rounded-lg overflow-hidden max-w-2xl fade-in" style="transition-delay:0.05s">
+      <div class="flex items-center justify-between px-4 py-2.5 bg-card border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#28C840]"></span>
+        </div>
+        <button class="copy-btn text-muted text-xs font-mono hover:text-accent transition-colors" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre class="p-5 font-mono text-[13px] leading-relaxed overflow-x-auto"><code id="quickstart-code"><span class="text-success">npm install -g nansen-cli</span>
+<span class="text-success">nansen wallet create</span>
+<span class="text-muted"># Fund wallet with USDC on Base</span>
 
-<span class="c"># Clone and run NansenScope</span>
-<span class="g">$</span> git clone https://github.com/Luigi08001/nansenscope
-<span class="g">$</span> cd nansenscope && pip install -r requirements.txt
-<span class="g">$</span> python nansenscope.py daily --chains ethereum,base,solana</div>
-</div>
+<span class="text-success">git clone https://github.com/Luigi08001/nansenscope</span>
+<span class="text-success">cd nansenscope && pip install -r requirements.txt</span>
+<span class="text-success">python nansenscope.py daily --chains ethereum,base,solana</span></code></pre>
+    </div>
+  </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
-<p>Built for <a href="https://x.com/hashtag/NansenCLI" target="_blank">#NansenCLI Challenge</a> Week 2 &mdash; by <a href="https://x.com/luigi08002" target="_blank">@luigi08002</a></p>
-<p style="margin-top:8px"><a href="https://github.com/Luigi08001/nansenscope" target="_blank">github.com/Luigi08001/nansenscope</a></p>
+<!-- Footer -->
+<footer class="py-16 px-6 md:px-12 border-t border-border/50">
+  <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+    <p class="text-muted text-sm">
+      Built for <span class="text-txt">#NansenCLI Challenge Week 2</span> — <a href="https://x.com/luigi08002" target="_blank" class="text-accent hover:underline">@luigi08002</a>
+    </p>
+    <a href="https://github.com/Luigi08001/nansenscope" target="_blank" class="text-muted text-sm hover:text-accent transition-colors">
+      GitHub →
+    </a>
+  </div>
 </footer>
 
 <script>
-(function(){
-var tabs=[
-{title:'nansenscope scan',lines:[
-{t:'$ nansenscope scan --chains ethereum,base,solana',c:'prompt'},
-{t:''},
-{t:'Scanning 3 chains: ethereum, base, solana',c:'info'},
-{t:''},
-{t:'\u2713 ethereum done (11s)',c:'ok'},
-{t:'\u2713 base done (7s)',c:'ok'},
-{t:'\u2713 solana done (4s)',c:'ok'},
-{t:''},
-{t:'                    Smart Money Signals',c:'head'},
-{t:'#   Sev   Chain      Token    Type              Signal',c:'head'},
-{t:'1   HIGH  ethereum   UNI      high_conviction   29 SM wallets ($144M)',c:'hi'},
-{t:'2   HIGH  ethereum   WLD      high_conviction   22 SM wallets ($60M)',c:'hi'},
-{t:'3   HIGH  ethereum   ONDO     high_conviction   19 SM wallets ($87M)',c:'hi'},
-{t:'4   HIGH  base       VIRTUAL  high_conviction   27 SM wallets ($757K)',c:'hi'},
-{t:'5   HIGH  solana     JUP      high_conviction   19 SM wallets ($2.7M)',c:'hi'},
-{t:'6   HIGH  ethereum   ENA      high_conviction   17 SM wallets ($17M)',c:'hi'},
-{t:'7   HIGH  ethereum   SAFE     high_conviction   16 SM wallets ($1.1M)',c:'hi'},
-{t:'8   HIGH  base       FACY     high_conviction   16 SM wallets ($11K)',c:'hi'},
-{t:'9   HIGH  ethereum   SYRUP    high_conviction   15 SM wallets ($15M)',c:'hi'},
-{t:'10  HIGH  solana     PENGU    high_conviction   8 SM wallets ($851K)',c:'hi'},
-{t:''},
-{t:'API calls: 12 | Errors: 0 | Chains: 3',c:'info'}
-]},
-{title:'nansenscope network',lines:[
-{t:'$ nansenscope network --address 0x0ed6...47ff 0xa5d2...fecf --chain ethereum',c:'prompt'},
-{t:''},
-{t:'Building wallet network from 2 seeds, max 2 hops...',c:'info'},
-{t:'\u2713 Network built (13s)',c:'ok'},
-{t:''},
-{t:'Network: 12 nodes, 11 edges',c:'head'},
-{t:''},
-{t:'Wallet Clusters: 2 detected',c:'head'},
-{t:''},
-{t:'  Cluster #1: 8 wallets | $2.1M total PnL',c:'ok'},
-{t:'    Hub: 0xa5d2...fecf (7 connections)',c:''},
-{t:'    Smart Money: 2 nodes detected',c:''},
-{t:'    Relations: funder, counterparty',c:'info'},
-{t:''},
-{t:'  Cluster #0: 4 wallets | $450K total PnL',c:'ok'},
-{t:'    Hub: 0x0ed6...47ff (3 connections)',c:''},
-{t:'    Relations: funder',c:'info'},
-{t:''},
-{t:'  Top Connected Nodes:',c:'head'},
-{t:'    0xa5d2...fecf \u2014 7 connections (counterparty hub)',c:''},
-{t:'    0x0ed6...47ff \u2014 3 connections (funder)',c:''},
-{t:'    0xfa49...2c1a \u2014 2 connections',c:''},
-{t:''},
-{t:'\u2713 Bubble map saved: reports/charts/syndicate_bubble_map.png',c:'ok'},
-{t:'\u2713 Interactive HTML: reports/charts/syndicate_bubble_map.html',c:'ok'}
-]},
-{title:'nansenscope perps',lines:[
-{t:'$ nansenscope perps',c:'prompt'},
-{t:''},
-{t:'Smart Money Perpetual Trading Intelligence',c:'head'},
-{t:'Hyperliquid \u2014 Real-time SM positions',c:'info'},
-{t:''},
-{t:'Positions: 50 | Volume: $208,111 | Traders: 5',c:''},
-{t:'L/S Ratio: 18.91 (strongly bullish)',c:'ok'},
-{t:''},
-{t:'          Top Tokens by Perp Volume',c:'head'},
-{t:'Token      Volume      Trades    Long         Short',c:'head'},
-{t:'xyz:CL     $196,147    11        $196,147     $0',c:''},
-{t:'TAO        $6,228      17        $0           $6,228',c:''},
-{t:'AVAX       $2,146      5         $22          $2,124',c:''},
-{t:'LINK       $1,351      3         $0           $1,351',c:''},
-{t:'AZTEC      $1,194      6         $1,194       $0',c:''},
-{t:'NEAR       $750        4         $0           $750',c:''},
-{t:'SOL        $156        2         $156         $0',c:''},
-{t:'ETH        $137        2         $137         $0',c:''},
-{t:''},
-{t:'\uD83D\uDD34 SM perp Short Open: $750 LINK @ $8.98 \u2014 Smart HL Perps Trader',c:'crit'},
-{t:'\uD83D\uDD34 SM perp Short Open: $614 TAO @ $344.22 \u2014 Smart HL Perps Trader',c:'crit'},
-{t:'\uD83D\uDFE2 SM perp Long Open: $196K xyz:CL \u2014 Smart HL Perps Trader',c:'ok'},
-{t:''},
-{t:'API calls: 1 | Errors: 0',c:'info'}
-]},
-{title:'nansenscope signals',lines:[
-{t:'$ nansenscope signals --chains ethereum,base,solana --top 10',c:'prompt'},
-{t:''},
-{t:'Analyzing cross-chain convergence...',c:'info'},
-{t:''},
-{t:'\u26A0 CONVERGENCE DETECTED: UNI',c:'crit'},
-{t:'  \u2514\u2500 ethereum: 29 SM wallets holding ($144M)',c:''},
-{t:'  \u2514\u2500 base: netflow +$2.1M (24h)',c:''},
-{t:'  \u2514\u2500 Signals: high_conviction + netflow = CONVERGENCE',c:'hi'},
-{t:'  \u2514\u2500 Score: 95 | Severity: CRITICAL',c:'crit'},
-{t:''},
-{t:'\u26A0 CONVERGENCE DETECTED: ONDO',c:'crit'},
-{t:'  \u2514\u2500 ethereum: 19 SM wallets ($87M)',c:''},
-{t:'  \u2514\u2500 arbitrum: 4 SM wallets ($1.2M)',c:''},
-{t:'  \u2514\u2500 Signals: high_conviction + cross_chain = CONVERGENCE',c:'hi'},
-{t:'  \u2514\u2500 Score: 88 | Severity: CRITICAL',c:'crit'},
-{t:''},
-{t:'Ranked Signals (top 10):',c:'head'},
-{t:'#  Score  Token    Chain      Type',c:'head'},
-{t:'1  95     UNI      multi      convergence',c:'crit'},
-{t:'2  88     ONDO     multi      convergence',c:'crit'},
-{t:'3  82     WLD      ethereum   high_conviction',c:'hi'},
-{t:'4  78     VIRTUAL  base       high_conviction',c:'hi'},
-{t:'5  75     JUP      solana     high_conviction',c:'hi'}
-]},
-{title:'nansenscope alerts',lines:[
-{t:'$ nansenscope alerts --chains ethereum,base,solana',c:'prompt'},
-{t:''},
-{t:'Running 5 alert rules across 3 chains...',c:'info'},
-{t:''},
-{t:'\uD83D\uDEA8 CRITICAL \u2014 Whale Accumulation',c:'crit'},
-{t:'   UNI: SM buying across ethereum + base',c:''},
-{t:'   29 wallets, $144M total | Cooldown: 60min',c:'info'},
-{t:''},
-{t:'\uD83D\uDEA8 CRITICAL \u2014 Convergence Spike',c:'crit'},
-{t:'   ONDO: convergence score 88 > threshold 80',c:''},
-{t:'   Cross-chain activity detected | Cooldown: 30min',c:'info'},
-{t:''},
-{t:'\u26A0 HIGH \u2014 Cross-Chain Flow',c:'hi'},
-{t:'   WETH: flowing into base + arbitrum',c:''},
-{t:'   $2.1M netflow detected | Cooldown: 45min',c:'info'},
-{t:''},
-{t:'Alerts triggered: 3 | Rules checked: 5',c:''},
-{t:'History saved: reports/alert_history.json',c:'ok'}
-]},
-{title:'nansenscope daily',lines:[
-{t:'$ nansenscope daily --chains ethereum,base,solana,arbitrum,bnb',c:'prompt'},
-{t:''},
-{t:'Daily Intelligence Pipeline',c:'head'},
-{t:'scan \u2192 signals \u2192 alerts \u2192 charts \u2192 report',c:'info'},
-{t:''},
-{t:'Step 1/5: Scanning 5 chains...',c:''},
-{t:'  \u2713 ethereum (11s) | \u2713 base (7s) | \u2713 solana (4s)',c:'ok'},
-{t:'  \u2713 arbitrum (5s) | \u2713 bnb (6s)',c:'ok'},
-{t:''},
-{t:'Step 2/5: Analyzing signals...',c:''},
-{t:'  53 signals detected (2 convergence, 41 high, 10 medium)',c:'hi'},
-{t:''},
-{t:'Step 3/5: Running alerts...',c:''},
-{t:'  3 alerts triggered (2 critical, 1 high)',c:'crit'},
-{t:''},
-{t:'Step 4/5: Generating charts...',c:''},
-{t:'  \u2713 signal_timeline.png',c:'ok'},
-{t:'  \u2713 chain_comparison.png',c:'ok'},
-{t:'  \u2713 syndicate_bubble_map.png + .html',c:'ok'},
-{t:''},
-{t:'Step 5/5: Building report...',c:''},
-{t:'  \u2713 reports/daily_2026-03-26.md',c:'ok'},
-{t:''},
-{t:'API calls: 24 | Errors: 0 | Chains: 5',c:'info'},
-{t:'Daily pipeline complete!',c:'ok'}
-]}
-];
-
-var el=document.getElementById('term');
-var titleEl=document.getElementById('demo-title');
-var tabBtns=document.querySelectorAll('.demo-tab');
-var activeTab=0,typing=false,typingTimer=null,typed=false;
-
-function renderTab(idx,animate){
-  activeTab=idx;
-  if(typingTimer){clearTimeout(typingTimer);typingTimer=null}
-  typing=false;
-  var tab=tabs[idx];
-  titleEl.textContent=tab.title;
-  tabBtns.forEach(function(b,i){b.classList.toggle('active',i===idx)});
-  if(animate&&!typed){
-    typed=true;
-    typeTab(tab.lines);
-  } else {
-    el.innerHTML=buildStatic(tab.lines)+'<span class="cursor"></span>';
-  }
-}
-
-function buildStatic(lines){
-  var h='';
-  for(var i=0;i<lines.length;i++){
-    var l=lines[i];
-    if(!l.t){h+='\n';continue}
-    if(l.c){h+='<span class="'+l.c+'">'+esc(l.t)+'</span>\n'}
-    else{h+=esc(l.t)+'\n'}
-  }
-  return h;
-}
-
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-
-function typeTab(lines){
-  typing=true;
-  el.innerHTML='';
-  var li=0,ci=0;
-  function step(){
-    if(!typing)return;
-    if(li>=lines.length){el.innerHTML+='<span class="cursor"></span>';typing=false;return}
-    var line=lines[li];
-    if(!line.t){el.innerHTML+='\n';li++;typingTimer=setTimeout(step,80);return}
-    if(ci===0){el.innerHTML+='<span class="'+(line.c||'')+'">';}
-    if(ci<line.t.length){
-      // append char safely
-      var sp=el.querySelector('span:last-of-type');
-      if(sp){sp.textContent+=line.t[ci]}else{el.innerHTML+=esc(line.t[ci])}
-      ci++;
-      var d=line.c==='prompt'?30:8;
-      typingTimer=setTimeout(step,d);
-    } else {
-      el.innerHTML+='</span>\n';
-      ci=0;li++;
-      typingTimer=setTimeout(step,60);
-    }
-  }
-  step();
-}
-
-tabBtns.forEach(function(btn){
-  btn.addEventListener('click',function(){
-    var idx=parseInt(this.getAttribute('data-tab'));
-    if(idx===activeTab)return;
-    renderTab(idx,false);
-  });
+// Terminal tabs
+document.getElementById('term-tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.term-tab');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
 });
 
-// Trigger typing on first scroll into view
-var obs=new IntersectionObserver(function(entries){
-  if(entries[0].isIntersecting&&!typed){renderTab(0,true)}
-},{threshold:0.3});
-obs.observe(el);
-// Fallback
-setTimeout(function(){if(!typed){renderTab(0,true)}},3000);
-})();
+// Feature list
+const featCodes = [
+  `<span class="text-muted">$</span> nansenscope scan --chains ethereum,base,solana\n\n<span class="text-success">✓</span> 3 chains scanned in 22s\n<span class="text-txt">10 HIGH signals detected</span>\n<span class="text-accent">Top: UNI — 29 SM wallets ($144M)</span>`,
+  `<span class="text-muted">$</span> nansenscope network --address 0xa5d2...fecf\n\n<span class="text-success">✓</span> 12 nodes, 11 edges\n<span class="text-txt">2 clusters detected</span>\n<span class="text-accent">Hub: 0xa5d2...fecf (7 connections)</span>`,
+  `<span class="text-muted">$</span> nansenscope perps\n\n<span class="text-txt">L/S Ratio: 18.91</span> (strongly bullish)\n<span class="text-success">●</span> SM Long: $196K xyz:CL\n<span class="text-critical">●</span> SM Short: $750 LINK`,
+  `<span class="text-muted">$</span> nansenscope signals --top 5\n\n<span class="text-critical">⚠ CONVERGENCE: UNI</span> Score: 95\n<span class="text-critical">⚠ CONVERGENCE: ONDO</span> Score: 88\n<span class="text-accent">Cross-chain correlation detected</span>`,
+  `<span class="text-muted">$</span> nansenscope alerts\n\n<span class="text-critical">🚨 Whale Accumulation</span> UNI: $144M\n<span class="text-critical">🚨 Convergence Spike</span> ONDO: 88\n<span class="text-amber">⚠ Cross-Chain Flow</span> WETH: $2.1M`,
+  `<span class="text-muted">$</span> nansenscope daily --chains ethereum,base,solana\n\n<span class="text-success">✓</span> 5 steps completed\n<span class="text-txt">53 signals · 3 alerts · 2 charts</span>\n<span class="text-accent">✓ reports/daily_2026-03-26.md</span>`,
+  `<span class="text-muted">$</span> nansenscope charts\n\n<span class="text-success">✓</span> signal_timeline.png\n<span class="text-success">✓</span> chain_comparison.png\n<span class="text-accent">Plotly dark theme · Interactive HTML</span>`,
+  `<span class="text-muted">$</span> nansenscope profiler --address 0xa5d2...fecf\n\n<span class="text-txt">Holdings: 14 tokens ($2.1M)</span>\n<span class="text-txt">Labels: Smart Money, DeFi Whale</span>\n<span class="text-accent">PnL: +$340K (30d)</span>`,
+  `<span class="text-muted">$</span> nansenscope quote --token UNI --amount 10000\n\n<span class="text-txt">Best route: Uniswap V3</span>\n<span class="text-txt">Price impact: 0.02%</span>\n<span class="text-accent">Est. output: 892.4 UNI</span>`,
+];
+
+document.getElementById('feature-list').addEventListener('click', (e) => {
+  const item = e.target.closest('.feature-item');
+  if (!item) return;
+  document.querySelectorAll('.feature-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  document.getElementById('feat-code').innerHTML = featCodes[item.dataset.feat];
+});
+document.getElementById('feature-list').addEventListener('mouseover', (e) => {
+  const item = e.target.closest('.feature-item');
+  if (!item) return;
+  document.querySelectorAll('.feature-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  document.getElementById('feat-code').innerHTML = featCodes[item.dataset.feat];
+});
+
+// Scroll fade-in
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+// Copy
+function copyCode(btn) {
+  const code = `npm install -g nansen-cli\nnansen wallet create\n# Fund wallet with USDC on Base\n\ngit clone https://github.com/Luigi08001/nansenscope\ncd nansenscope && pip install -r requirements.txt\npython nansenscope.py daily --chains ethereum,base,solana`;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 2000);
+  });
+}
 </script>
 </body>
 </html>
