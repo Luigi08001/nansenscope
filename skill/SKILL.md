@@ -4,7 +4,7 @@ description: >
   Autonomous Smart Money Intelligence Agent — scan 18 chains, detect whale
   movements, map wallet networks, track leveraged bets, get cross-chain
   convergence alerts. Built on Nansen CLI.
-version: 0.3.0
+version: 1.0.0
 license: MIT
 requires:
   - nansen-cli >= 1.21.0

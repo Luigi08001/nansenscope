@@ -134,7 +134,11 @@ async def _run_nansen(args: list[str], endpoint: str) -> ScanResult:
 
                     # Unauthorized
                     if error_code == "UNAUTHORIZED" or parsed.get("status") == 401:
-                        log.warning("Unauthorized for %s", endpoint)
+                        if not hasattr(_run_nansen, '_warned_endpoints'):
+                            _run_nansen._warned_endpoints = set()
+                        if endpoint not in _run_nansen._warned_endpoints:
+                            log.warning("Unauthorized for %s (suppressing further warnings)", endpoint)
+                            _run_nansen._warned_endpoints.add(endpoint)
                         return ScanResult(
                             success=False,
                             error=f"Unauthorized: {error_msg}",

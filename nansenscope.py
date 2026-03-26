@@ -83,7 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-V", "--version", action="version",
-        version="%(prog)s 0.3.0",
+        version="%(prog)s 1.0.0",
     )
 
     sub = parser.add_subparsers(dest="command", help="Available commands")
@@ -980,13 +980,7 @@ async def cmd_network(args: argparse.Namespace):
             label = ", ".join(node.labels[:2]) if node and node.labels else "unlabeled"
             console.print(f"  {addr[:10]}... — {degree} connections ({label})")
 
-    # Generate bubble map
-    try:
-        bubble_path = analyzer.generate_bubble_map()
-        if bubble_path:
-            console.print(f"\n[green]✓[/green] Bubble map saved: {bubble_path}")
-    except Exception as e:
-        console.print(f"\n[yellow]Bubble map generation failed: {e}[/yellow]")
+    # Bubble map removed — replaced by interactive HTML map below
 
     # Generate interactive HTML network map
     try:

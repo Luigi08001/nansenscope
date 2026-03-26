@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)]()
 [![Nansen CLI](https://img.shields.io/badge/nansen--cli-v1.21.0-green.svg)]()
-[![Commands](https://img.shields.io/badge/commands-11-orange.svg)]()
+[![Commands](https://img.shields.io/badge/commands-13-orange.svg)]()
 [![Chains](https://img.shields.io/badge/chains-18-purple.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)]()
 
@@ -37,7 +37,7 @@ $ nansenscope daily --chains ethereum,base,solana,apechain
 
 ## Features
 
-### 11 Commands
+### 13 Commands
 
 | Command | What it does |
 |---|---|
@@ -52,6 +52,8 @@ $ nansenscope daily --chains ethereum,base,solana,apechain
 | `portfolio` | Full portfolio analysis — holdings, labels, PnL breakdown |
 | `watch` | Continuous monitoring — re-scans every N minutes, alerts on NEW signals |
 | `quote` | DEX trade quotes via Nansen |
+| `history` | Signal trend detection — find tokens appearing repeatedly over time |
+| `report` | Generate full intelligence report from scan data |
 
 ### Signal Detection Engine
 
@@ -87,7 +89,7 @@ skill/                  OpenClaw Agent Skill
 
 - **5,500+ lines of Python**
 - **18 chains** supported (ethereum, solana, base, apechain, arbitrum, bnb, polygon, optimism, avalanche, linea, scroll, mantle, ronin, sei, plasma, sonic, monad, hyperevm, iotaevm)
-- **11 CLI commands**
+- **13 CLI commands**
 - **5 signal detectors** + convergence engine
 - **5 alert rules** with persistent cooldowns
 - **x402 micropayment** — no API key needed
