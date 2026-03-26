@@ -11,16 +11,17 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        bg: '#050508',
-        surface: '#0A0D14',
-        card: '#111827',
-        border: '#1F2937',
-        accent: '#06B6D4',
-        amber: '#F59E0B',
-        success: '#10B981',
-        critical: '#EF4444',
-        txt: '#F3F4F6',
-        muted: '#9CA3AF',
+        bg: '#001321',
+        surface: '#001D32',
+        card: '#082235',
+        border: '#0D3B5C',
+        accent: '#01FFA7',
+        amber: '#FAAD15',
+        success: '#01FFA7',
+        critical: '#AA2626',
+        purple: '#6475F6',
+        txt: '#EDF2F6',
+        muted: '#949FA8',
       },
       fontFamily: {
         display: ['Satoshi', 'Inter', 'sans-serif'],
@@ -37,27 +38,27 @@ tailwind.config = {
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
 <style>
   html { scroll-behavior: smooth; }
-  body { background: #050508; color: #F3F4F6; font-family: 'Inter', sans-serif; }
-  ::selection { background: #06B6D4; color: #050508; }
+  body { background: #001321; color: #EDF2F6; font-family: 'Inter', sans-serif; }
+  ::selection { background: #01FFA7; color: #001321; }
   .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
   .fade-in.visible { opacity: 1; transform: translateY(0); }
   .term-tab { cursor: pointer; padding: 6px 16px; font-size: 13px; border-bottom: 2px solid transparent; color: #9CA3AF; transition: color 0.15s, border-color 0.15s; }
   .term-tab:hover { color: #F3F4F6; }
-  .term-tab.active { color: #F3F4F6; border-color: #06B6D4; }
+  .term-tab.active { color: #EDF2F6; border-color: #01FFA7; }
   .term-content { display: none; }
   .term-content.active { display: block; }
   .feature-item { border-left: 2px solid transparent; padding-left: 20px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
-  .feature-item:hover, .feature-item.active { border-color: #06B6D4; background: rgba(6,182,212,0.03); }
-  .feature-item.active .feat-name { color: #06B6D4; }
+  .feature-item:hover, .feature-item.active { border-color: #01FFA7; background: rgba(1,255,167,0.03); }
+  .feature-item.active .feat-name { color: #01FFA7; }
   .pipeline-step { position: relative; }
-  .pipeline-line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, #1F2937, #06B6D4, #1F2937); background-size: 200% 100%; animation: pulseLine 3s ease infinite; z-index: 0; }
+  .pipeline-line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, #0D3B5C, #01FFA7, #0D3B5C); background-size: 200% 100%; animation: pulseLine 3s ease infinite; z-index: 0; }
   @keyframes pulseLine { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-  .typed-cursor { display: inline-block; width: 8px; height: 18px; background: #06B6D4; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+  .typed-cursor { display: inline-block; width: 8px; height: 18px; background: #01FFA7; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
-  .copy-btn:hover { color: #06B6D4; }
+  .copy-btn:hover { color: #01FFA7; }
   .stat-item { letter-spacing: 0.02em; }
   pre { tab-size: 2; }
-  .ascii-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.025; font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.3; white-space: pre; color: #F3F4F6; z-index: 0; }
+  .ascii-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.02; font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.3; white-space: pre; color: #01FFA7; z-index: 0; }
 
   /* Intel grid background */
   .intel-grid {
@@ -66,20 +67,20 @@ tailwind.config = {
   .intel-grid::before {
     content: ''; position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(1,255,167,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(1,255,167,0.025) 1px, transparent 1px);
     background-size: 60px 60px;
   }
   .intel-grid::after {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.03) 0%, transparent 40%);
+    background: radial-gradient(ellipse at 50% 0%, rgba(1,255,167,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(100,117,246,0.03) 0%, transparent 40%);
   }
 
   /* Scanning line animation */
   .scan-line {
     position: fixed; top: 0; left: 0; right: 0; height: 1px; z-index: 0; pointer-events: none;
-    background: linear-gradient(90deg, transparent, rgba(6,182,212,0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(1,255,167,0.12), transparent);
     animation: scanDown 8s ease-in-out infinite;
   }
   @keyframes scanDown { 0% { top: -1px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100vh; opacity: 0; } }
@@ -87,7 +88,7 @@ tailwind.config = {
   /* Corner HUD decorations */
   .hud-corner {
     position: fixed; pointer-events: none; z-index: 1;
-    font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(6,182,212,0.12);
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(1,255,167,0.12);
     line-height: 1.6;
   }
   .hud-tl { top: 16px; left: 16px; }
@@ -98,7 +99,7 @@ tailwind.config = {
   /* Floating data streams */
   .data-stream {
     position: fixed; pointer-events: none; z-index: 0;
-    font-family: 'JetBrains Mono', monospace; font-size: 8px; color: rgba(6,182,212,0.06);
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; color: rgba(1,255,167,0.06);
     writing-mode: vertical-rl; line-height: 1.4; letter-spacing: 2px;
     animation: streamUp 20s linear infinite;
   }
@@ -107,7 +108,7 @@ tailwind.config = {
   /* Section divider */
   .intel-divider {
     height: 1px; margin: 0 auto; max-width: 200px;
-    background: linear-gradient(90deg, transparent, rgba(6,182,212,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(1,255,167,0.2), transparent);
   }
 </style>
 </head>
@@ -237,12 +238,13 @@ tailwind.config = {
       </div>
       <!-- Content -->
       <div class="p-6 font-mono text-[13px] leading-relaxed min-h-[420px]" id="term-body">
-        <div class="term-content active" data-tab="0"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope scan --chains ethereum,base,solana</span>
+        <div class="term-content active" data-tab="0"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope scan --chains ethereum,base,solana,apechain</span>
 
-<span class="text-muted">Scanning 3 chains: ethereum, base, solana</span>
+<span class="text-muted">Scanning 4 chains: ethereum, base, solana, apechain</span>
 <span class="text-success">✓</span> ethereum done (11s)
 <span class="text-success">✓</span> base done (7s)
 <span class="text-success">✓</span> solana done (4s)
+<span class="text-success">✓</span> apechain done (3s)
 
 <span class="text-txt font-medium">                    Smart Money Signals</span>
 <span class="text-muted"> #   Sev    Chain      Token    Type              Signal</span>
@@ -251,34 +253,40 @@ tailwind.config = {
  <span class="text-txt">3</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">ONDO</span>     high_conviction   <span class="text-accent">19 SM wallets ($87M)</span>
  <span class="text-txt">4</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">VIRTUAL</span>  high_conviction   <span class="text-accent">27 SM wallets ($757K)</span>
  <span class="text-txt">5</span>   <span class="text-critical">HIGH</span>   solana     <span class="text-txt font-medium">JUP</span>      high_conviction   <span class="text-accent">19 SM wallets ($2.7M)</span>
- <span class="text-txt">6</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">ENA</span>      high_conviction   <span class="text-accent">17 SM wallets ($17M)</span>
+ <span class="text-txt">6</span>   <span class="text-critical">HIGH</span>   apechain   <span class="text-txt font-medium">APE</span>      high_conviction   <span class="text-accent">14 SM wallets ($8.2M)</span>
  <span class="text-txt">7</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">SAFE</span>     high_conviction   <span class="text-accent">16 SM wallets ($1.1M)</span>
- <span class="text-txt">8</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">FACY</span>     high_conviction   <span class="text-accent">16 SM wallets ($11K)</span>
+ <span class="text-txt">8</span>   <span class="text-critical">HIGH</span>   apechain   <span class="text-txt font-medium">BORED</span>    high_conviction   <span class="text-accent">11 SM wallets ($3.4M)</span>
  <span class="text-txt">9</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">SYRUP</span>    high_conviction   <span class="text-accent">15 SM wallets ($15M)</span>
-<span class="text-txt">10</span>   <span class="text-critical">HIGH</span>   solana     <span class="text-txt font-medium">PENGU</span>    high_conviction   <span class="text-accent">8 SM wallets ($851K)</span>
+<span class="text-txt">10</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">FACY</span>     high_conviction   <span class="text-accent">16 SM wallets ($11K)</span>
 
-<span class="text-muted">API calls: 12 | Errors: 0 | Chains: 3</span></pre>
+<span class="text-muted">API calls: 16 | Errors: 0 | Chains: 4</span></pre>
 <!-- Chain Heatmap Visual -->
-<div style="margin-top:16px;padding-top:16px;border-top:1px solid #1F2937">
-  <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Chain Signal Heatmap</p>
+<div style="margin-top:16px;padding-top:16px;border-top:1px solid #0D3B5C">
+  <p style="font-size:11px;color:#949FA8;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Chain Signal Heatmap</p>
   <div style="display:flex;gap:12px;flex-wrap:wrap">
-    <div class="chain-tile" style="flex:1;min-width:140px;background:#0A0D14;border:1px solid rgba(6,182,212,0.5);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#06B6D4'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(6,182,212,0.5)'">
-      <div style="font-size:11px;color:#9CA3AF;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Ethereum</div>
-      <div style="font-size:36px;font-weight:800;color:#06B6D4;line-height:1;font-family:'Satoshi',sans-serif">10</div>
-      <div style="font-size:10px;color:#9CA3AF;margin-top:4px">signals</div>
-      <div style="font-size:13px;color:#F3F4F6;margin-top:6px;font-weight:600">$484M</div>
+    <div class="chain-tile" style="flex:1;min-width:120px;background:#001D32;border:1px solid rgba(1,255,167,0.5);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#01FFA7'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(1,255,167,0.5)'">
+      <div style="font-size:11px;color:#949FA8;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Ethereum</div>
+      <div style="font-size:36px;font-weight:800;color:#01FFA7;line-height:1;font-family:'Satoshi',sans-serif">10</div>
+      <div style="font-size:10px;color:#949FA8;margin-top:4px">signals</div>
+      <div style="font-size:13px;color:#EDF2F6;margin-top:6px;font-weight:600">$484M</div>
     </div>
-    <div class="chain-tile" style="flex:1;min-width:140px;background:#0A0D14;border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#06B6D4'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(6,182,212,0.3)'">
-      <div style="font-size:11px;color:#9CA3AF;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Base</div>
-      <div style="font-size:36px;font-weight:800;color:rgba(6,182,212,0.7);line-height:1;font-family:'Satoshi',sans-serif">8</div>
-      <div style="font-size:10px;color:#9CA3AF;margin-top:4px">signals</div>
-      <div style="font-size:13px;color:#F3F4F6;margin-top:6px;font-weight:600">$2.3M</div>
+    <div class="chain-tile" style="flex:1;min-width:120px;background:#001D32;border:1px solid rgba(1,255,167,0.35);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#01FFA7'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(1,255,167,0.35)'">
+      <div style="font-size:11px;color:#949FA8;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Base</div>
+      <div style="font-size:36px;font-weight:800;color:rgba(1,255,167,0.75);line-height:1;font-family:'Satoshi',sans-serif">8</div>
+      <div style="font-size:10px;color:#949FA8;margin-top:4px">signals</div>
+      <div style="font-size:13px;color:#EDF2F6;margin-top:6px;font-weight:600">$2.3M</div>
     </div>
-    <div class="chain-tile" style="flex:1;min-width:140px;background:#0A0D14;border:1px solid rgba(6,182,212,0.15);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#06B6D4'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(6,182,212,0.15)'">
-      <div style="font-size:11px;color:#9CA3AF;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Solana</div>
-      <div style="font-size:36px;font-weight:800;color:rgba(6,182,212,0.4);line-height:1;font-family:'Satoshi',sans-serif">2</div>
-      <div style="font-size:10px;color:#9CA3AF;margin-top:4px">signals</div>
-      <div style="font-size:13px;color:#F3F4F6;margin-top:6px;font-weight:600">$3.6M</div>
+    <div class="chain-tile" style="flex:1;min-width:120px;background:#001D32;border:1px solid rgba(1,255,167,0.2);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#01FFA7'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(1,255,167,0.2)'">
+      <div style="font-size:11px;color:#949FA8;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Solana</div>
+      <div style="font-size:36px;font-weight:800;color:rgba(1,255,167,0.45);line-height:1;font-family:'Satoshi',sans-serif">2</div>
+      <div style="font-size:10px;color:#949FA8;margin-top:4px">signals</div>
+      <div style="font-size:13px;color:#EDF2F6;margin-top:6px;font-weight:600">$3.6M</div>
+    </div>
+    <div class="chain-tile" style="flex:1;min-width:120px;background:#001D32;border:1px solid rgba(1,255,167,0.3);border-radius:8px;padding:16px;text-align:center;transition:transform 0.2s,border-color 0.2s;cursor:default" onmouseenter="this.style.transform='scale(1.04)';this.style.borderColor='#01FFA7'" onmouseleave="this.style.transform='scale(1)';this.style.borderColor='rgba(1,255,167,0.3)'">
+      <div style="font-size:11px;color:#949FA8;font-family:'JetBrains Mono',monospace;margin-bottom:6px">ApeChain</div>
+      <div style="font-size:36px;font-weight:800;color:rgba(1,255,167,0.6);line-height:1;font-family:'Satoshi',sans-serif">2</div>
+      <div style="font-size:10px;color:#949FA8;margin-top:4px">signals</div>
+      <div style="font-size:13px;color:#EDF2F6;margin-top:6px;font-weight:600">$11.6M</div>
     </div>
   </div>
 </div></pre></div>
@@ -303,29 +311,29 @@ tailwind.config = {
 
 <span class="text-success">✓</span> Interactive HTML: <span class="text-accent">reports/charts/network_map.html</span></pre>
 <!-- Syndicate Hunter: Arkham-style Force-Directed Network Graph -->
-<div style="margin-top:16px;padding-top:16px;border-top:1px solid #1F2937">
+<div style="margin-top:16px;padding-top:16px;border-top:1px solid #0D3B5C">
   <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Interactive Network Map <span style="color:#4B5563">— scroll to zoom · drag to pan · simulated data</span></p>
-  <div style="position:relative;width:100%;height:400px;background:#0A0D14;border-radius:8px;overflow:hidden;cursor:grab" id="network-map-container">
+  <div style="position:relative;width:100%;height:400px;background:#001D32;border-radius:8px;overflow:hidden;cursor:grab" id="network-map-container">
     <canvas id="network-canvas" style="display:block;width:100%;height:100%"></canvas>
     <!-- Legend -->
-    <div style="position:absolute;top:12px;right:12px;background:rgba(10,13,20,0.9);border:1px solid #1F2937;border-radius:6px;padding:10px 14px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#9CA3AF;line-height:1.8;pointer-events:none">
+    <div style="position:absolute;top:12px;right:12px;background:rgba(10,13,20,0.9);border:1px solid #0D3B5C;border-radius:6px;padding:10px 14px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#9CA3AF;line-height:1.8;pointer-events:none">
       <div><span style="display:inline-block;width:18px;height:2px;background:#EF4444;vertical-align:middle;margin-right:6px;border-radius:1px"></span>Fund Flow</div>
       <div><span style="display:inline-block;width:18px;height:2px;background:#F59E0B;vertical-align:middle;margin-right:6px;border-radius:1px"></span>Counterparty</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#4B5563;border-radius:50%;vertical-align:middle;margin-right:6px"></span>Unknown Wallet</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#06B6D4;border-radius:50%;vertical-align:middle;margin-right:6px;box-shadow:0 0 4px #06B6D4"></span>Smart Money</div>
-      <div><span style="display:inline-block;width:12px;height:12px;background:#06B6D4;border-radius:50%;vertical-align:middle;margin-right:4px;box-shadow:0 0 6px #06B6D4"></span>Cluster Hub</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#01FFA7;border-radius:50%;vertical-align:middle;margin-right:6px;box-shadow:0 0 4px #01FFA7"></span>Smart Money</div>
+      <div><span style="display:inline-block;width:12px;height:12px;background:#01FFA7;border-radius:50%;vertical-align:middle;margin-right:4px;box-shadow:0 0 6px #01FFA7"></span>Cluster Hub</div>
       <div><span style="display:inline-block;width:10px;height:10px;background:#A855F7;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Exchange / DEX</div>
     </div>
     <!-- Zoom controls -->
     <div style="position:absolute;bottom:12px;right:12px;display:flex;gap:4px;z-index:5">
-      <button onclick="netZoom(1.3)" style="width:28px;height:28px;background:#111827;border:1px solid #1F2937;border-radius:4px;color:#9CA3AF;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
-      <button onclick="netZoom(0.7)" style="width:28px;height:28px;background:#111827;border:1px solid #1F2937;border-radius:4px;color:#9CA3AF;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
-      <button onclick="netReset()" style="width:28px;height:28px;background:#111827;border:1px solid #1F2937;border-radius:4px;color:#9CA3AF;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center">⟳</button>
+      <button onclick="netZoom(1.3)" style="width:28px;height:28px;background:#111827;border:1px solid #0D3B5C;border-radius:4px;color:#9CA3AF;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+      <button onclick="netZoom(0.7)" style="width:28px;height:28px;background:#111827;border:1px solid #0D3B5C;border-radius:4px;color:#9CA3AF;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+      <button onclick="netReset()" style="width:28px;height:28px;background:#111827;border:1px solid #0D3B5C;border-radius:4px;color:#9CA3AF;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center">⟳</button>
     </div>
     <!-- Tooltip -->
-    <div id="net-tooltip" style="position:absolute;display:none;background:#111827;border:1px solid #1F2937;border-radius:6px;padding:8px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#F3F4F6;pointer-events:none;z-index:10;white-space:nowrap"></div>
+    <div id="net-tooltip" style="position:absolute;display:none;background:#111827;border:1px solid #0D3B5C;border-radius:6px;padding:8px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#F3F4F6;pointer-events:none;z-index:10;white-space:nowrap"></div>
   </div>
-  <div style="margin-top:10px;padding:10px 14px;background:#0A0D14;border:1px solid #1F2937;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px">
+  <div style="margin-top:10px;padding:10px 14px;background:#001D32;border:1px solid #0D3B5C;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <span style="color:#9CA3AF">Identified Entities</span>
       <span style="color:#374151">|</span>
@@ -337,7 +345,7 @@ tailwind.config = {
       <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Uniswap V3</span>
       <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Aave</span>
       <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#A855F715;border:1px solid #A855F730;border-radius:4px;color:#D8B4FE"><span style="width:6px;height:6px;background:#A855F7;border-radius:1px;display:inline-block"></span>Lido</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#06B6D415;border:1px solid #06B6D430;border-radius:4px;color:#67E8F9"><span style="width:6px;height:6px;background:#06B6D4;border-radius:50%;display:inline-block"></span>SM: 0xa5d2...fecf</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#01FFA715;border:1px solid #01FFA730;border-radius:4px;color:#67E8F9"><span style="width:6px;height:6px;background:#01FFA7;border-radius:50%;display:inline-block"></span>SM: 0xa5d2...fecf</span>
       <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:#F59E0B15;border:1px solid #F59E0B30;border-radius:4px;color:#FCD34D"><span style="width:6px;height:6px;background:#F59E0B;border-radius:50%;display:inline-block"></span>SM: 0x0ed6...47ff</span>
     </div>
   </div>
@@ -363,7 +371,7 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
 <span class="text-critical">●</span> SM Short Open: $614 TAO @ $344.22
 <span class="text-success">●</span> SM Long Open: $196K xyz:CL</pre>
 <!-- Leverage Radar Visual -->
-<div style="margin-top:16px;padding-top:16px;border-top:1px solid #1F2937">
+<div style="margin-top:16px;padding-top:16px;border-top:1px solid #0D3B5C">
   <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Long/Short Ratio</p>
   <div style="display:flex;height:32px;border-radius:6px;overflow:hidden;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">
     <div style="width:94.7%;background:#10B981;display:flex;align-items:center;padding-left:12px;color:#050508;min-width:80px">LONG 94.7%</div>
@@ -415,7 +423,7 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
 
 <span class="text-muted">Alerts: 3 | Rules: 5 | History saved</span></pre></div>
 
-        <div class="term-content" data-tab="5"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope daily --chains ethereum,base,solana,arbitrum,bnb</span>
+        <div class="term-content" data-tab="5"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope daily --chains ethereum,base,solana,apechain,arbitrum,bnb</span>
 
 <span class="text-txt font-medium">Step 1/5:</span> Scanning 5 chains...
   <span class="text-success">✓</span> ethereum <span class="text-success">✓</span> base <span class="text-success">✓</span> solana <span class="text-success">✓</span> arbitrum <span class="text-success">✓</span> bnb
@@ -676,12 +684,12 @@ function initNetworkGraph(){
   const edges = [];
   const CX = W/2, CY = H/2;
   // 2 hubs
-  nodes.push({id:0, x:CX-80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:14, label:'0xa5d2...fecf', color:'#06B6D4', type:'hub', cluster:1});
+  nodes.push({id:0, x:CX-80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:14, label:'0xa5d2...fecf', color:'#01FFA7', type:'hub', cluster:1});
   nodes.push({id:1, x:CX+80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:12, label:'0x0ed6...47ff', color:'#F59E0B', type:'hub', cluster:0});
   // 6 SM nodes
   for(let i=0;i<6;i++){
     const cl=i<4?1:0, hub=cl===1?0:1;
-    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*100, y:CY+(Math.random()-0.5)*80, vx:0, vy:0, r:6+Math.random()*2, label:rAddr(), color:'#06B6D4', type:'sm', cluster:cl});
+    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*100, y:CY+(Math.random()-0.5)*80, vx:0, vy:0, r:6+Math.random()*2, label:rAddr(), color:'#01FFA7', type:'sm', cluster:cl});
     edges.push({s:hub, t:nodes.length-1, type:'hub-sm'});
   }
   // 20 known wallets
@@ -849,7 +857,7 @@ function initNetworkGraph(){
       if(n.type==='sm'){
         ctx.beginPath();
         const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.5,n.x,n.y,n.r*2.2);
-        grad.addColorStop(0,'#06B6D425');grad.addColorStop(1,'#06B6D400');
+        grad.addColorStop(0,'#01FFA725');grad.addColorStop(1,'#01FFA700');
         ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2.2,0,Math.PI*2);ctx.fill();
       }
       if(n.isSquare){
@@ -861,7 +869,7 @@ function initNetworkGraph(){
       } else {
         ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
         if(n.type==='hub'){ctx.fillStyle=n.color;ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.fill();ctx.stroke();}
-        else if(n.type==='sm'){ctx.fillStyle='#06B6D4';ctx.fill();}
+        else if(n.type==='sm'){ctx.fillStyle='#01FFA7';ctx.fill();}
         else if(n.type==='known'){ctx.fillStyle='#4B5563';ctx.fill();}
         else{ctx.fillStyle='#374151';ctx.fill();}
       }
@@ -869,7 +877,7 @@ function initNetworkGraph(){
     ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
     nodes.forEach(n=>{
       if(n.type==='hub'){ctx.fillStyle='#E5E7EB';ctx.fillText(n.label,n.x,n.y+n.r+14);}
-      else if(n.type==='sm'){ctx.fillStyle='#06B6D4';ctx.font='bold 8px JetBrains Mono,monospace';ctx.fillText('SM',n.x,n.y+3);ctx.font='9px JetBrains Mono,monospace';}
+      else if(n.type==='sm'){ctx.fillStyle='#01FFA7';ctx.font='bold 8px JetBrains Mono,monospace';ctx.fillText('SM',n.x,n.y+3);ctx.font='9px JetBrains Mono,monospace';}
       else if(n.type==='entity'){ctx.fillStyle='#E9D5FF';ctx.font='bold 8px JetBrains Mono,monospace';ctx.fillText(n.label,n.x,n.y+n.r+14);ctx.font='9px JetBrains Mono,monospace';}
     });
     ctx.restore(); // end zoom/pan transform
