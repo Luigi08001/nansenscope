@@ -891,7 +891,7 @@ function initNetworkGraph(){
   const canvas = document.getElementById('network-canvas');
   if(!canvas) return;
   const container = document.getElementById('network-map-container');
-  if(!container || container.offsetWidth < 10) return; // tab still hidden
+  if(!container || container.offsetWidth < 10) return;
   _networkInitialized = true;
   const tt = document.getElementById('net-tooltip');
   const ctx = canvas.getContext('2d');
@@ -901,7 +901,6 @@ function initNetworkGraph(){
   function resize(){
     const rect = container.getBoundingClientRect();
     if(rect.width > 10 && rect.height > 10){
-      // Rescale node positions if W changed
       const oldW = W, oldH = H;
       W = rect.width; H = rect.height;
       if(initialized && oldW > 10){
@@ -917,72 +916,264 @@ function initNetworkGraph(){
   const nodes = [];
   const edges = [];
   const CX = W/2, CY = H/2;
-  // 2 hubs
-  // Hub nodes with meaningful labels
-  nodes.push({id:0, x:CX-80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:14, label:'DeFi Whale #1', color:'#00E5A0', type:'hub', cluster:1, detail:'Accumulated $2.1M across 47 tokens in 3 years'});
-  nodes.push({id:1, x:CX+80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:12, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets — likely same entity'});
-  // 6 "Smart Money" nodes — labeled by what they actually DO
+
+  // --- Hub nodes at center, offset ---
+  const hub1X = CX - 110, hub1Y = CY;
+  const hub2X = CX + 110, hub2Y = CY;
+  nodes.push({id:0, x:hub1X, y:hub1Y, vx:0, vy:0, r:16, label:'DeFi Whale #1', color:'#00E5A0', type:'hub', cluster:1, detail:'Accumulated $2.1M across 47 tokens in 3 years'});
+  nodes.push({id:1, x:hub2X, y:hub2Y, vx:0, vy:0, r:14, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets — likely same entity'});
+
+  // --- Ring 1: Smart Money nodes around their hub ---
   const smLabels = [
-    {name:'DEX Buyer', detail:'$340K profit'},
-    {name:'Yield Farmer', detail:'$1.2M deposited'},
-    {name:'NFT Flipper', detail:'$890K PnL'},
-    {name:'MEV Searcher', detail:'$45K/week'},
-    {name:'DAO Treasury', detail:'8 DAOs'},
-    {name:'Accumulator', detail:'18mo DCA'}
+    {name:'DEX Buyer', detail:'$340K profit', cl:1},
+    {name:'Yield Farmer', detail:'$1.2M deposited', cl:1},
+    {name:'NFT Flipper', detail:'$890K PnL', cl:1},
+    {name:'MEV Searcher', detail:'$45K/week', cl:1},
+    {name:'DAO Treasury', detail:'8 DAOs', cl:0},
+    {name:'Accumulator', detail:'18mo DCA', cl:0}
   ];
-  for(let i=0;i<6;i++){
-    const cl=i<4?1:0, hub=cl===1?0:1;
-    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*100, y:CY+(Math.random()-0.5)*80, vx:0, vy:0, r:6+Math.random()*2, label:smLabels[i].name, color:'#00E5A0', type:'sm', cluster:cl, detail:smLabels[i].detail});
-    edges.push({s:hub, t:nodes.length-1, type:'hub-sm'});
-  }
-  // 20 known wallets — with descriptive labels
-  const knownLabels=['LP','Staker','Bridge','Holder','Hunter','Signer','Funder','Bot','OTC','Mixer','Cold','Hot','Voter','Claimer','Liquidator','Flash','Relayer','Gas','Deployer','Admin'];
-  for(let i=0;i<20;i++){
-    const cl=i<12?1:0, hub=cl===1?0:1;
-    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*200, y:CY+(Math.random()-0.5)*150, vx:0, vy:0, r:4+Math.random(), label:knownLabels[i], color:'#4B5563', type:'known', cluster:cl, detail:'Linked via on-chain transfers'});
-    edges.push({s:hub, t:nodes.length-1, type:'hub-known'});
-    if(Math.random()<0.3){ edges.push({s:2+Math.floor(Math.random()*6), t:nodes.length-1, type:'hub-known'}); }
-  }
-  // 60 peripheral nodes
-  for(let i=0;i<60;i++){
-    nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*300, y:CY+(Math.random()-0.5)*200, vx:0, vy:0, r:1.5+Math.random()*1.5, label:rAddr(), color:'#374151', type:'peripheral', cluster:Math.random()<0.6?1:0});
-    const pool=nodes.filter(n=>n.type==='known'||n.type==='sm');
-    const p=pool[Math.floor(Math.random()*pool.length)];
-    edges.push({s:p.id, t:nodes.length-1, type:'peripheral'});
-    if(Math.random()<0.15){ const o=pool[Math.floor(Math.random()*pool.length)]; if(o.id!==p.id) edges.push({s:o.id, t:nodes.length-1, type:'peripheral'}); }
-  }
-  // Exchange/DEX entity nodes — positioned mixed into the graph, not bottom-row
-  const entities = [
-    {label:'Binance', x:CX-120, y:CY-60},
-    {label:'Coinbase', x:CX+140, y:CY-40},
-    {label:'Uniswap V3', x:CX-60, y:CY+80},
-    {label:'Aave', x:CX+100, y:CY+70},
-    {label:'Lido', x:CX+30, y:CY-100}
-  ];
-  entities.forEach(e=>{
-    nodes.push({id:nodes.length, x:e.x+(Math.random()-0.5)*30, y:e.y+(Math.random()-0.5)*30, vx:0, vy:0, r:9, label:e.label, color:'#A855F7', type:'entity', cluster:-1, isSquare:true});
+  const smR = 75;
+  const sm1 = smLabels.filter(s=>s.cl===1), sm0 = smLabels.filter(s=>s.cl===0);
+  sm1.forEach((s,i)=>{
+    const angle = (i/sm1.length)*Math.PI*2 - Math.PI/2;
+    nodes.push({id:nodes.length, x:hub1X+Math.cos(angle)*smR, y:hub1Y+Math.sin(angle)*smR, vx:0,vy:0, r:7, label:s.name, color:'#00E5A0', type:'sm', cluster:1, detail:s.detail});
+    edges.push({s:0, t:nodes.length-1, type:'hub-sm'});
   });
-  // Connect entities to some known/top traders
+  sm0.forEach((s,i)=>{
+    const angle = (i/sm0.length)*Math.PI*2 - Math.PI/2;
+    nodes.push({id:nodes.length, x:hub2X+Math.cos(angle)*smR, y:hub2Y+Math.sin(angle)*smR, vx:0,vy:0, r:7, label:s.name, color:'#00E5A0', type:'sm', cluster:0, detail:s.detail});
+    edges.push({s:1, t:nodes.length-1, type:'hub-sm'});
+  });
+
+  // --- Ring 2: Known wallets in wider ring ---
+  const knownLabels=['LP Provider','Staker','Bridge User','Holder','Hunter','Multi-Sig','Funder','Bot Wallet','OTC Desk','Mixer','Cold Storage','Hot Wallet','DAO Voter','Claimer','Liquidator','Flash Loan','Relayer','Gas Funder','Deployer','Admin Key'];
+  const knownR1 = 140, knownR0 = 130;
+  const known1 = knownLabels.slice(0,12), known0 = knownLabels.slice(12);
+  known1.forEach((lbl,i)=>{
+    const angle = (i/known1.length)*Math.PI*2 - Math.PI/4;
+    nodes.push({id:nodes.length, x:hub1X+Math.cos(angle)*knownR1, y:hub1Y+Math.sin(angle)*knownR1, vx:0,vy:0, r:4.5, label:lbl, color:'#4B5563', type:'known', cluster:1, detail:'Linked via on-chain transfers'});
+    edges.push({s:0, t:nodes.length-1, type:'hub-known'});
+    if(Math.random()<0.4){const smPool=nodes.filter(n=>n.type==='sm'&&n.cluster===1);if(smPool.length)edges.push({s:smPool[Math.floor(Math.random()*smPool.length)].id, t:nodes.length-1, type:'hub-known'});}
+  });
+  known0.forEach((lbl,i)=>{
+    const angle = (i/known0.length)*Math.PI*2 + Math.PI/4;
+    nodes.push({id:nodes.length, x:hub2X+Math.cos(angle)*knownR0, y:hub2Y+Math.sin(angle)*knownR0, vx:0,vy:0, r:4.5, label:lbl, color:'#4B5563', type:'known', cluster:0, detail:'Linked via on-chain transfers'});
+    edges.push({s:1, t:nodes.length-1, type:'hub-known'});
+    if(Math.random()<0.4){const smPool=nodes.filter(n=>n.type==='sm'&&n.cluster===0);if(smPool.length)edges.push({s:smPool[Math.floor(Math.random()*smPool.length)].id, t:nodes.length-1, type:'hub-known'});}
+  });
+
+  // --- Ring 3: Entity nodes at cardinal points around the whole graph ---
+  const entityData = [
+    {label:'Binance', angle:-Math.PI/2, dist:190},
+    {label:'Coinbase', angle:Math.PI*0.15, dist:200},
+    {label:'Uniswap V3', angle:Math.PI*0.65, dist:185},
+    {label:'Aave', angle:Math.PI*0.85, dist:195},
+    {label:'Lido', angle:-Math.PI*0.25, dist:195}
+  ];
+  entityData.forEach(e=>{
+    nodes.push({id:nodes.length, x:CX+Math.cos(e.angle)*e.dist, y:CY+Math.sin(e.angle)*e.dist, vx:0,vy:0, r:12, label:e.label, color:'#A855F7', type:'entity', cluster:-1, isSquare:true});
+  });
+  // Connect entities to SM/known nodes
   const entIds = nodes.filter(n=>n.type==='entity').map(n=>n.id);
   const smKnown = nodes.filter(n=>n.type==='sm'||n.type==='known');
   entIds.forEach(eid=>{
-    const count = 3+Math.floor(Math.random()*5);
+    const count = 2+Math.floor(Math.random()*3);
+    const used = new Set();
     for(let i=0;i<count;i++){
       const t=smKnown[Math.floor(Math.random()*smKnown.length)];
-      edges.push({s:eid, t:t.id, type:'hub-known'});
+      if(!used.has(t.id)){used.add(t.id);edges.push({s:eid, t:t.id, type:'entity-link'});}
     }
-    // Also connect some entities to hub nodes
-    if(Math.random()<0.7) edges.push({s:eid, t:0, type:'hub-known'});
-    if(Math.random()<0.5) edges.push({s:eid, t:1, type:'hub-known'});
+    if(Math.random()<0.6) edges.push({s:eid, t:0, type:'entity-link'});
+    if(Math.random()<0.4) edges.push({s:eid, t:1, type:'entity-link'});
   });
+
+  // --- Peripherals: scattered outside rings, 30 total ---
+  for(let i=0;i<30;i++){
+    const cl = Math.random()<0.6?1:0;
+    const hubX = cl===1?hub1X:hub2X, hubY = cl===1?hub1Y:hub2Y;
+    const angle = Math.random()*Math.PI*2;
+    const dist = 170 + Math.random()*60;
+    nodes.push({id:nodes.length, x:hubX+Math.cos(angle)*dist, y:hubY+Math.sin(angle)*dist, vx:0,vy:0, r:1.5+Math.random()*1.2, label:rAddr(), color:'#374151', type:'peripheral', cluster:cl});
+    const pool=nodes.filter(n=>n.type==='known'||n.type==='sm');
+    const p=pool[Math.floor(Math.random()*pool.length)];
+    edges.push({s:p.id, t:nodes.length-1, type:'peripheral'});
+    if(Math.random()<0.12){const o=pool[Math.floor(Math.random()*pool.length)];if(o.id!==p.id)edges.push({s:o.id, t:nodes.length-1, type:'peripheral'});}
+  }
+
+  // Hub-to-hub edge
   edges.push({s:0, t:1, type:'hub-sm'});
   nodes.forEach(n=>n.conn=0);
   edges.forEach(e=>{nodes[e.s].conn++;nodes[e.t].conn++;});
+
+  // --- Gentle force simulation to add organic feel without destroying layout ---
+  let iteration=0, settled=false;
+  function simulate(){
+    // Weak repulsion
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        let dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+        let d2=dx*dx+dy*dy; if(d2<1)d2=1;
+        let d=Math.sqrt(d2), f=150/d2;
+        let fx=dx/d*f, fy=dy/d*f;
+        if(!nodes[i]._pinned){nodes[i].vx-=fx; nodes[i].vy-=fy;}
+        if(!nodes[j]._pinned){nodes[j].vx+=fx; nodes[j].vy+=fy;}
+      }
+    }
+    // Edge springs — short rest lengths to keep structure tight
+    edges.forEach(e=>{
+      const a=nodes[e.s],b=nodes[e.t];
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      let rest=e.type==='peripheral'?50:e.type==='hub-sm'?smR:e.type==='hub-known'?knownR1*0.9:80;
+      let f=0.015*(d-rest), fx=dx/d*f, fy=dy/d*f;
+      if(!a._pinned){a.vx+=fx;a.vy+=fy;}
+      if(!b._pinned){b.vx-=fx;b.vy-=fy;}
+    });
+    // Cluster gravity — pull nodes toward their hub center
+    nodes.forEach(n=>{
+      if(n.type==='hub') return;
+      const hx = n.cluster===1?hub1X:n.cluster===0?hub2X:CX;
+      const hy = n.cluster===1?hub1Y:n.cluster===0?hub2Y:CY;
+      const grav = n.type==='entity'?0.003:0.008;
+      n.vx+=(hx-n.x)*grav; n.vy+=(hy-n.y)*grav;
+    });
+    // Global center gravity (weak)
+    nodes.forEach(n=>{
+      if(n.type==='hub') return;
+      n.vx+=(CX-n.x)*0.002; n.vy+=(CY-n.y)*0.002;
+    });
+    // Damping + apply
+    nodes.forEach(n=>{
+      if(n.type==='hub'){n.vx=0;n.vy=0;return;} // hubs stay fixed
+      n.vx*=0.92; n.vy*=0.92;
+      n.x+=n.vx; n.y+=n.vy;
+      n.x=Math.max(n.r+8,Math.min(W-n.r-8,n.x));
+      n.y=Math.max(n.r+8,Math.min(H-n.r-8,n.y));
+    });
+    iteration++;
+  }
+
+  let settledPos=[];
+  function draw(time){
+    ctx.clearRect(0,0,W,H);
+    const t=time||0;
+    if(settled && settledPos.length){
+      nodes.forEach((n,i)=>{
+        const sp=settledPos[i];
+        n.x=sp.ox+Math.sin(t*0.0008*sp.sx+sp.px)*sp.ax;
+        n.y=sp.oy+Math.cos(t*0.0006*sp.sy+sp.py)*sp.ay;
+      });
+    }
+    ctx.save();
+    ctx.translate(panX + W/2*(1-zoom), panY + H/2*(1-zoom));
+    ctx.scale(zoom, zoom);
+
+    // --- Cluster zone backgrounds ---
+    // Cluster 1 zone
+    ctx.beginPath();
+    ctx.arc(hub1X, hub1Y, 160, 0, Math.PI*2);
+    ctx.fillStyle='rgba(0,229,160,0.025)';
+    ctx.fill();
+    ctx.strokeStyle='rgba(0,229,160,0.07)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Cluster 0 zone
+    ctx.beginPath();
+    ctx.arc(hub2X, hub2Y, 150, 0, Math.PI*2);
+    ctx.fillStyle='rgba(245,166,35,0.02)';
+    ctx.fill();
+    ctx.strokeStyle='rgba(245,166,35,0.06)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // --- Cluster labels ---
+    ctx.font='bold 9px JetBrains Mono,monospace';
+    ctx.textAlign='center';
+    ctx.fillStyle='rgba(0,229,160,0.35)';
+    ctx.fillText('Cluster #1 — DeFi Whale', hub1X, hub1Y - 170);
+    ctx.fillStyle='rgba(245,166,35,0.35)';
+    ctx.fillText('Cluster #0 — Fund Deployer', hub2X, hub2Y - 160);
+
+    // --- Edges with type-based opacity ---
+    const highlightNode = dragNode || null;
+    edges.forEach(e=>{
+      const a=nodes[e.s],b=nodes[e.t];
+      const isHighlighted = highlightNode && (e.s===highlightNode.id || e.t===highlightNode.id);
+      ctx.beginPath();
+      if(e.type==='hub-sm'){
+        ctx.strokeStyle=isHighlighted?'rgba(0,229,160,0.95)':'rgba(0,229,160,0.5)';ctx.lineWidth=isHighlighted?2.5:1.5;
+        const mx=(a.x+b.x)/2+(a.y-b.y)*0.12,my=(a.y+b.y)/2+(b.x-a.x)*0.12;
+        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
+      } else if(e.type==='hub-known'){
+        ctx.strokeStyle=isHighlighted?'rgba(245,158,11,0.7)':'rgba(245,158,11,0.18)';ctx.lineWidth=isHighlighted?1.8:0.7;
+        const mx=(a.x+b.x)/2+(a.y-b.y)*0.06,my=(a.y+b.y)/2+(b.x-a.x)*0.06;
+        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
+      } else if(e.type==='entity-link'){
+        ctx.strokeStyle=isHighlighted?'rgba(168,85,247,0.7)':'rgba(168,85,247,0.15)';ctx.lineWidth=isHighlighted?1.5:0.6;
+        ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      } else {
+        ctx.strokeStyle=isHighlighted?'rgba(156,163,175,0.5)':'rgba(31,41,55,0.25)';ctx.lineWidth=isHighlighted?0.8:0.3;
+        ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      }
+      ctx.stroke();
+    });
+
+    // --- Nodes ---
+    nodes.forEach(n=>{
+      if(n.type==='hub'){
+        ctx.beginPath();
+        const pulse=1+0.12*Math.sin(t*0.003+(n.cluster===1?0:Math.PI));
+        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.3,n.x,n.y,n.r*3*pulse);
+        grad.addColorStop(0,n.color+'40');grad.addColorStop(1,n.color+'00');
+        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*3*pulse,0,Math.PI*2);ctx.fill();
+      }
+      if(n.type==='sm'){
+        ctx.beginPath();
+        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.3,n.x,n.y,n.r*2);
+        grad.addColorStop(0,'#00E5A020');grad.addColorStop(1,'#00E5A000');
+        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2,0,Math.PI*2);ctx.fill();
+      }
+      if(n.isSquare){
+        // Entity: larger rounded rect
+        const s=n.r*1.4;
+        ctx.fillStyle='#A855F7';
+        ctx.beginPath();ctx.roundRect(n.x-s,n.y-s,s*2,s*2,4);ctx.fill();
+        ctx.strokeStyle='rgba(168,85,247,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+      } else {
+        ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+        if(n.type==='hub'){ctx.fillStyle=n.color;ctx.strokeStyle=n.color+'80';ctx.lineWidth=2;ctx.fill();ctx.stroke();}
+        else if(n.type==='sm'){ctx.fillStyle='#00E5A0';ctx.fill();}
+        else if(n.type==='known'){ctx.fillStyle='#4B5563';ctx.fill();}
+        else{ctx.fillStyle='#2A3040';ctx.globalAlpha=0.6;ctx.fill();ctx.globalAlpha=1;}
+      }
+    });
+
+    // --- Labels ---
+    ctx.textAlign='center';
+    nodes.forEach(n=>{
+      if(n.type==='hub'){
+        ctx.fillStyle='#E5E7EB';ctx.font='bold 10px JetBrains Mono,monospace';
+        ctx.fillText(n.label,n.x,n.y+n.r+16);
+      } else if(n.type==='sm'){
+        ctx.fillStyle='#00E5A0';ctx.font='bold 8px JetBrains Mono,monospace';
+        ctx.fillText(n.label,n.x,n.y+n.r+11);
+      } else if(n.type==='entity'){
+        ctx.fillStyle='#E9D5FF';ctx.font='bold 9px JetBrains Mono,monospace';
+        ctx.fillText(n.label,n.x,n.y+n.r+14);
+      }
+      // known and peripheral labels only on hover (via tooltip)
+    });
+    ctx.restore();
+  }
+
   // Zoom/pan state
   let zoom = 1, panX = 0, panY = 0, dragging = false, dragStartX = 0, dragStartY = 0, dragPanX = 0, dragPanY = 0;
   window.netZoom = function(factor){ zoom *= factor; zoom = Math.max(0.3, Math.min(5, zoom)); draw(); };
   window.netReset = function(){ zoom = 1; panX = 0; panY = 0; draw(); };
-  let dragNode = null; // node being dragged
+  let dragNode = null;
   function screenToWorld(sx, sy){ return { x: (sx - panX - W/2*(1-zoom))/zoom, y: (sy - panY - H/2*(1-zoom))/zoom }; }
   function findNodeAt(sx, sy){ const p=screenToWorld(sx,sy); for(let i=nodes.length-1;i>=0;i--){ const n=nodes[i],dx=p.x-n.x,dy=p.y-n.y; if(dx*dx+dy*dy<Math.max(n.r*n.r*4,100)) return n; } return null; }
   container.addEventListener('wheel', function(ev){ ev.preventDefault(); const f = ev.deltaY > 0 ? 0.9 : 1.1; zoom *= f; zoom = Math.max(0.3, Math.min(5, zoom)); draw(); }, {passive:false});
@@ -998,13 +1189,12 @@ function initNetworkGraph(){
       const rect=canvas.getBoundingClientRect();
       const p=screenToWorld(ev.clientX-rect.left, ev.clientY-rect.top);
       dragNode.x=p.x; dragNode.y=p.y; dragNode.vx=0; dragNode.vy=0;
-      // Update settled position so drift doesn't snap back
       if(settled && settledPos[dragNode.id]){ settledPos[dragNode.id].ox=p.x; settledPos[dragNode.id].oy=p.y; }
       draw();
     } else if(dragging){ panX = dragPanX + (ev.clientX - dragStartX); panY = dragPanY + (ev.clientY - dragStartY); draw(); }
   });
   window.addEventListener('mouseup', function(){ if(dragNode){ dragNode._pinned=false; dragNode=null; } if(dragging){ dragging=false; } container.style.cursor='grab'; });
-  // Touch support for mobile
+  // Touch support
   container.addEventListener('touchstart', function(ev){
     if(ev.touches.length!==1) return;
     const t=ev.touches[0], rect=canvas.getBoundingClientRect();
@@ -1020,116 +1210,15 @@ function initNetworkGraph(){
     else if(dragging){ panX=dragPanX+(t.clientX-dragStartX); panY=dragPanY+(t.clientY-dragStartY); draw(); }
   }, {passive:false});
   container.addEventListener('touchend', function(){ if(dragNode){dragNode._pinned=false;dragNode=null;} dragging=false; });
-  // Force simulation
-  let iteration=0, settled=false;
-  function simulate(){
-    for(let i=0;i<nodes.length;i++){
-      for(let j=i+1;j<nodes.length;j++){
-        let dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
-        let d2=dx*dx+dy*dy; if(d2<1)d2=1;
-        let d=Math.sqrt(d2), f=600/d2;
-        let fx=dx/d*f, fy=dy/d*f;
-        nodes[i].vx-=fx; nodes[i].vy-=fy;
-        nodes[j].vx+=fx; nodes[j].vy+=fy;
-      }
-    }
-    edges.forEach(e=>{
-      const a=nodes[e.s],b=nodes[e.t];
-      let dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-      let rest=e.type==='peripheral'?60:e.type==='hub-known'?90:100;
-      let f=0.03*(d-rest), fx=dx/d*f, fy=dy/d*f;
-      a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
-    });
-    nodes.forEach(n=>{
-      n.vx+=(W/2-n.x)*0.012; n.vy+=(H/2-n.y)*0.012;
-      n.vx*=0.9; n.vy*=0.9;
-      n.x+=n.vx; n.y+=n.vy;
-      n.x=Math.max(n.r+8,Math.min(W-n.r-8,n.x));
-      n.y=Math.max(n.r+8,Math.min(H-n.r-8,n.y));
-    });
-    iteration++;
-  }
-  // Save settled positions for drift
-  let settledPos=[];
-  function draw(time){
-    ctx.clearRect(0,0,W,H);
-    const t=time||0;
-    // Subtle drift after settling
-    if(settled && settledPos.length){
-      nodes.forEach((n,i)=>{
-        const sp=settledPos[i];
-        n.x=sp.ox+Math.sin(t*0.0008*sp.sx+sp.px)*sp.ax;
-        n.y=sp.oy+Math.cos(t*0.0006*sp.sy+sp.py)*sp.ay;
-      });
-    }
-    // Apply zoom/pan transform
-    ctx.save();
-    ctx.translate(panX + W/2*(1-zoom), panY + H/2*(1-zoom));
-    ctx.scale(zoom, zoom);
-    // Edges
-    const highlightNode = dragNode || null;
-    edges.forEach(e=>{
-      const a=nodes[e.s],b=nodes[e.t];
-      const isHighlighted = highlightNode && (e.s===highlightNode.id || e.t===highlightNode.id);
-      ctx.beginPath();
-      if(e.type==='hub-sm'){
-        ctx.strokeStyle=isHighlighted?'rgba(239,68,68,0.95)':'rgba(239,68,68,0.55)';ctx.lineWidth=isHighlighted?2.5:1.5;
-        const mx=(a.x+b.x)/2+(a.y-b.y)*0.15,my=(a.y+b.y)/2+(b.x-a.x)*0.15;
-        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
-      } else if(e.type==='hub-known'){
-        ctx.strokeStyle=isHighlighted?'rgba(245,158,11,0.8)':'rgba(245,158,11,0.25)';ctx.lineWidth=isHighlighted?2:0.8;
-        const mx=(a.x+b.x)/2+(a.y-b.y)*0.08,my=(a.y+b.y)/2+(b.x-a.x)*0.08;
-        ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);
-      } else {
-        ctx.strokeStyle=isHighlighted?'rgba(156,163,175,0.6)':'rgba(31,41,55,0.45)';ctx.lineWidth=isHighlighted?1:0.4;
-        ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
-      }
-      ctx.stroke();
-    });
-    // Nodes
-    nodes.forEach(n=>{
-      if(n.type==='hub'){
-        ctx.beginPath();
-        const pulse=1+0.15*Math.sin(t*0.003+(n.cluster===1?0:Math.PI));
-        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.3,n.x,n.y,n.r*2.8*pulse);
-        grad.addColorStop(0,n.color+'50');grad.addColorStop(1,n.color+'00');
-        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2.8*pulse,0,Math.PI*2);ctx.fill();
-      }
-      if(n.type==='sm'){
-        ctx.beginPath();
-        const grad=ctx.createRadialGradient(n.x,n.y,n.r*0.5,n.x,n.y,n.r*2.2);
-        grad.addColorStop(0,'#00E5A025');grad.addColorStop(1,'#00E5A000');
-        ctx.fillStyle=grad;ctx.arc(n.x,n.y,n.r*2.2,0,Math.PI*2);ctx.fill();
-      }
-      if(n.isSquare){
-        // Entity nodes (exchanges/DEX) as rounded squares
-        const s=n.r*1.6;
-        ctx.fillStyle='#A855F7';
-        ctx.beginPath();ctx.roundRect(n.x-s,n.y-s,s*2,s*2,3);ctx.fill();
-        ctx.strokeStyle='#A855F780';ctx.lineWidth=1;ctx.stroke();
-      } else {
-        ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
-        if(n.type==='hub'){ctx.fillStyle=n.color;ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.fill();ctx.stroke();}
-        else if(n.type==='sm'){ctx.fillStyle='#00E5A0';ctx.fill();}
-        else if(n.type==='known'){ctx.fillStyle='#4B5563';ctx.fill();}
-        else{ctx.fillStyle='#374151';ctx.fill();}
-      }
-    });
-    ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
-    nodes.forEach(n=>{
-      if(n.type==='hub'){ctx.fillStyle='#E5E7EB';ctx.fillText(n.label,n.x,n.y+n.r+14);}
-      else if(n.type==='sm'){ctx.fillStyle='#00E5A0';ctx.font='bold 7px JetBrains Mono,monospace';ctx.fillText(n.label.split(' ')[0],n.x,n.y+n.r+12);ctx.font='9px JetBrains Mono,monospace';}
-      else if(n.type==='entity'){ctx.fillStyle='#E9D5FF';ctx.font='bold 8px JetBrains Mono,monospace';ctx.fillText(n.label,n.x,n.y+n.r+14);ctx.font='9px JetBrains Mono,monospace';}
-    });
-    ctx.restore(); // end zoom/pan transform
-  }
+
+  // Animation loop
   let animFrame=null, running=false;
   function loop(time){
     if(!settled){
-      for(let s=0;s<3;s++) simulate(); // 3 steps per frame for faster convergence
-      if(iteration>=250){
+      for(let s=0;s<2;s++) simulate();
+      if(iteration>=100){
         settled=true;
-        settledPos=nodes.map(n=>({ox:n.x,oy:n.y,px:Math.random()*6.28,py:Math.random()*6.28,sx:0.3+Math.random()*0.5,sy:0.25+Math.random()*0.4,ax:0.4+Math.random()*0.6,ay:0.4+Math.random()*0.6}));
+        settledPos=nodes.map(n=>({ox:n.x,oy:n.y,px:Math.random()*6.28,py:Math.random()*6.28,sx:0.3+Math.random()*0.5,sy:0.25+Math.random()*0.4,ax:0.3+Math.random()*0.5,ay:0.3+Math.random()*0.5}));
       }
     }
     draw(time);
@@ -1142,7 +1231,7 @@ function initNetworkGraph(){
     initialized=true;
     loop(0);
   }
-  // Hover
+  // Hover tooltip
   canvas.addEventListener('mousemove',function(ev){
     const rect=canvas.getBoundingClientRect();
     const rawX=ev.clientX-rect.left, rawY=ev.clientY-rect.top;
@@ -1164,7 +1253,6 @@ function initNetworkGraph(){
     } else { tt.style.display='none';canvas.style.cursor=dragging?'grabbing':'grab'; }
   });
   canvas.addEventListener('mouseleave',function(){tt.style.display='none';});
-  // Start immediately since we're called when tab is visible
   start();
   window.addEventListener('resize',()=>{ if(running) resize(); });
 }
