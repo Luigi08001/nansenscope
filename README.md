@@ -62,7 +62,7 @@
 
 ```bash
 # Clone
-git clone https://github.com/yourusername/nansenscope.git
+git clone https://github.com/Luigi08001/nansenscope.git
 cd nansenscope
 
 # Install dependencies

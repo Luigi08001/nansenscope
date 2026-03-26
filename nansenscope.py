@@ -77,6 +77,10 @@ def build_parser() -> argparse.ArgumentParser:
         "-v", "--verbose", action="store_true",
         help="Enable debug logging",
     )
+    parser.add_argument(
+        "-V", "--version", action="version",
+        version="%(prog)s 0.3.0",
+    )
 
     sub = parser.add_subparsers(dest="command", help="Available commands")
 
