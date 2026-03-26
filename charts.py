@@ -117,13 +117,8 @@ def flow_heatmap(data: dict[str, dict[str, float]]) -> str:
 
 def signal_timeline(signals: list[Signal]) -> str:
     """
-    Generate a timeline chart of signals by severity.
-
-    Args:
-        signals: List of Signal objects with timestamps.
-
-    Returns:
-        Path to saved PNG file.
+    Generate a scatter plot of signals: chain (x) vs score (y), sized by
+    conviction/value. Shows the signal landscape across chains at a glance.
     """
     if not signals:
         log.warning("No signals for timeline")
@@ -131,27 +126,39 @@ def signal_timeline(signals: list[Signal]) -> str:
 
     fig = go.Figure()
 
+    # Jitter x-positions within each chain to avoid overlap
+    import random
+    random.seed(42)
+
+    chain_set = sorted(set(s.chain for s in signals))
+    chain_idx = {c: i for i, c in enumerate(chain_set)}
+
     for severity in [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW]:
         sev_signals = [s for s in signals if s.severity == severity]
         if not sev_signals:
             continue
 
+        x_vals = [chain_idx[s.chain] + random.uniform(-0.3, 0.3) for s in sev_signals]
+
         fig.add_trace(go.Scatter(
-            x=[s.timestamp for s in sev_signals],
+            x=x_vals,
             y=[s.score for s in sev_signals],
             mode="markers+text",
             name=severity.value.upper(),
             marker=dict(
                 color=SEVERITY_COLORS[severity],
-                size=[max(8, s.score / 5) for s in sev_signals],
+                size=[max(12, min(s.score / 3, 40)) for s in sev_signals],
                 opacity=0.8,
-                line=dict(width=1, color="#C9D1D9"),
+                line=dict(width=1, color="rgba(255,255,255,0.3)"),
             ),
-            text=[s.token[:8] for s in sev_signals],
+            text=[s.token[:6] for s in sev_signals],
             textposition="top center",
-            textfont=dict(size=9),
+            textfont=dict(size=9, color="#E0E6ED"),
             hovertext=[
-                f"{s.token} ({s.chain})<br>{s.type}<br>Score: {s.score:.0f}<br>{s.summary[:60]}"
+                f"<b>{s.token}</b> ({s.chain})<br>"
+                f"Type: {s.type}<br>"
+                f"Score: {s.score:.0f}<br>"
+                f"{s.summary[:80]}"
                 for s in sev_signals
             ],
             hoverinfo="text",
@@ -159,13 +166,23 @@ def signal_timeline(signals: list[Signal]) -> str:
 
     fig.update_layout(
         **LAYOUT_DEFAULTS,
-        title=dict(text="Signal Timeline by Severity", font=dict(size=18)),
-        xaxis=dict(title="Time"),
-        yaxis=dict(title="Signal Score", range=[0, 105]),
+        title=dict(
+            text="<b>Signal Fusion</b> — Smart Money Signals Across Chains",
+            font=dict(size=18),
+        ),
+        xaxis=dict(
+            title="Chain",
+            tickvals=list(range(len(chain_set))),
+            ticktext=chain_set,
+            showgrid=True,
+            gridcolor="rgba(150,150,150,0.1)",
+        ),
+        yaxis=dict(title="Signal Score", range=[0, max(s.score for s in signals) * 1.15],
+                    showgrid=True, gridcolor="rgba(150,150,150,0.1)"),
         width=1000,
-        height=500,
+        height=550,
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(size=11)),
     )
 
     return _save_chart(fig, "signal_timeline")
@@ -173,48 +190,74 @@ def signal_timeline(signals: list[Signal]) -> str:
 
 def chain_comparison(data: dict[str, dict[str, Any]]) -> str:
     """
-    Generate a bar chart comparing SM activity across chains.
-
-    Args:
-        data: {chain: {metric: value}} — e.g. signal counts, volumes, etc.
-
-    Returns:
-        Path to saved PNG file.
+    Generate a horizontal bar chart comparing SM signal counts across chains.
+    Only shows chains with data. Clean, readable, competition-grade.
     """
     if not data:
         log.warning("No data for chain comparison")
         return ""
 
-    chains = sorted(data.keys())
-    metrics = set()
-    for chain_data in data.values():
-        metrics.update(chain_data.keys())
-    metrics = sorted(metrics)
+    # Filter to chains with actual signals and sort by total
+    chains_with_data = {c: d for c, d in data.items() if d.get("total_signals", 0) > 0}
+    if not chains_with_data:
+        log.warning("No chains with signals for comparison")
+        return ""
+
+    # Sort by total signals descending
+    sorted_chains = sorted(chains_with_data.keys(),
+                           key=lambda c: chains_with_data[c].get("total_signals", 0))
 
     fig = go.Figure()
 
-    bar_colors = ["#00FF88", "#FF8C00", "#627EEA", "#FFD700", "#FF4444"]
+    # Stacked horizontal bars: HIGH, MEDIUM, CONVERGENCE
+    categories = [
+        ("high", "HIGH Severity", "#FF8C00"),
+        ("medium", "MEDIUM Severity", "#FFD700"),
+        ("convergence", "Convergence", "#00FF88"),
+        ("critical", "CRITICAL", "#FF0000"),
+    ]
 
-    for i, metric in enumerate(metrics[:5]):
-        values = [data.get(chain, {}).get(metric, 0) for chain in chains]
-        fig.add_trace(go.Bar(
-            name=metric.replace("_", " ").title(),
-            x=chains,
-            y=values,
-            marker_color=bar_colors[i % len(bar_colors)],
-            opacity=0.85,
-        ))
+    for key, label, color in categories:
+        values = [chains_with_data.get(c, {}).get(key, 0) for c in sorted_chains]
+        if any(v > 0 for v in values):
+            fig.add_trace(go.Bar(
+                name=label,
+                y=sorted_chains,
+                x=values,
+                orientation="h",
+                marker_color=color,
+                opacity=0.9,
+                text=[str(v) if v > 0 else "" for v in values],
+                textposition="inside",
+                textfont=dict(size=12, color="white"),
+            ))
+
+    # Add total annotations on the right
+    for chain in sorted_chains:
+        total = chains_with_data[chain].get("total_signals", 0)
+        fig.add_annotation(
+            x=total + 0.5, y=chain,
+            text=f"<b>{total}</b>",
+            showarrow=False,
+            font=dict(size=13, color="#C9D1D9"),
+            xanchor="left",
+        )
 
     fig.update_layout(
         **LAYOUT_DEFAULTS,
-        title=dict(text="Smart Money Activity by Chain", font=dict(size=18)),
-        xaxis=dict(title="Chain"),
-        yaxis=dict(title="Count / Volume"),
-        barmode="group",
+        title=dict(
+            text="<b>Chain Sweep</b> — Smart Money Signals by Chain",
+            font=dict(size=18),
+        ),
+        xaxis=dict(title="Signal Count", showgrid=True,
+                    gridcolor="rgba(150,150,150,0.1)"),
+        yaxis=dict(title=""),
+        barmode="stack",
         width=900,
-        height=500,
+        height=max(350, len(sorted_chains) * 60 + 150),
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                    font=dict(size=11)),
     )
 
     return _save_chart(fig, "chain_comparison")
