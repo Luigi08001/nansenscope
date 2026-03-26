@@ -182,6 +182,30 @@ def build_parser() -> argparse.ArgumentParser:
     port_p.add_argument("--chain", "-c", default="ethereum", help="Chain (default: ethereum)")
     port_p.add_argument("--top", type=int, default=20, help="Max tokens to show (default: 20)")
 
+    # ── quote ──
+    quote_p = sub.add_parser("quote", help="Get DEX trade quotes via Nansen")
+    quote_p.add_argument(
+        "--from-token", required=True,
+        help="Source token (symbol like ETH, SOL, or contract address)",
+    )
+    quote_p.add_argument(
+        "--to-token", required=True,
+        help="Destination token (symbol like USDC, or contract address)",
+    )
+    quote_p.add_argument(
+        "--amount", required=True,
+        help="Amount in human-readable token units (e.g. 1.5)",
+    )
+    quote_p.add_argument(
+        "--chain", "-c", default="base",
+        choices=["base", "solana"],
+        help="Chain (default: base). Only base and solana support trade quotes.",
+    )
+    quote_p.add_argument(
+        "--slippage", type=float, default=None,
+        help="Slippage tolerance as decimal (e.g. 0.03 for 3%%)",
+    )
+
     # ── daily ──
     daily_p = sub.add_parser("daily", help="Full daily pipeline: scan -> signals -> alerts -> perps -> charts -> report")
     daily_p.add_argument(
@@ -673,6 +697,124 @@ async def cmd_daily(args: argparse.Namespace):
     console.print(f"\n[bold green]Daily pipeline complete! Report saved:[/bold green] {saved}")
 
 
+async def cmd_quote(args: argparse.Namespace):
+    """Get a DEX trade quote via Nansen."""
+    show_banner()
+
+    from_token = args.from_token
+    to_token = args.to_token
+    amount = args.amount
+    chain = args.chain
+
+    console.print(Panel(
+        f"[bold]DEX Quote[/bold]\n"
+        f"{amount} {from_token} → {to_token} on {chain}",
+        border_style="green",
+    ))
+
+    # Build the nansen trade quote command
+    cmd_args = [
+        "trade", "quote",
+        "--chain", chain,
+        "--from", from_token,
+        "--to", to_token,
+        "--amount", amount,
+        "--amount-unit", "token",
+    ]
+    if args.slippage is not None:
+        cmd_args.extend(["--slippage", str(args.slippage)])
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching quote...", total=None)
+        result = await _run_nansen_quote(cmd_args)
+        progress.update(task, completed=True, description="[green]Quote received")
+
+    if not result.success:
+        console.print(f"\n[red]Error:[/red] {result.error}")
+        _display_api_stats()
+        return
+
+    # Parse and display the quote
+    data = result.data
+
+    if isinstance(data, dict):
+        # Build a nicely formatted output
+        table = Table(title="Quote Details", title_style="bold green", show_lines=True)
+        table.add_column("Field", style="cyan", min_width=20)
+        table.add_column("Value", style="bold", min_width=30)
+
+        # Common fields to extract
+        field_map = [
+            ("Input", "inputAmount", "inAmount", "amountIn"),
+            ("Output (estimated)", "outputAmount", "outAmount", "amountOut", "expectedOutput"),
+            ("Price Impact", "priceImpact", "priceImpactPct"),
+            ("Exchange Rate", "rate", "exchangeRate", "price"),
+            ("Route", "route", "routePlan"),
+            ("Slippage", "slippage", "slippageBps"),
+            ("Min Output", "minOutputAmount", "otherAmountThreshold", "minimumReceived"),
+            ("Fee", "fee", "fees", "platformFee", "networkFee"),
+            ("Gas Estimate", "gas", "gasEstimate", "estimatedGas"),
+        ]
+
+        found_any = False
+        for label, *keys in field_map:
+            for k in keys:
+                val = data.get(k)
+                if val is not None:
+                    found_any = True
+                    # Format route lists nicely
+                    if isinstance(val, list):
+                        if all(isinstance(v, dict) for v in val):
+                            # Route plan — extract DEX names
+                            route_parts = []
+                            for step in val:
+                                dex = step.get("swapInfo", {}).get("label", step.get("label", step.get("ammKey", "")))
+                                if not dex:
+                                    dex = step.get("percent", "")
+                                route_parts.append(str(dex))
+                            val = " → ".join(route_parts) if route_parts else str(val)
+                        else:
+                            val = " → ".join(str(v) for v in val)
+                    elif isinstance(val, (int, float)):
+                        if "impact" in k.lower() or "slippage" in k.lower():
+                            # Display as percentage
+                            if abs(val) < 1:
+                                val = f"{val * 100:.4f}%"
+                            else:
+                                val = f"{val:.4f}%"
+                        elif "bps" in k.lower():
+                            val = f"{val / 100:.2f}%"
+                    table.add_row(label, str(val))
+                    break
+
+        if found_any:
+            console.print(table)
+        else:
+            # Fallback: dump all keys
+            console.print("\n[bold cyan]Raw Quote Data:[/bold cyan]")
+            for k, v in data.items():
+                console.print(f"  [cyan]{k}:[/cyan] {v}")
+
+    elif isinstance(data, str):
+        # Non-JSON output — display as-is in a panel
+        console.print(Panel(data, title="Quote Result", border_style="green"))
+    else:
+        console.print(f"\n{data}")
+
+    _display_api_stats()
+
+
+async def _run_nansen_quote(args: list[str]) -> ScanResult:
+    """Run a nansen trade quote command through the standard runner."""
+    from scanner import _run_nansen
+    return await _run_nansen(args, endpoint="trade/quote")
+
+
 async def cmd_network(args: argparse.Namespace):
     """Wallet network & cluster analysis."""
     from network import NetworkAnalyzer
@@ -1120,6 +1262,7 @@ def main():
         "daily": cmd_daily,
         "portfolio": cmd_portfolio,
         "watch": cmd_watch,
+        "quote": cmd_quote,
     }
 
     handler = commands.get(args.command)
