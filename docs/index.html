@@ -59,7 +59,6 @@ tailwind.config = {
   .stat-item { letter-spacing: 0.02em; }
   pre { tab-size: 2; }
   .ascii-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.02; font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.3; white-space: pre; color: #00E5A0; z-index: 0; }
-
   /* Intel grid background */
   .intel-grid {
     position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
@@ -76,7 +75,6 @@ tailwind.config = {
     background: radial-gradient(ellipse at 50% 0%, rgba(1,255,167,0.04) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(100,117,246,0.03) 0%, transparent 40%);
   }
-
   /* Scanning line animation */
   .scan-line {
     position: fixed; top: 0; left: 0; right: 0; height: 1px; z-index: 0; pointer-events: none;
@@ -84,7 +82,6 @@ tailwind.config = {
     animation: scanDown 8s ease-in-out infinite;
   }
   @keyframes scanDown { 0% { top: -1px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100vh; opacity: 0; } }
-
   /* Corner HUD decorations */
   .hud-corner {
     position: fixed; pointer-events: none; z-index: 1;
@@ -95,7 +92,6 @@ tailwind.config = {
   .hud-tr { top: 16px; right: 16px; text-align: right; }
   .hud-bl { bottom: 16px; left: 16px; }
   .hud-br { bottom: 16px; right: 16px; text-align: right; }
-
   /* Floating data streams */
   .data-stream {
     position: fixed; pointer-events: none; z-index: 0;
@@ -104,13 +100,11 @@ tailwind.config = {
     animation: streamUp 20s linear infinite;
   }
   @keyframes streamUp { 0% { transform: translateY(100vh); } 100% { transform: translateY(-100vh); } }
-
   /* Section divider */
   .intel-divider {
     height: 1px; margin: 0 auto; max-width: 200px;
     background: linear-gradient(90deg, transparent, rgba(1,255,167,0.2), transparent);
   }
-
   /* Live Signal Ticker */
   .ticker-bar {
     position: relative; z-index: 3;
@@ -143,24 +137,16 @@ tailwind.config = {
 </style>
 </head>
 <body class="antialiased">
-
-<!-- Intel Background Elements -->
 <div class="intel-grid"></div>
 <div class="scan-line"></div>
-
-<!-- Corner HUD -->
 <div class="hud-corner hud-tl">SYS:ACTIVE<br>CHAINS:18<br>SCAN:OK</div>
 <div class="hud-corner hud-tr">NANSEN.CLI<br>v1.21.0<br>x402:LIVE</div>
 <div class="hud-corner hud-bl">SM.TRACK<br>NODES:90<br>EDGES:140</div>
 <div class="hud-corner hud-br">ALERT:3<br>SIGNAL:53<br>CONV:2</div>
-
-<!-- Data streams (vertical floating hex data) -->
 <div class="data-stream" style="left:3%;animation-delay:0s">0xA7F2 0xE91B 0x3D4C 0xB8E1 0x6FA3 0x2C7D 0x9E5B 0xD4A8 0x1F3C 0x7B92</div>
 <div class="data-stream" style="left:12%;animation-delay:-7s;animation-duration:25s">0xF4D2 0x8A1E 0x5C7B 0x2E9F 0xA3D6 0x7F1C 0xB5E8 0x4A2D 0x9C6F 0xD1B4</div>
 <div class="data-stream" style="right:8%;animation-delay:-12s;animation-duration:22s">0x3E8A 0xC5F1 0x7D2B 0x1A9E 0xE4C6 0x8B3F 0x6D1A 0xF2E7 0x4C8D 0xA7B5</div>
 <div class="data-stream" style="right:18%;animation-delay:-4s;animation-duration:28s">0xB1D3 0x5F8A 0x2E7C 0x9A4F 0xD6B1 0x3C5E 0x8F2A 0xE1D7 0x6B9C 0x4A3E</div>
-
-<!-- Live Signal Ticker -->
 <div class="ticker-bar">
   <div class="ticker-content">
     <span class="ticker-item green">🟢 UNI +$144M (29 top traders) · ethereum</span><span class="ticker-sep">|</span>
@@ -185,8 +171,6 @@ tailwind.config = {
     <span class="ticker-item green">🟢 BORED +$3.4M (11 top traders) · apechain</span><span class="ticker-sep">|</span>
   </div>
 </div>
-
-<!-- Hero -->
 <section class="relative min-h-screen flex items-center overflow-hidden" style="z-index:2">
   <div class="ascii-bg" aria-hidden="true">╔══════════════════════════════════════════════════════╗
 ║  ███╗   ██╗ █████╗ ███╗   ██╗███████╗███████╗███╗   ██╗  ║
@@ -208,15 +192,7 @@ tailwind.config = {
        │                 │
        └────────┬────────┘
                 ▼
-         CLUSTER #1: 8 wallets
-╔══════════════════════════════════════════════════════╗
-║  ███╗   ██╗ █████╗ ███╗   ██╗███████╗███████╗███╗   ██╗  ║
-║  ████╗  ██║██╔══██╗████╗  ██║██╔════╝██╔════╝████╗  ██║  ║
-║  ██╔██╗ ██║███████║██╔██╗ ██║███████╗█████╗  ██╔██╗ ██║  ║
-║  ██║╚██╗██║██╔══██║██║╚██╗██║╚════██║██╔══╝  ██║╚██╗██║  ║
-║  ██║ ╚████║██║  ██║██║ ╚████║███████║███████╗██║ ╚████║  ║
-║  ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═══╝  ║
-╚══════════════════════════════════════════════════════╝</div>
+         CLUSTER #1: 8 wallets</div>
   <div class="relative z-10 max-w-6xl mx-auto px-6 md:px-12 w-full">
     <div class="max-w-2xl">
       <p class="text-muted font-mono text-sm mb-6 fade-in">v2.0 — Week 2 Submission</p>
@@ -266,8 +242,6 @@ tailwind.config = {
     </svg>
   </div>
 </section>
-
-<!-- Terminal Demo -->
 <section class="py-24 px-6 md:px-12 relative" style="z-index:2">
   <div class="max-w-6xl mx-auto">
     <p class="text-muted text-sm font-mono mb-6 fade-in">LIVE DEMO</p>
@@ -295,13 +269,11 @@ tailwind.config = {
       <!-- Content -->
       <div class="p-6 font-mono text-[13px] leading-relaxed min-h-[420px]" id="term-body">
         <div class="term-content active" data-tab="0"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope scan --chains ethereum,base,solana,apechain</span>
-
 <span class="text-muted">Scanning 4 chains: ethereum, base, solana, apechain</span>
 <span class="text-success">✓</span> ethereum done (11s)
 <span class="text-success">✓</span> base done (7s)
 <span class="text-success">✓</span> solana done (4s)
 <span class="text-success">✓</span> apechain done (3s)
-
 <span class="text-txt font-medium">                    Smart Money Signals</span>
 <span class="text-muted"> #   Sev    Chain      Token    Type              Signal</span>
  <span class="text-txt">1</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">UNI</span>      high_conviction   <span class="text-accent">29 top traders ($144M)</span>
@@ -314,9 +286,7 @@ tailwind.config = {
  <span class="text-txt">8</span>   <span class="text-critical">HIGH</span>   apechain   <span class="text-txt font-medium">BORED</span>    high_conviction   <span class="text-accent">11 top traders ($3.4M)</span>
  <span class="text-txt">9</span>   <span class="text-critical">HIGH</span>   ethereum   <span class="text-txt font-medium">SYRUP</span>    high_conviction   <span class="text-accent">15 top traders ($15M)</span>
 <span class="text-txt">10</span>   <span class="text-critical">HIGH</span>   base       <span class="text-txt font-medium">FACY</span>     high_conviction   <span class="text-accent">16 top traders ($11K)</span>
-
 <span class="text-muted">API calls: 16 | Errors: 0 | Chains: 4</span></pre>
-<!-- Chain Heatmap Visual -->
 <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1A2940">
   <p style="font-size:11px;color:#8895A7;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Chain Signal Heatmap</p>
   <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -346,29 +316,21 @@ tailwind.config = {
     </div>
   </div>
 </div></pre></div>
-
         <div class="term-content" data-tab="1"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope network --address &lt;whale-wallet&gt; --chain ethereum --hops 2</span>
-
 <span class="text-muted">Mapping wallet relationships from seed address...</span>
 <span class="text-success">✓</span> Network built (13s)
-
 <span class="text-txt font-medium">What this means:</span> We traced who funds this whale,
 who they trade with, and which exchanges they use.
-
 <span class="text-txt font-medium">12 wallets found, 2 clusters detected:</span>
-
   <span class="text-accent">Cluster #1 — "DeFi Whale"</span>
     8 wallets controlled by same entity (funded from same source)
     $2.1M total profit · Trades on Uniswap, deposits to Aave
     <span class="text-amber">→ This group bought UNI 3 days before the pump</span>
-
   <span class="text-accent">Cluster #0 — "Fund Deployer"</span>
     4 wallets seeded from one deployer
     $450K total · Moves funds through Coinbase
     <span class="text-amber">→ Fresh wallets accumulating ONDO since last week</span>
-
 <span class="text-success">✓</span> Interactive map: <span class="text-accent">reports/charts/network_map.html</span></pre>
-<!-- Syndicate Hunter: Arkham-style Force-Directed Network Graph -->
 <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1A2940">
   <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Interactive Network Map <span style="color:#4B5563">— scroll to zoom · drag to pan · simulated data</span></p>
   <div style="position:relative;width:100%;height:400px;background:#0C1420;border-radius:8px;overflow:hidden;cursor:grab" id="network-map-container">
@@ -408,15 +370,11 @@ who they trade with, and which exchanges they use.
     </div>
   </div>
 </div></pre></div>
-
         <div class="term-content" data-tab="2"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope perps</span>
-
 <span class="text-txt font-medium">Smart Money Perpetual Trading Intelligence</span>
 <span class="text-muted">Hyperliquid — Real-time SM positions</span>
-
 Positions: <span class="text-txt">50</span> | Volume: <span class="text-txt">$208,111</span> | Traders: <span class="text-txt">5</span>
 L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
-
 <span class="text-txt font-medium">          Top Tokens by Perp Volume</span>
 <span class="text-muted"> Token      Volume      Trades    Long         Short</span>
  <span class="text-txt">xyz:CL</span>     $196,147    11        <span class="text-success">$196,147</span>     $0
@@ -424,11 +382,9 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
  <span class="text-txt">AVAX</span>       $2,146      5         $22          <span class="text-critical">$2,124</span>
  <span class="text-txt">LINK</span>       $1,351      3         $0           <span class="text-critical">$1,351</span>
  <span class="text-txt">AZTEC</span>      $1,194      6         <span class="text-success">$1,194</span>       $0
-
 <span class="text-critical">●</span> SM Short Open: $750 LINK @ $8.98
 <span class="text-critical">●</span> SM Short Open: $614 TAO @ $344.22
 <span class="text-success">●</span> SM Long Open: $196K xyz:CL</pre>
-<!-- Leverage Radar Visual -->
 <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1A2940">
   <p style="font-size:11px;color:#9CA3AF;margin-bottom:10px;font-family:'JetBrains Mono',monospace">Long/Short Ratio</p>
   <div style="display:flex;height:32px;border-radius:6px;overflow:hidden;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">
@@ -444,68 +400,48 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
     <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:999px;padding:4px 12px;font-size:11px;color:#10B981;font-family:'JetBrains Mono',monospace">🟢 AZTEC $1.2K</span>
   </div>
 </div></pre></div>
-
         <div class="term-content" data-tab="3"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope signals --chains ethereum,base,solana --top 5</span>
-
 <span class="text-muted">Analyzing cross-chain convergence...</span>
-
 <span class="text-amber">⚠ CONVERGENCE: <span class="text-txt font-medium">UNI</span></span>
   ethereum: 29 top traders ($144M)
   base: netflow +$2.1M (24h)
   Score: <span class="text-critical">95</span> | <span class="text-critical">CRITICAL</span>
-
 <span class="text-amber">⚠ CONVERGENCE: <span class="text-txt font-medium">ONDO</span></span>
   ethereum: 19 top traders ($87M)
   arbitrum: 4 top traders ($1.2M)
   Score: <span class="text-critical">88</span> | <span class="text-critical">CRITICAL</span>
-
 <span class="text-muted"> #  Score  Token    Chain      Type</span>
  <span class="text-txt">1</span>  <span class="text-critical">95</span>     <span class="text-txt font-medium">UNI</span>      multi      convergence
  <span class="text-txt">2</span>  <span class="text-critical">88</span>     <span class="text-txt font-medium">ONDO</span>     multi      convergence
  <span class="text-txt">3</span>  <span class="text-amber">82</span>     <span class="text-txt font-medium">WLD</span>      ethereum   high_conviction
  <span class="text-txt">4</span>  <span class="text-amber">78</span>     <span class="text-txt font-medium">VIRTUAL</span>  base       high_conviction
  <span class="text-txt">5</span>  <span class="text-amber">75</span>     <span class="text-txt font-medium">JUP</span>      solana     high_conviction</pre></div>
-
         <div class="term-content" data-tab="4"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope alerts --chains ethereum,base,solana</span>
-
 <span class="text-muted">Running 5 alert rules across 3 chains...</span>
-
 <span class="text-critical">🚨 CRITICAL — Whale Accumulation</span>
    UNI: 29 wallets, $144M | Cooldown: 60min
-
 <span class="text-critical">🚨 CRITICAL — Convergence Spike</span>
    ONDO: score 88 &gt; threshold 80 | Cooldown: 30min
-
 <span class="text-amber">⚠ HIGH — Cross-Chain Flow</span>
    WETH: $2.1M netflow | Cooldown: 45min
-
 <span class="text-muted">Alerts: 3 | Rules: 5 | History saved</span></pre></div>
-
         <div class="term-content" data-tab="5"><pre class="whitespace-pre-wrap"><span class="text-muted">$</span> <span class="text-txt">nansenscope daily --chains ethereum,base,solana,apechain,arbitrum,bnb</span>
-
 <span class="text-txt font-medium">Step 1/5:</span> Scanning 5 chains...
   <span class="text-success">✓</span> ethereum <span class="text-success">✓</span> base <span class="text-success">✓</span> solana <span class="text-success">✓</span> arbitrum <span class="text-success">✓</span> bnb
-
 <span class="text-txt font-medium">Step 2/5:</span> Analyzing signals...
   53 signals (2 convergence, 41 high, 10 medium)
-
 <span class="text-txt font-medium">Step 3/5:</span> Running alerts...
   3 alerts (<span class="text-critical">2 critical</span>, <span class="text-amber">1 high</span>)
-
 <span class="text-txt font-medium">Step 4/5:</span> Generating charts...
   <span class="text-success">✓</span> signal_timeline.png
   <span class="text-success">✓</span> chain_comparison.png
-
 <span class="text-txt font-medium">Step 5/5:</span> Building report...
   <span class="text-success">✓</span> reports/daily_2026-03-26.md
-
 <span class="text-muted">API calls: 24 | Errors: 0 | Chains: 5</span></pre></div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- Features -->
 <section class="py-24 px-6 md:px-12 relative" style="z-index:2">
   <div class="max-w-6xl mx-auto">
     <p class="text-muted text-sm font-mono mb-3 fade-in">CAPABILITIES</p>
@@ -560,7 +496,6 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
           </div>
           <div class="p-5 font-mono text-[13px] leading-relaxed min-h-[200px]" id="feature-preview">
             <pre class="whitespace-pre-wrap" id="feat-code"><span class="text-muted">$</span> nansenscope scan --chains ethereum,base,solana
-
 <span class="text-success">✓</span> 3 chains scanned in 22s
 <span class="text-txt">10 HIGH signals detected</span>
 <span class="text-accent">Top: UNI — 29 top traders ($144M)</span></pre>
@@ -570,8 +505,6 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
     </div>
   </div>
 </section>
-
-<!-- Architecture -->
 <section class="py-24 px-6 md:px-12 relative" style="z-index:2">
   <div class="max-w-6xl mx-auto">
     <p class="text-muted text-sm font-mono mb-3 fade-in">ARCHITECTURE</p>
@@ -609,10 +542,6 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
     </div>
   </div>
 </section>
-
-<!-- Comparison section removed -->
-
-<!-- Quick Start -->
 <section class="py-24 px-6 md:px-12 relative" style="z-index:2">
   <div class="max-w-6xl mx-auto">
     <p class="text-muted text-sm font-mono mb-3 fade-in">GET STARTED</p>
@@ -629,15 +558,12 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
       <pre class="p-5 font-mono text-[13px] leading-relaxed overflow-x-auto"><code id="quickstart-code"><span class="text-success">npm install -g nansen-cli</span>
 <span class="text-success">nansen wallet create</span>
 <span class="text-muted"># Fund wallet with USDC on Base</span>
-
 <span class="text-success">git clone https://github.com/Luigi08001/nansenscope</span>
 <span class="text-success">cd nansenscope && pip install -r requirements.txt</span>
 <span class="text-success">python nansenscope.py daily --chains ethereum,base,solana</span></code></pre>
     </div>
   </div>
 </section>
-
-<!-- Footer -->
 <footer class="py-16 px-6 md:px-12 border-t border-border/50">
   <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
     <p class="text-muted text-sm">
@@ -648,9 +574,7 @@ L/S Ratio: <span class="text-success">18.91</span> (strongly bullish)
     </a>
   </div>
 </footer>
-
 <script>
-// Terminal tabs
 document.getElementById('term-tabs').addEventListener('click', (e) => {
   const btn = e.target.closest('.term-tab');
   if (!btn) return;
@@ -670,8 +594,6 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
     setTimeout(initNetworkGraph, 100);
   }
 });
-
-// Feature list
 const featCodes = [
   `<span class="text-muted">$</span> nansenscope scan --chains ethereum,base,solana\n\n<span class="text-success">✓</span> 3 chains scanned in 22s\n<span class="text-txt">10 HIGH signals detected</span>\n<span class="text-accent">Top: UNI — 29 top traders ($144M)</span>`,
   `<span class="text-muted">$</span> nansenscope network --address 0xa5d2...fecf\n\n<span class="text-success">✓</span> 12 nodes, 11 edges\n<span class="text-txt">2 clusters detected</span>\n<span class="text-accent">Hub: 0xa5d2...fecf (7 connections)</span>`,
@@ -683,7 +605,6 @@ const featCodes = [
   `<span class="text-muted">$</span> nansenscope profiler --address 0xa5d2...fecf\n\n<span class="text-txt">Holdings: 14 tokens ($2.1M)</span>\n<span class="text-txt">Labels: Smart Money, DeFi Whale</span>\n<span class="text-accent">PnL: +$340K (30d)</span>`,
   `<span class="text-muted">$</span> nansenscope quote --token UNI --amount 10000\n\n<span class="text-txt">Best route: Uniswap V3</span>\n<span class="text-txt">Price impact: 0.02%</span>\n<span class="text-accent">Est. output: 892.4 UNI</span>`,
 ];
-
 document.getElementById('feature-list').addEventListener('click', (e) => {
   const item = e.target.closest('.feature-item');
   if (!item) return;
@@ -698,14 +619,10 @@ document.getElementById('feature-list').addEventListener('mouseover', (e) => {
   item.classList.add('active');
   document.getElementById('feat-code').innerHTML = featCodes[item.dataset.feat];
 });
-
-// Scroll fade-in
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
-
-// Force-Directed Network Graph (Arkham-style)
 var _networkInitialized = false;
 function initNetworkGraph(){
   if(_networkInitialized) return;
@@ -719,7 +636,6 @@ function initNetworkGraph(){
   const dpr = window.devicePixelRatio || 1;
   let W = container.offsetWidth || 900, H = 400;
   let initialized = false;
-
   function resize(){
     const rect = container.getBoundingClientRect();
     if(rect.width > 10 && rect.height > 10){
@@ -735,9 +651,7 @@ function initNetworkGraph(){
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-
   function rAddr(){ return '0x'+Array.from({length:4},()=>Math.floor(Math.random()*65536).toString(16).padStart(4,'0')).join('').slice(0,4)+'...'+Math.floor(Math.random()*65536).toString(16).padStart(4,'0'); }
-
   const nodes = [];
   const edges = [];
   const CX = W/2, CY = H/2;
@@ -747,12 +661,12 @@ function initNetworkGraph(){
   nodes.push({id:1, x:CX+80+(Math.random()-0.5)*20, y:CY+(Math.random()-0.5)*20, vx:0, vy:0, r:12, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets — likely same entity'});
   // 6 "Smart Money" nodes — labeled by what they actually DO
   const smLabels = [
-    {name:'Early DEX Buyer', detail:'Bought UNI pre-listing, $340K profit'},
-    {name:'Yield Farmer', detail:'$1.2M in Aave/Compound, auto-compounds'},
-    {name:'NFT Flipper', detail:'Top 0.1% NFT trader, $890K lifetime PnL'},
-    {name:'MEV Searcher', detail:'120 arbitrage txns/day, $45K weekly'},
-    {name:'DAO Treasury', detail:'Holds governance tokens across 8 DAOs'},
-    {name:'Accumulator', detail:'DCA buying ETH+SOL for 18 months straight'}
+    {name:'DEX Buyer', detail:'$340K profit'},
+    {name:'Yield Farmer', detail:'$1.2M deposited'},
+    {name:'NFT Flipper', detail:'$890K PnL'},
+    {name:'MEV Searcher', detail:'$45K/week'},
+    {name:'DAO Treasury', detail:'8 DAOs'},
+    {name:'Accumulator', detail:'18mo DCA'}
   ];
   for(let i=0;i<6;i++){
     const cl=i<4?1:0, hub=cl===1?0:1;
@@ -760,7 +674,7 @@ function initNetworkGraph(){
     edges.push({s:hub, t:nodes.length-1, type:'hub-sm'});
   }
   // 20 known wallets — with descriptive labels
-  const knownLabels=['LP Provider','Staker','Bridge User','Token Holder','Airdrop Hunter','Multisig Signer','Funder Wallet','Trader Bot','OTC Desk','Mixer Output','Cold Storage','Hot Wallet','Governance Voter','Rewards Claimer','Liquidator','Flash Loan User','Relayer','Gas Sponsor','Deployer','Contract Admin'];
+  const knownLabels=['LP','Staker','Bridge','Holder','Hunter','Signer','Funder','Bot','OTC','Mixer','Cold','Hot','Voter','Claimer','Liquidator','Flash','Relayer','Gas','Deployer','Admin'];
   for(let i=0;i<20;i++){
     const cl=i<12?1:0, hub=cl===1?0:1;
     nodes.push({id:nodes.length, x:CX+(Math.random()-0.5)*200, y:CY+(Math.random()-0.5)*150, vx:0, vy:0, r:4+Math.random(), label:knownLabels[i], color:'#4B5563', type:'known', cluster:cl, detail:'Linked via on-chain transfers'});
@@ -802,7 +716,6 @@ function initNetworkGraph(){
   edges.push({s:0, t:1, type:'hub-sm'});
   nodes.forEach(n=>n.conn=0);
   edges.forEach(e=>{nodes[e.s].conn++;nodes[e.t].conn++;});
-
   // Zoom/pan state
   let zoom = 1, panX = 0, panY = 0, dragging = false, dragStartX = 0, dragStartY = 0, dragPanX = 0, dragPanY = 0;
   window.netZoom = function(factor){ zoom *= factor; zoom = Math.max(0.3, Math.min(5, zoom)); draw(); };
@@ -845,7 +758,6 @@ function initNetworkGraph(){
     else if(dragging){ panX=dragPanX+(t.clientX-dragStartX); panY=dragPanY+(t.clientY-dragStartY); draw(); }
   }, {passive:false});
   container.addEventListener('touchend', function(){ if(dragNode){dragNode._pinned=false;dragNode=null;} dragging=false; });
-
   // Force simulation
   let iteration=0, settled=false;
   function simulate(){
@@ -875,7 +787,6 @@ function initNetworkGraph(){
     });
     iteration++;
   }
-
   // Save settled positions for drift
   let settledPos=[];
   function draw(time){
@@ -950,7 +861,6 @@ function initNetworkGraph(){
     });
     ctx.restore(); // end zoom/pan transform
   }
-
   let animFrame=null, running=false;
   function loop(time){
     if(!settled){
@@ -963,7 +873,6 @@ function initNetworkGraph(){
     draw(time);
     animFrame=requestAnimationFrame(loop);
   }
-
   function start(){
     if(running) return;
     running=true;
@@ -971,7 +880,6 @@ function initNetworkGraph(){
     initialized=true;
     loop(0);
   }
-
   // Hover
   canvas.addEventListener('mousemove',function(ev){
     const rect=canvas.getBoundingClientRect();
@@ -994,13 +902,41 @@ function initNetworkGraph(){
     } else { tt.style.display='none';canvas.style.cursor=dragging?'grabbing':'grab'; }
   });
   canvas.addEventListener('mouseleave',function(){tt.style.display='none';});
-
   // Start immediately since we're called when tab is visible
   start();
   window.addEventListener('resize',()=>{ if(running) resize(); });
 }
-
-// Copy
+(function(){
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function animateCounter(el, target, duration){
+    if(target === 0){ el.textContent = '0'; return; }
+    let start = null;
+    const step = (ts) => {
+      if(!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      el.textContent = Math.floor(easeOutCubic(progress) * target);
+      if(progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const statsBar = document.getElementById('stats-bar');
+  if(statsBar){
+    let fired = false;
+    const counterObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting && !fired){
+          fired = true;
+          document.querySelectorAll('.counter').forEach(el => {
+            const target = parseInt(el.dataset.target, 10);
+            animateCounter(el, target, 1500);
+          });
+          counterObs.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    counterObs.observe(statsBar);
+  }
+})();
 function copyCode(btn) {
   const code = `npm install -g nansen-cli\nnansen wallet create\n# Fund wallet with USDC on Base\n\ngit clone https://github.com/Luigi08001/nansenscope\ncd nansenscope && pip install -r requirements.txt\npython nansenscope.py daily --chains ethereum,base,solana`;
   navigator.clipboard.writeText(code).then(() => {
