@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)]()
 [![Nansen CLI](https://img.shields.io/badge/nansen--cli-v1.21.0-green.svg)]()
-[![Commands](https://img.shields.io/badge/commands-19-orange.svg)]()
+[![Commands](https://img.shields.io/badge/commands-18-orange.svg)]()
 [![Chains](https://img.shields.io/badge/chains-18-purple.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)]()
 
@@ -37,7 +37,7 @@ $ nansenscope daily --chains ethereum,base,solana,apechain
 
 ## Features
 
-### 19 Commands
+### 18 Commands
 
 | Command | What it does |
 |---|---|
@@ -95,7 +95,7 @@ skill/                  OpenClaw Agent Skill
 
 - **6,300+ lines of Python**
 - **18 chains** supported (ethereum, solana, base, apechain, arbitrum, bnb, polygon, optimism, avalanche, linea, scroll, mantle, ronin, sei, plasma, sonic, monad, hyperevm, iotaevm)
-- **19 CLI commands**
+- **18 CLI commands**
 - **6 signal detectors** + convergence engine
 - **5 alert rules** with persistent cooldowns
 - **x402 micropayment** — no API key needed
