@@ -8,9 +8,10 @@
 [![Nansen CLI](https://img.shields.io/badge/nansen--cli-v1.21.0-green.svg)]()
 [![Commands](https://img.shields.io/badge/commands-18-orange.svg)]()
 [![Chains](https://img.shields.io/badge/chains-18-purple.svg)]()
+[![Tests](https://img.shields.io/badge/tests-10%20passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)]()
 
-[Live Demo](https://luigi08001.github.io/nansenscope/) · [Architecture](#architecture) · [Quick Start](#quick-start)
+[Live Demo](https://luigi08001.github.io/nansenscope/) · [Architecture](#architecture) · [Quick Start](#quick-start) · [Example Reports](examples/)
 
 ---
 
@@ -21,7 +22,7 @@ NansenScope is a CLI-powered intelligence platform that turns Nansen's raw block
 **One command. Full intelligence pipeline.**
 
 ```bash
-$ nansenscope daily --chains ethereum,base,solana,apechain
+$ nansenscope daily --chains ethereum,base,solana,arbitrum,bnb
 ```
 
 ## Why NansenScope?
@@ -93,12 +94,13 @@ skill/                  OpenClaw Agent Skill
 
 ### Stats
 
-- **6,300+ lines of Python**
-- **18 chains** supported (ethereum, solana, base, apechain, arbitrum, bnb, polygon, optimism, avalanche, linea, scroll, mantle, ronin, sei, plasma, sonic, monad, hyperevm, iotaevm)
+- **7,300+ lines of Python** (+ tests)
+- **18 chains** supported (ethereum, solana, base, arbitrum, bnb, polygon, optimism, avalanche, linea, scroll, mantle, ronin, sei, plasma, sonic, monad, hyperevm, iotaevm)
 - **18 CLI commands**
-- **6 signal detectors** + convergence engine
+- **5 signal detectors** + convergence engine
 - **5 alert rules** with persistent cooldowns
-- **x402 micropayment** — no API key needed
+- **10 unit tests** (config + signal engine)
+- **x402 micropayment** — no API key needed, pay per call with USDC on Base
 
 ## Quick Start
 
@@ -136,25 +138,28 @@ NansenScope will continue gracefully and still produce a report, but signal qual
 
 ## Example Output
 
-### Scan (real data)
+### Scan (real data — March 27, 2026)
 ```
-$ nansenscope scan --chains ethereum,base,solana
+$ nansenscope scan --chains ethereum,base
 
-Scanning 3 chains: ethereum, base, solana
-✓ ethereum done (11s)
-✓ base done (7s)
-✓ solana done (4s)
+Scanning 2 chains: ethereum, base
+✓ ethereum done (8s)
+✓ base done (4s)
 
                     Smart Money Signals
  #   Sev   Chain      Token    Type              Signal
- 1   HIGH  ethereum   UNI      high_conviction   29 top traders ($144M)
- 2   HIGH  ethereum   WLD      high_conviction   22 top traders ($60M)
- 3   HIGH  ethereum   ONDO     high_conviction   19 top traders ($87M)
- 4   HIGH  base       VIRTUAL  high_conviction   27 top traders ($757K)
- 5   HIGH  solana     JUP      high_conviction   19 top traders ($2.7M)
+ 1   HIGH  ethereum   UNI      high_conviction   29 SM wallets ($137.8M)
+ 2   HIGH  ethereum   WLD      high_conviction   22 SM wallets ($50.3M)
+ 3   HIGH  ethereum   ONDO     high_conviction   19 SM wallets ($91.7M)
+ 4   HIGH  ethereum   AMPL     high_conviction   17 SM wallets ($8.1M)
+ 5   HIGH  ethereum   ENA      high_conviction   17 SM wallets ($15.8M)
+ 6   HIGH  base       VIRTUAL  high_conviction   27 SM wallets ($715K)
+ 7   HIGH  base       AERO     high_conviction   7 SM wallets ($907K)
 
-API calls: 12 | Errors: 0 | Chains: 3
+API calls: 10 | Errors: 0 | Endpoints hit: 5
 ```
+
+> See [examples/](examples/) for full reports and charts from live scans.
 
 ### Watch Mode (continuous monitoring)
 ```
@@ -185,6 +190,21 @@ $ nansenscope perps
 
 Positions: 50 | Volume: $208,111 | Traders: 5
 L/S Ratio: 18.91 (strongly bullish)
+```
+
+## Verifiability
+
+Every API call is paid via **x402 micropayments** (USDC on Base), creating an on-chain audit trail:
+
+- **Wallet**: [`0x695CD56C13b088F26A99027A89d7aa8A242084F6`](https://basescan.org/address/0x695CD56C13b088F26A99027A89d7aa8A242084F6)
+- **Each API call** = a USDC microtransaction on Base
+- **Anyone** can verify call count via Basescan token transfers
+- **Signal data** comes directly from Nansen's labeled smart money datasets — run the same scan, get the same results
+- **Reports are reproducible** — `nansenscope daily` generates the same report structure from live data
+
+```
+# Verify API usage on-chain
+https://basescan.org/address/0x695CD56C13b088F26A99027A89d7aa8A242084F6#tokentxns
 ```
 
 ## OpenClaw Integration
@@ -224,6 +244,14 @@ Key thresholds in `config.py`:
 ## License
 
 MIT
+
+---
+
+## Sample Charts
+
+| Signal Timeline | Chain Comparison |
+|---|---|
+| ![Signal Timeline](examples/signal_timeline.png) | ![Chain Comparison](examples/chain_comparison.png) |
 
 ---
 
