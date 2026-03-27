@@ -117,76 +117,89 @@ def flow_heatmap(data: dict[str, dict[str, float]]) -> str:
 
 def signal_timeline(signals: list[Signal]) -> str:
     """
-    Generate a scatter plot of signals: chain (x) vs score (y), sized by
-    conviction/value. Shows the signal landscape across chains at a glance.
+    Generate a horizontal bar chart of top signals ranked by conviction
+    (wallet count extracted from summary). Clean, readable layout.
     """
     if not signals:
         log.warning("No signals for timeline")
         return ""
 
+    import re
+
     fig = go.Figure()
 
-    # Jitter x-positions within each chain to avoid overlap
-    import random
-    random.seed(42)
+    # Extract wallet count from summary for sizing, sort descending
+    def _extract_wallets(s):
+        m = re.search(r"(\d+)\s*smart money wallet", s.summary)
+        return int(m.group(1)) if m else 0
 
-    chain_set = sorted(set(s.chain for s in signals))
-    chain_idx = {c: i for i, c in enumerate(chain_set)}
+    def _extract_usd(s):
+        m = re.search(r"\$([0-9,]+)", s.summary)
+        return float(m.group(1).replace(",", "")) if m else 0
 
-    for severity in [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW]:
-        sev_signals = [s for s in signals if s.severity == severity]
-        if not sev_signals:
-            continue
+    # Sort by wallet count descending, take top 15
+    ranked = sorted(signals, key=_extract_wallets, reverse=True)[:15]
+    ranked.reverse()  # bottom-to-top for horizontal bars
 
-        x_vals = [chain_idx[s.chain] + random.uniform(-0.3, 0.3) for s in sev_signals]
+    chain_colors = {
+        "ethereum": "#627EEA",
+        "base": "#0052FF",
+        "solana": "#9945FF",
+        "arbitrum": "#28A0F0",
+        "bnb": "#F0B90B",
+        "polygon": "#8247E5",
+        "optimism": "#FF0420",
+        "avalanche": "#E84142",
+    }
 
-        fig.add_trace(go.Scatter(
-            x=x_vals,
-            y=[s.score for s in sev_signals],
-            mode="markers+text",
-            name=severity.value.upper(),
-            marker=dict(
-                color=SEVERITY_COLORS[severity],
-                size=[max(12, min(s.score / 3, 40)) for s in sev_signals],
-                opacity=0.8,
-                line=dict(width=1, color="rgba(255,255,255,0.3)"),
-            ),
-            text=[s.token[:6] if s.score >= sorted([x.score for x in signals], reverse=True)[min(7, len(signals)-1)] else "" 
-                 for s in sev_signals],
-            textposition="top center",
-            textfont=dict(size=10, color="#E0E6ED"),
-            hovertext=[
-                f"<b>{s.token}</b> ({s.chain})<br>"
-                f"Type: {s.type}<br>"
-                f"Score: {s.score:.0f}<br>"
-                f"{s.summary[:80]}"
-                for s in sev_signals
-            ],
-            hoverinfo="text",
-        ))
+    tokens = [f"{s.token} ({s.chain})" for s in ranked]
+    wallets = [_extract_wallets(s) for s in ranked]
+    colors = [chain_colors.get(s.chain, "#4ECDC4") for s in ranked]
+    usd_vals = [_extract_usd(s) for s in ranked]
+
+    fig.add_trace(go.Bar(
+        y=tokens,
+        x=wallets,
+        orientation="h",
+        marker=dict(
+            color=colors,
+            line=dict(width=0),
+            opacity=0.9,
+        ),
+        text=[f"  {w} wallets — ${u:,.0f}" for w, u in zip(wallets, usd_vals)],
+        textposition="inside",
+        insidetextanchor="end",
+        textfont=dict(size=11, color="#E0E6ED"),
+        hovertext=[
+            f"<b>{s.token}</b> ({s.chain})<br>"
+            f"Wallets: {_extract_wallets(s)}<br>"
+            f"Score: {s.score:.0f}<br>"
+            f"{s.summary[:80]}"
+            for s in ranked
+        ],
+        hoverinfo="text",
+    ))
 
     fig.update_layout(
         **LAYOUT_DEFAULTS,
         title=dict(
-            text="<b>Signal Fusion</b> — Smart Money Signals Across Chains",
+            text="<b>Signal Fusion</b> — Top Smart Money Signals by Conviction",
             font=dict(size=18),
         ),
         xaxis=dict(
-            title="Chain",
-            tickvals=list(range(len(chain_set))),
-            ticktext=chain_set,
+            title="Smart Money Wallets",
             showgrid=True,
-            gridcolor="rgba(150,150,150,0.1)",
+            gridcolor="rgba(150,150,150,0.15)",
         ),
-        yaxis=dict(title="Signal Score",
-                    range=[max(0, min(s.score for s in signals) * 0.85),
-                           max(s.score for s in signals) * 1.1],
-                    showgrid=True, gridcolor="rgba(150,150,150,0.1)"),
+        yaxis=dict(
+            showgrid=False,
+            tickfont=dict(size=12),
+        ),
         width=1100,
-        height=600,
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(size=11)),
+        height=max(400, len(ranked) * 38 + 120),
+        showlegend=False,
     )
+    fig.update_layout(margin=dict(l=160, r=160, t=80, b=60))
 
     return _save_chart(fig, "signal_timeline")
 
