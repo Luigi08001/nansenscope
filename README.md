@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)]()
 [![Nansen CLI](https://img.shields.io/badge/nansen--cli-v1.21.0-green.svg)]()
-[![Commands](https://img.shields.io/badge/commands-13-orange.svg)]()
+[![Commands](https://img.shields.io/badge/commands-19-orange.svg)]()
 [![Chains](https://img.shields.io/badge/chains-18-purple.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)]()
 
@@ -37,23 +37,29 @@ $ nansenscope daily --chains ethereum,base,solana,apechain
 
 ## Features
 
-### 13 Commands
+### 19 Commands
 
 | Command | What it does |
 |---|---|
 | `scan` | Multi-chain smart money scanning. 18 chains, parallel async |
-| `signals` | Cross-chain convergence detection. Score & rank |
-| `alerts` | 5 built-in rules, cooldown engine, persistent history |
-| `charts` | Plotly dark charts. Timeline + chain heatmap |
-| `daily` | Full pipeline: scan → signals → alerts → charts → report |
-| `network` | Wallet graph analysis via BFS. Clusters, centrality |
-| `perps` | Hyperliquid perpetual positions. L/S ratios, SM traders |
-| `profile` | Wallet deep dive. Holdings, labels |
-| `portfolio` | Full portfolio analysis — holdings, labels, PnL breakdown |
-| `watch` | Continuous monitoring — re-scans every N minutes, alerts on NEW signals |
-| `quote` | DEX trade quotes via Nansen |
-| `history` | Signal trend detection — find tokens appearing repeatedly over time |
+| `profile` | Wallet deep dive (labels, holdings, behavior) |
+| `signals` | Detect + rank signals from scan output |
 | `report` | Generate full intelligence report from scan data |
+| `alerts` | Rule-based alerting with cooldown + history |
+| `charts` | Plotly visualizations (timeline, heatmap, ranking views) |
+| `network` | Wallet graph analysis via BFS (clusters + centrality) |
+| `perps` | Hyperliquid perp intelligence (L/S ratio + consensus) |
+| `watch` | Continuous monitoring loop, alerts only on NEW signals |
+| `portfolio` | Portfolio breakdown (holdings, labels, PnL) |
+| `quote` | DEX quote lookup via Nansen |
+| `daily` | Full pipeline: scan → signals → alerts → charts → report |
+| `analyze` | Nansen AI narrative synthesis from scan context |
+| `exit-signals` | Detect possible smart money distribution/dumps |
+| `defi` | DeFi positions analysis for a wallet |
+| `search` | Search tokens/entities across Nansen datasets |
+| `history` | Signal history persistence + trend analysis |
+| `prediction` | Prediction-market intelligence (Polymarket) |
+| `--version` | Print CLI version |
 
 ### Signal Detection Engine
 
@@ -87,10 +93,10 @@ skill/                  OpenClaw Agent Skill
 
 ### Stats
 
-- **5,500+ lines of Python**
+- **6,300+ lines of Python**
 - **18 chains** supported (ethereum, solana, base, apechain, arbitrum, bnb, polygon, optimism, avalanche, linea, scroll, mantle, ronin, sei, plasma, sonic, monad, hyperevm, iotaevm)
-- **13 CLI commands**
-- **5 signal detectors** + convergence engine
+- **19 CLI commands**
+- **6 signal detectors** + convergence engine
 - **5 alert rules** with persistent cooldowns
 - **x402 micropayment** — no API key needed
 
@@ -116,6 +122,17 @@ python nansenscope.py daily --chains ethereum,base,solana
 # 6. Start continuous monitoring
 python nansenscope.py watch --chains ethereum,base,solana --interval 5
 ```
+
+## Troubleshooting
+
+### "Payment required" warnings
+If you see warnings like `Payment required for smart-money/...` during `scan`:
+
+1. Confirm wallet exists: `nansen wallet list`
+2. Fund wallet with **USDC on Base**
+3. Retry with a single chain first: `python nansenscope.py scan --chains ethereum`
+
+NansenScope will continue gracefully and still produce a report, but signal quality drops when paid endpoints are unavailable.
 
 ## Example Output
 
