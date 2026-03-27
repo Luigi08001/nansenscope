@@ -1,0 +1,14 @@
+{
+  "name": "nansenscope-video-remotion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "remotion render src/index.jsx NansenScopeProduct ../docs/demo_v2_remotion.mp4 --codec=h264"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.366",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.366"
+  }
+}

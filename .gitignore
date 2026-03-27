@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 reports/
 .env
+video-v2/node_modules/
+video-remotion/node_modules/
+video-v2/out/
+video-remotion/out/
+*.mp4
+!docs/demo_web.mp4

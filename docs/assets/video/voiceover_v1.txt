@@ -1,0 +1,6 @@
+NansenScope is a complete smart money intelligence workflow, built for fast onchain decision making.
+In one command, we scan multi chain activity and detect high conviction signals from tracked smart money wallets.
+Then we go deeper with perps pressure and exit signals, so we can see both momentum and distribution risk.
+Every run is saved and rendered into a visual dashboard, turning raw CLI output into actionable context.
+With portfolio and DeFi analysis, we can pivot from token level moves to wallet level exposure in seconds.
+NansenScope turns noisy onchain data into an execution ready loop: detect, verify, and monitor.

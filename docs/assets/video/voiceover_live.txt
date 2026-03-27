@@ -1,0 +1,6 @@
+NansenScope is a complete smart money intelligence workflow designed for fast onchain decisions.
+This is a real live recording of the product in action.
+We scan multiple chains, surface high conviction wallet signals, and rank what matters first.
+Then we move to market context with perps and exit signals to track both momentum and risk.
+Every run is transformed into a visual dashboard so analysis is clear, fast, and shareable.
+NansenScope turns noisy blockchain data into an execution ready loop: detect, verify, and monitor.
