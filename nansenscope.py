@@ -19,6 +19,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+log = logging.getLogger(__name__)
+
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.panel import Panel
@@ -773,7 +775,7 @@ async def ask_nansen_agent(prompt: str, mode: str = "fast") -> str | None:
     if mode == "expert":
         cmd_args.append("--expert")
 
-    result = await _run_nansen(cmd_args=cmd_args, endpoint="agent")
+    result = await _run_nansen(args=cmd_args, endpoint="agent")
 
     if not result.success:
         log.warning("Nansen agent call failed: %s", result.error)
