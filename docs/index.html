@@ -51,7 +51,7 @@ tailwind.config = {
   .feature-item:hover, .feature-item.active { border-color: #00E5A0; background: rgba(1,255,167,0.03); }
   .feature-item.active .feat-name { color: #00E5A0; }
   .pipeline-step { position: relative; }
-  .pipeline-line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, #1A2940, #00E5A0, #1A2940); background-size: 200% 100%; animation: pulseLine 3s ease infinite; z-index: 0; }
+  .pipeline-line { position: absolute; top: 50%; left: 65px; right: 65px; height: 1px; background: linear-gradient(90deg, #1A2940, #00E5A0, #1A2940); background-size: 200% 100%; animation: pulseLine 3s ease infinite; z-index: 0; }
   @keyframes pulseLine { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
   .typed-cursor { display: inline-block; width: 8px; height: 18px; background: #00E5A0; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
@@ -165,7 +165,7 @@ tailwind.config = {
   }
 
   /* 3. Architecture data flow dots */
-  .pipeline-wrapper { position: relative; }
+  .pipeline-wrapper { position: relative; overflow: hidden; }
   .data-dot {
     position: absolute;
     top: 50%;
