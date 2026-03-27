@@ -141,6 +141,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", "-o", type=str, default=None,
         help="Save report to file (default: reports/scan_YYYY-MM-DD.md)",
     )
+    scan_p.add_argument(
+        "--dashboard", action="store_true", default=False,
+        help="Open interactive dashboard in browser after scan",
+    )
 
     # ── profile ──
     prof_p = sub.add_parser("profile", help="Deep-dive a wallet address")
@@ -500,6 +504,15 @@ async def cmd_report(args: argparse.Namespace):
 
     _display_api_stats()
     console.print(f"\n[bold green]Full report saved:[/bold green] {saved}")
+
+    # Open interactive dashboard if requested
+    if getattr(args, "dashboard", False):
+        try:
+            from dashboard import generate_dashboard
+            dash_path = generate_dashboard(auto_open=True)
+            console.print(f"[bold cyan]Dashboard opened:[/bold cyan] {dash_path}")
+        except Exception as e:
+            log.warning("Dashboard generation failed: %s", e)
 
 
 async def cmd_alerts(args: argparse.Namespace):
@@ -1019,6 +1032,14 @@ async def cmd_daily(args: argparse.Namespace):
 
     _display_api_stats()
     console.print(f"\n[bold green]Daily pipeline complete! Report saved:[/bold green] {saved}")
+
+    # Generate and open interactive dashboard
+    try:
+        from dashboard import generate_dashboard
+        dash_path = generate_dashboard(auto_open=True)
+        console.print(f"[bold cyan]Dashboard opened:[/bold cyan] {dash_path}")
+    except Exception as e:
+        log.warning("Dashboard generation failed: %s", e)
 
 
 async def cmd_exit_signals(args: argparse.Namespace):
