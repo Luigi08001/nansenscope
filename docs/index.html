@@ -869,15 +869,21 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
   document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
-  // Switch dashboard tab in iframe
+  // Switch dashboard tab in iframe to match terminal tab
   const dashFrame = document.getElementById('dashboard-frame');
-  if (dashFrame && dashFrame.contentWindow) {
+  if (dashFrame) {
     const tabMap = {'0':'signals','1':'network','2':'signals','3':'charts','4':'signals','5':'signals','6':'signals','7':'signals','8':'signals'};
     const dashTab = tabMap[tab] || 'signals';
     try {
-      const tabBtn = dashFrame.contentDocument.querySelector(`.tab[onclick*="${dashTab}"]`);
-      if (tabBtn) tabBtn.click();
-    } catch(e) { /* cross-origin fallback */ }
+      const dw = dashFrame.contentWindow;
+      if (dw && typeof dw.showTab === 'function') {
+        const tabBtn = dashFrame.contentDocument.querySelector('.tab.active');
+        dw.showTab(dashTab, tabBtn || dashFrame.contentDocument.querySelector('.tab'));
+      }
+    } catch(e) {
+      // Fallback: reload iframe with hash
+      dashFrame.src = 'dashboard.html#' + dashTab;
+    }
   }
   // Update feature description
   const desc = btn.dataset.desc || '';
