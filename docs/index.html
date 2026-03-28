@@ -866,31 +866,56 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
 
         <!-- Tab 5: Morning Brief -->
         <div class="visual-panel" data-tab="5">
+          <!-- Pipeline progress -->
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:8px">Daily Intelligence Pipeline</div>
+          <div style="display:flex;gap:0;margin-bottom:16px" id="vp-pipeline-steps">
+            <div class="vp-step" data-delay="0" style="flex:1;text-align:center;padding:8px 4px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-right:none;border-radius:6px 0 0 6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7;transition:all 0.5s ease">scan</div>
+            <div class="vp-step" data-delay="400" style="flex:1;text-align:center;padding:8px 4px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-right:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7;transition:all 0.5s ease">signals</div>
+            <div class="vp-step" data-delay="800" style="flex:1;text-align:center;padding:8px 4px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-right:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7;transition:all 0.5s ease">alerts</div>
+            <div class="vp-step" data-delay="1200" style="flex:1;text-align:center;padding:8px 4px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-right:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7;transition:all 0.5s ease">charts</div>
+            <div class="vp-step" data-delay="1600" style="flex:1;text-align:center;padding:8px 4px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:0 6px 6px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7;transition:all 0.5s ease">report</div>
+          </div>
+          <!-- Key findings summary -->
           <div class="vp-stat-grid">
-            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="53">0</div><div class="vp-stat-label">Signals</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="20">0</div><div class="vp-stat-label">Signals</div></div>
             <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="5">0</div><div class="vp-stat-label">Chains</div></div>
             <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="3">0</div><div class="vp-stat-label">Alerts</div></div>
-            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="2">0</div><div class="vp-stat-label">Charts</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="26">0</div><div class="vp-stat-label">API Calls</div></div>
           </div>
-          <div class="vp-pipeline">
-            <span>scan</span><span style="color:#1A2940">→</span><span>signals</span><span style="color:#1A2940">→</span><span>alerts</span><span style="color:#1A2940">→</span><span>charts</span><span style="color:#1A2940">→</span><span>report</span>
+          <!-- Top 3 findings -->
+          <div class="vp-card" style="padding:0;overflow:hidden;margin-top:4px">
+            <div style="padding:10px 16px;border-bottom:1px solid rgba(26,41,64,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7">Key Findings</div>
+            <div class="vp-signal-row" style="transition-delay:0.8s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="95"></div><span style="color:#E5484D;font-weight:700;min-width:50px;z-index:1">CRIT</span><span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">UNI</span><span style="color:#8895A7;flex:1;z-index:1">convergence: ETH + Base</span><span style="color:#00E5A0;z-index:1">$144M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.9s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="88"></div><span style="color:#E5484D;font-weight:700;min-width:50px;z-index:1">CRIT</span><span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">ONDO</span><span style="color:#8895A7;flex:1;z-index:1">convergence: ETH + Arbitrum</span><span style="color:#00E5A0;z-index:1">$87M</span></div>
+            <div class="vp-signal-row" style="transition-delay:1.0s;border-bottom:none;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="82"></div><span style="color:#F5A623;font-weight:700;min-width:50px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">WLD</span><span style="color:#8895A7;flex:1;z-index:1">22 SM wallets accumulating</span><span style="color:#00E5A0;z-index:1">$60M</span></div>
           </div>
-          <div class="vp-pipeline-bar"><div class="vp-pipeline-fill"></div></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-            <div class="vp-card"><img src="signal_timeline.png" alt="Signal Timeline" loading="lazy"></div>
-            <div class="vp-card"><img src="chain_comparison.png" alt="Chain Comparison" loading="lazy"></div>
-          </div>
+          <div style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;text-align:center;opacity:0.6">Report saved: reports/daily_2026-03-27.md · Dashboard opened in browser</div>
         </div>
 
         <!-- Tab 6: Watch Mode -->
         <div class="visual-panel" data-tab="6">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-            <span class="vp-pulse-dot"></span>
-            <span class="vp-watch-status">MONITORING ACTIVE</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="vp-pulse-dot"></span>
+              <span class="vp-watch-status">MONITORING ACTIVE</span>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7">interval: 5min · chains: ethereum, base</div>
           </div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8895A7;margin-bottom:8px" id="vp-watch-cycle">Cycle <span data-cycle>1</span> — scanning...</div>
-          <div class="vp-watch-notification" id="vp-watch-notif">
-            <span style="color:#00E5A0;font-weight:700">NEW:</span> VIRTUAL on base — 28 SM wallets
+          <!-- Cycle log that updates -->
+          <div class="vp-card" style="padding:0;overflow:hidden;max-height:280px">
+            <div style="padding:10px 16px;border-bottom:1px solid rgba(26,41,64,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;display:flex;justify-content:space-between">
+              <span>Live Monitoring Log</span>
+              <span id="vp-watch-cycle">Cycle <span data-cycle>1</span></span>
+            </div>
+            <div id="vp-watch-log" style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 0">
+              <div class="vp-signal-row" style="transition-delay:0.2s"><span style="color:#8895A7;min-width:70px">14:23:05</span><span style="color:#E8ECF2;flex:1">Scanned 2 chains | 15 total signals | <span style="color:#00E5A0;font-weight:600">15 NEW</span></span></div>
+              <div class="vp-signal-row" style="transition-delay:0.6s"><span style="color:#8895A7;min-width:70px">14:28:07</span><span style="color:#E8ECF2;flex:1">Scanned 2 chains | 16 total signals | <span style="color:#00E5A0;font-weight:600">1 NEW</span></span></div>
+              <div class="vp-signal-row" style="transition-delay:1.0s"><span style="color:#8895A7;min-width:70px"></span><span style="color:#00E5A0;flex:1;font-weight:600">  → NEW: VIRTUAL on base — 28 SM wallets ($812K)</span></div>
+              <div class="vp-signal-row" style="transition-delay:1.4s"><span style="color:#8895A7;min-width:70px">14:33:09</span><span style="color:#E8ECF2;flex:1">Scanned 2 chains | 16 total signals | 0 NEW</span></div>
+              <div class="vp-signal-row" style="transition-delay:1.8s"><span style="color:#8895A7;min-width:70px">14:38:11</span><span style="color:#E8ECF2;flex:1">Scanned 2 chains | 18 total signals | <span style="color:#00E5A0;font-weight:600">2 NEW</span></span></div>
+              <div class="vp-signal-row" style="transition-delay:2.2s"><span style="color:#8895A7;min-width:70px"></span><span style="color:#00E5A0;flex:1;font-weight:600">  → NEW: MORPHO on base — 14 SM wallets ($2.1M)</span></div>
+              <div class="vp-signal-row" style="transition-delay:2.6s;border-bottom:none"><span style="color:#8895A7;min-width:70px"></span><span style="color:#F5A623;flex:1;font-weight:600">  → ALERT: UNI convergence score 95 — notified</span></div>
+            </div>
           </div>
         </div>
 
@@ -1160,6 +1185,18 @@ function activateVisualPanel(tab) {
   animateCounters(panel);
   animateBars(panel);
   if (tab === '6') startWatchAnimation(panel);
+  // Morning Brief pipeline step animation
+  if (tab === '5') {
+    const steps = panel.querySelectorAll('.vp-step');
+    steps.forEach(s => { s.style.background = 'rgba(26,41,64,0.3)'; s.style.color = '#8895A7'; s.style.borderColor = '#1A2940'; });
+    steps.forEach((s, i) => {
+      setTimeout(() => {
+        s.style.background = 'rgba(0,229,160,0.15)';
+        s.style.color = '#00E5A0';
+        s.style.borderColor = 'rgba(0,229,160,0.3)';
+      }, parseInt(s.dataset.delay || i * 400));
+    });
+  }
 }
 
 document.getElementById('term-tabs').addEventListener('click', (e) => {
