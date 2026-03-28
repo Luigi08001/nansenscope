@@ -8,6 +8,7 @@
 [![Nansen CLI](https://img.shields.io/badge/nansen--cli-v1.21.0-green.svg)]()
 [![Commands](https://img.shields.io/badge/commands-18-orange.svg)]()
 [![Chains](https://img.shields.io/badge/chains-18-purple.svg)]()
+[![Tests](https://github.com/Luigi08001/nansenscope/actions/workflows/test.yml/badge.svg)](https://github.com/Luigi08001/nansenscope/actions)
 [![Tests](https://img.shields.io/badge/tests-10%20passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)]()
 
@@ -247,11 +248,11 @@ MIT
 
 ---
 
-## Sample Charts
+## Screenshots
 
-| Signal Timeline | Chain Comparison |
-|---|---|
-| ![Signal Timeline](examples/signal_timeline.png) | ![Chain Comparison](examples/chain_comparison.png) |
+| Terminal Scan | Signal Fusion | Chain Sweep |
+|---|---|---|
+| ![Terminal](screenshots/terminal_scan.png) | ![Signals](screenshots/signal_timeline.png) | ![Chains](screenshots/chain_comparison.png) |
 
 ---
 
