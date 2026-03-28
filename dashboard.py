@@ -719,7 +719,8 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             <div class="header-left">
                 <h1><span class="accent">Nansen</span>Scope <span class="dim">Dashboard</span></h1>
                 <div class="header-meta">
-                    <span class="green">SCAN COMPLETE</span> &mdash; {timestamp} &mdash; Chains: {chains_str}
+                    <span class="green">$</span> nansenscope daily --chains {chains_str}<br>
+                    <span class="green">SCAN COMPLETE</span> &mdash; {timestamp}
                 </div>
             </div>
             <div class="header-right">
@@ -1015,8 +1016,9 @@ def generate_dashboard(auto_open: bool = True) -> Path:
         var CX = W / 2, CY = H / 2;
 
         /* Hub nodes */
-        var hub1X = CX - 120, hub1Y = CY;
-        var hub2X = CX + 120, hub2Y = CY;
+        var scale = Math.min(W, H) / 600;
+        var hub1X = CX - Math.min(W * 0.25, 250), hub1Y = CY;
+        var hub2X = CX + Math.min(W * 0.25, 250), hub2Y = CY;
         nodes.push({{id:0, x:hub1X, y:hub1Y, vx:0, vy:0, r:16, label:'DeFi Whale #1', color:'#00E5A0', type:'hub', cluster:1, detail:'Accumulated $2.1M across 47 tokens'}});
         nodes.push({{id:1, x:hub2X, y:hub2Y, vx:0, vy:0, r:14, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets'}});
 
@@ -1029,7 +1031,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             {{name:'DAO Treasury', detail:'8 DAOs', cl:0}},
             {{name:'Accumulator', detail:'18mo DCA', cl:0}}
         ];
-        var smR = 80;
+        var smR = Math.max(80, Math.min(H, W) * 0.15);
         var sm1 = smLabels.filter(function(s){{return s.cl===1;}});
         var sm0 = smLabels.filter(function(s){{return s.cl===0;}});
 
@@ -1046,7 +1048,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
 
         /* Known wallets ring */
         var knownLabels = ['LP Provider','Staker','Bridge User','Holder','Hunter','Multi-Sig','Funder','Bot Wallet','OTC Desk','Mixer','Cold Storage','Hot Wallet','DAO Voter','Claimer','Liquidator','Flash Loan','Relayer','Gas Funder','Deployer','Admin Key'];
-        var knownR1 = 150, knownR0 = 140;
+        var knownR1 = Math.max(150, Math.min(H, W) * 0.25), knownR0 = knownR1 * 0.93;
         var known1 = knownLabels.slice(0, 12), known0 = knownLabels.slice(12);
 
         known1.forEach(function(lbl, i) {{
@@ -1069,10 +1071,11 @@ def generate_dashboard(auto_open: bool = True) -> Path:
         }});
 
         /* Entity nodes (exchanges/DEXs) */
+        var entDist = Math.max(200, Math.min(H, W) * 0.35);
         var entityData = [
-            {{label:'Binance', angle:-Math.PI/2, dist:200}},
-            {{label:'Coinbase', angle:Math.PI*0.15, dist:210}},
-            {{label:'Uniswap V3', angle:Math.PI*0.65, dist:195}},
+            {{label:'Binance', angle:-Math.PI/2, dist:entDist}},
+            {{label:'Coinbase', angle:Math.PI*0.15, dist:entDist*1.05}},
+            {{label:'Uniswap V3', angle:Math.PI*0.65, dist:entDist*0.97}},
             {{label:'Aave', angle:Math.PI*0.85, dist:205}},
             {{label:'Lido', angle:-Math.PI*0.25, dist:205}}
         ];
@@ -1182,7 +1185,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
 
             /* Cluster zone backgrounds */
             ctx.beginPath();
-            ctx.arc(hub1X, hub1Y, 170, 0, Math.PI * 2);
+            ctx.arc(hub1X, hub1Y, knownR1 * 1.3, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(0,229,160,0.025)';
             ctx.fill();
             ctx.strokeStyle = 'rgba(0,229,160,0.07)';
@@ -1192,7 +1195,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             ctx.setLineDash([]);
 
             ctx.beginPath();
-            ctx.arc(hub2X, hub2Y, 160, 0, Math.PI * 2);
+            ctx.arc(hub2X, hub2Y, knownR0 * 1.3, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(245,166,35,0.02)';
             ctx.fill();
             ctx.strokeStyle = 'rgba(245,166,35,0.06)';
