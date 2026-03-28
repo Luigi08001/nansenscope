@@ -80,6 +80,83 @@ def _build_signal_rows(signals: list) -> str:
     return rows
 
 
+def _build_chart_signal_bars(signals: list) -> str:
+    """Build horizontal signal bars ranked by wallet count."""
+    import re
+    
+    def _wallets(s):
+        m = re.search(r'(\d+)\s*(?:smart money wallet|SM wallet|top trader)', s.get('summary', ''))
+        return int(m.group(1)) if m else 0
+    
+    def _usd(s):
+        m = re.search(r'\$([0-9,]+)', s.get('summary', ''))
+        return float(m.group(1).replace(',', '')) if m else 0
+    
+    ranked = sorted(signals, key=_wallets, reverse=True)[:12]
+    max_w = max((_wallets(s) for s in ranked), default=1)
+    
+    chain_colors = {
+        "ethereum": "#627EEA", "base": "#0052FF", "solana": "#9945FF",
+        "arbitrum": "#28A0F0", "bnb": "#F0B90B",
+    }
+    
+    rows = ""
+    for i, s in enumerate(ranked):
+        w = _wallets(s)
+        usd = _usd(s)
+        pct = (w / max_w * 100) if max_w else 0
+        color = chain_colors.get(s.get('chain', ''), '#4ECDC4')
+        delay = 0.1 + i * 0.05
+        rows += f"""
+        <div class="signal-row" style="transition-delay:{delay}s;position:relative;overflow:hidden;padding:10px 14px">
+            <div class="vp-row-bar" data-width="{pct:.0f}"></div>
+            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">{s.get('token','')} ({s.get('chain','')})</span>
+            <span style="color:#8895A7;flex:1;z-index:1">{w} wallets</span>
+            <span style="color:#00E5A0;font-weight:600;z-index:1">${usd:,.0f}</span>
+        </div>"""
+    return rows
+
+
+def _build_chain_bars(signals: list) -> str:
+    """Build animated chain comparison bars."""
+    import re
+    
+    chain_data = {}
+    for s in signals:
+        chain = s.get('chain', '')
+        if chain not in chain_data:
+            chain_data[chain] = {'count': 0, 'usd': 0}
+        chain_data[chain]['count'] += 1
+        m = re.search(r'\$([0-9,]+)', s.get('summary', ''))
+        if m:
+            chain_data[chain]['usd'] += float(m.group(1).replace(',', ''))
+    
+    if not chain_data:
+        return ""
+    
+    max_usd = max((d['usd'] for d in chain_data.values()), default=1)
+    chain_colors = {
+        "ethereum": "#627EEA", "base": "#0052FF", "solana": "#9945FF",
+        "arbitrum": "#28A0F0", "bnb": "#F0B90B",
+    }
+    
+    sorted_chains = sorted(chain_data.keys(), key=lambda c: chain_data[c]['usd'], reverse=True)
+    
+    bars = ""
+    for i, chain in enumerate(sorted_chains):
+        d = chain_data[chain]
+        pct = (d['usd'] / max_usd * 98) if max_usd else 0
+        color = chain_colors.get(chain, '#4ECDC4')
+        bars += f"""
+        <div style="display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:12px">
+            <span style="color:#E8ECF2;min-width:80px;font-weight:600">{chain.upper()}</span>
+            <div style="flex:1;height:28px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:4px;overflow:hidden;position:relative">
+                <div class="vp-bar-fill" data-width="{pct:.0f}" style="background:{color};height:100%;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#E8ECF2;font-weight:500;transition:width 1s ease {0.2+i*0.15}s">${d['usd']:,.0f} · {d['count']} signals</div>
+            </div>
+        </div>"""
+    return bars
+
+
 def _build_chain_cards(results: dict) -> str:
     chain_summary = results.get("chain_summary", [])
     cards = ""
@@ -721,10 +798,13 @@ def generate_dashboard(auto_open: bool = True) -> Path:
 
             <!-- TAB: Charts -->
             <div id="tab-charts" class="tab-content">
-                {"<div class='charts-grid'><div class='chart-card'><h3>Signal Fusion &mdash; Top Signals by Conviction</h3><img src='" + timeline_b64 + "'></div></div>" if timeline_b64 else "<div class='no-data'>No signal timeline chart found.<br>Run <code>nansenscope charts</code> to generate.</div>"}
-                <div class="charts-2col" style="margin-top: 20px;">
-                    {"<div class='chart-card'><h3>Chain Comparison</h3><img src='" + comparison_b64 + "'></div>" if comparison_b64 else ""}
-                    {"<div class='chart-card'><h3>Syndicate Bubble Map</h3><img src='" + bubble_b64 + "'></div>" if bubble_b64 else ""}
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:12px">Signal Fusion &mdash; Top Signals by Conviction</div>
+                <div class="table-wrap" style="margin-bottom:20px">
+                    {_build_chart_signal_bars(signals)}
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:12px">Chain Sweep &mdash; Smart Money Value by Chain</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    {_build_chain_bars(signals)}
                 </div>
             </div>
 

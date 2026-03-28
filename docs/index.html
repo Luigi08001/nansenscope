@@ -1287,8 +1287,8 @@ function initNetworkGraph(){
   const CX = W/2, CY = H/2;
 
   // --- Hub nodes at center, offset ---
-  const hub1X = CX - 110, hub1Y = CY;
-  const hub2X = CX + 110, hub2Y = CY;
+  const hub1X = CX - Math.min(W*0.22, 180), hub1Y = CY;
+  const hub2X = CX + Math.min(W*0.22, 180), hub2Y = CY;
   nodes.push({id:0, x:hub1X, y:hub1Y, vx:0, vy:0, r:16, label:'DeFi Whale #1', color:'#00E5A0', type:'hub', cluster:1, detail:'Accumulated $2.1M across 47 tokens in 3 years'});
   nodes.push({id:1, x:hub2X, y:hub2Y, vx:0, vy:0, r:14, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets — likely same entity'});
 
