@@ -47,9 +47,80 @@ tailwind.config = {
   .term-tab.active { color: #E8ECF2; border-color: #00E5A0; }
   .term-content { display: none; }
   .term-content.active { display: block; }
-  .visual-panel { display: none; animation: fadeInPanel 0.4s ease; }
+  .visual-panel { display: none; }
   .visual-panel.active { display: block; }
-  @keyframes fadeInPanel { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  /* --- Visual Panel Animations --- */
+  .vp-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .vp-stat-box { background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 10px; padding: 16px; text-align: center; opacity: 0; transform: translateY(15px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .visual-panel.animate .vp-stat-box { opacity: 1; transform: translateY(0); }
+  .visual-panel.animate .vp-stat-box:nth-child(1) { transition-delay: 0s; }
+  .visual-panel.animate .vp-stat-box:nth-child(2) { transition-delay: 0.08s; }
+  .visual-panel.animate .vp-stat-box:nth-child(3) { transition-delay: 0.16s; }
+  .visual-panel.animate .vp-stat-box:nth-child(4) { transition-delay: 0.24s; }
+  .vp-stat-val { font-family: 'Satoshi', sans-serif; font-size: 28px; font-weight: 800; color: #00E5A0; line-height: 1; }
+  .vp-stat-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8895A7; margin-top: 6px; }
+  .vp-card { background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 10px; padding: 16px; margin-top: 12px; }
+  .vp-card img { width: 100%; border-radius: 8px; opacity: 0; transform: scale(0.97); transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s; }
+  .visual-panel.animate .vp-card img { opacity: 1; transform: scale(1); }
+  .vp-signal-row { opacity: 0; transform: translateX(-20px); transition: opacity 0.4s ease, transform 0.4s ease; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(26,41,64,0.5); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .visual-panel.animate .vp-signal-row { opacity: 1; transform: translateX(0); }
+  .vp-hint-bar { text-align: center; padding: 10px 16px; background: rgba(26,41,64,0.2); border: 1px solid #1A2940; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8895A7; margin-top: 12px; }
+  .vp-hint-bar span { color: #00E5A0; }
+  /* Bar animations */
+  .vp-bar-track { background: rgba(26,41,64,0.4); border-radius: 6px; height: 28px; overflow: hidden; position: relative; margin-bottom: 8px; }
+  .vp-bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; width: 0; transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+  .visual-panel.animate .vp-bar-fill { /* width set via style */ }
+  .vp-bar-label { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8895A7; }
+  /* Alert cards */
+  .vp-alert { opacity: 0; transform: translateX(-30px); transition: opacity 0.5s ease, transform 0.5s ease; padding: 14px 18px; border-radius: 10px; background: rgba(26,41,64,0.3); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+  .visual-panel.animate .vp-alert { opacity: 1; transform: translateX(0); }
+  .vp-alert.high { border-left: 3px solid #F5A623; }
+  .vp-alert.medium { border-left: 3px solid #FCD34D; }
+  .vp-alert-sev { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .vp-alert.high .vp-alert-sev { color: #F5A623; }
+  .vp-alert.medium .vp-alert-sev { color: #FCD34D; }
+  .vp-alert-msg { font-size: 13px; color: #E8ECF2; }
+  /* Chain pills */
+  .vp-chain-pill { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease 0.4s, transform 0.5s ease 0.4s; }
+  .visual-panel.animate .vp-chain-pill { opacity: 1; transform: translateY(0); }
+  .visual-panel.animate .vp-chain-pill:nth-child(2) { transition-delay: 0.55s; }
+  .vp-chain-pill-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E8ECF2; min-width: 90px; }
+  .vp-chain-pill-bar { flex: 1; height: 8px; background: rgba(26,41,64,0.5); border-radius: 4px; overflow: hidden; }
+  .vp-chain-pill-fill { height: 100%; border-radius: 4px; width: 0; transition: width 1s cubic-bezier(0.22, 1, 0.36, 1) 0.6s; }
+  .visual-panel.animate .vp-chain-pill-fill { /* width set inline */ }
+  .vp-chain-pill-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8895A7; min-width: 60px; text-align: right; }
+  /* Pipeline progress */
+  .vp-pipeline { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8895A7; margin: 12px 0; }
+  .vp-pipeline-bar { flex: 1; height: 6px; background: rgba(26,41,64,0.5); border-radius: 3px; overflow: hidden; }
+  .vp-pipeline-fill { height: 100%; width: 0; background: linear-gradient(90deg, #00E5A0, #7C6CF0); border-radius: 3px; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s; }
+  .visual-panel.animate .vp-pipeline-fill { width: 100%; }
+  /* Watch mode pulse */
+  .vp-pulse-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #00E5A0; box-shadow: 0 0 8px rgba(0,229,160,0.6); }
+  .visual-panel.animate .vp-pulse-dot { animation: watchPulse 2s ease-in-out infinite; }
+  .vp-watch-status { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #00E5A0; font-weight: 600; }
+  .vp-watch-notification { opacity: 0; transform: translateY(15px); transition: opacity 0.5s ease, transform 0.5s ease; padding: 12px 16px; background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.2); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #00E5A0; margin-top: 12px; }
+  .vp-watch-notification.show { opacity: 1; transform: translateY(0); }
+  /* Portfolio bars */
+  .vp-portfolio-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; opacity: 0; transform: translateX(-15px); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .visual-panel.animate .vp-portfolio-row { opacity: 1; transform: translateX(0); }
+  .vp-portfolio-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E8ECF2; min-width: 50px; }
+  .vp-portfolio-track { flex: 1; height: 24px; background: rgba(26,41,64,0.4); border-radius: 6px; overflow: hidden; }
+  .vp-portfolio-fill { height: 100%; border-radius: 6px; width: 0; transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; padding-left: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+  .vp-portfolio-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8895A7; min-width: 40px; text-align: right; }
+  .vp-pnl { font-family: 'Satoshi', sans-serif; font-size: 24px; font-weight: 800; color: #00E5A0; text-align: center; margin-top: 16px; opacity: 0; transform: scale(0.9); transition: opacity 0.6s ease 0.5s, transform 0.6s ease 0.5s; }
+  .visual-panel.animate .vp-pnl { opacity: 1; transform: scale(1); }
+  /* Quote card */
+  .vp-quote-card { background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 12px; padding: 24px; max-width: 420px; margin: 0 auto; opacity: 0; transform: translateY(15px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .visual-panel.animate .vp-quote-card { opacity: 1; transform: translateY(0); }
+  .vp-quote-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(26,41,64,0.5); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .vp-quote-row:last-child { border-bottom: none; }
+  .vp-quote-label { color: #8895A7; }
+  .vp-quote-val { color: #E8ECF2; font-weight: 600; }
+  .vp-quote-val.accent { color: #00E5A0; }
+  .vp-quote-val.green { color: #10B981; }
+  @media (max-width: 640px) {
+    .vp-stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @keyframes watchPulse { 0%,100% { box-shadow: 0 0 6px rgba(0,229,160,0.4); } 50% { box-shadow: 0 0 18px rgba(0,229,160,0.8); } }
   .watch-pulse { animation: watchPulse 2s ease-in-out infinite; }
   .feature-item { border-left: 2px solid transparent; padding-left: 20px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
@@ -692,14 +763,157 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
  <span class="text-muted">Min Output:</span>    <span class="text-txt">5,081.69 USDC</span>
  <span class="text-muted">Gas Estimate:</span>  <span class="text-success">~$0.12</span></pre></div>
       </div>
-      <!-- Visual Dashboard Renders -->
-      <!-- Live Dashboard -->
-      <div id="dashboard-embed" style="border-top:1px solid #1A2940; position:relative;">
-        <div style="padding:12px 20px; display:flex; justify-content:space-between; align-items:center; background:rgba(26,41,64,0.2);">
-          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#00E5A0;">LIVE DASHBOARD — Generated from scan results</span>
-          <a href="dashboard.html" target="_blank" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#8895A7; text-decoration:none; padding:4px 12px; border:1px solid #1A2940; border-radius:4px;">↗ Open Full Screen</a>
+      <!-- Visual Panels (inline, animated per tab) -->
+      <div id="visual-panels" style="border-top:1px solid #1A2940; padding: 20px 24px;">
+
+        <!-- Tab 0: Chain Sweep -->
+        <div class="visual-panel active" data-tab="0">
+          <div class="vp-stat-grid">
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="20">0</div><div class="vp-stat-label">Signals</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="5">0</div><div class="vp-stat-label">Chains</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="0">0</div><div class="vp-stat-label">Errors</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="328" data-prefix="$" data-suffix="M">0</div><div class="vp-stat-label">Value</div></div>
+          </div>
+          <div class="vp-card" style="padding:0;overflow:hidden;max-height:350px">
+            <div style="padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;border-bottom:1px solid rgba(26,41,64,0.5)">Signal Overview</div>
+            <div class="vp-signal-row" style="transition-delay:0.15s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">UNI</span><span style="color:#8895A7;flex:1">29 SM wallets</span><span style="color:#00E5A0">$144M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.2s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">WLD</span><span style="color:#8895A7;flex:1">22 SM wallets</span><span style="color:#00E5A0">$60M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.25s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">ONDO</span><span style="color:#8895A7;flex:1">19 SM wallets</span><span style="color:#00E5A0">$87M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.3s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">VIRTUAL</span><span style="color:#8895A7;flex:1">27 SM wallets</span><span style="color:#00E5A0">$757K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.35s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">JUP</span><span style="color:#8895A7;flex:1">19 SM wallets</span><span style="color:#00E5A0">$2.7M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.4s;border-bottom:none"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">APE</span><span style="color:#8895A7;flex:1">14 SM wallets</span><span style="color:#00E5A0">$8.2M</span></div>
+          </div>
+          <div class="vp-card"><img src="signal_timeline.png" alt="Signal Timeline" loading="lazy"></div>
         </div>
-        <iframe id="dashboard-frame" src="dashboard.html" style="width:100%;height:650px;border:none;background:#060B14;" loading="lazy"></iframe>
+
+        <!-- Tab 1: Syndicate Hunter -->
+        <div class="visual-panel" data-tab="1">
+          <div class="vp-hint-bar"><span>Drag nodes</span> · Scroll to zoom · Hover for details</div>
+        </div>
+
+        <!-- Tab 2: Leverage Radar -->
+        <div class="visual-panel" data-tab="2">
+          <div class="vp-stat-grid">
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="50">0</div><div class="vp-stat-label">Positions</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="208" data-prefix="$" data-suffix="K">0</div><div class="vp-stat-label">Volume</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="18" data-suffix=".91x" data-decimals="0">0</div><div class="vp-stat-label">L/S Ratio</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" style="color:#10B981">BULLISH</div><div class="vp-stat-label">Sentiment</div></div>
+          </div>
+          <div style="margin-top:8px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:8px">Long / Short Ratio</div>
+            <div class="vp-bar-track" style="height:32px;display:flex;overflow:hidden;border-radius:6px">
+              <div class="vp-bar-fill" data-width="94.7" style="background:#10B981;color:#050508;min-width:0;border-radius:6px 0 0 6px">LONG 94.7%</div>
+              <div class="vp-bar-fill" data-width="5.3" style="background:#EF4444;color:#fff;font-size:11px;justify-content:flex-end;padding-right:8px;min-width:0;border-radius:0 6px 6px 0">5.3%</div>
+            </div>
+          </div>
+          <div class="vp-card" style="margin-top:12px;padding:0;max-height:200px;overflow-y:auto">
+            <div style="padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;border-bottom:1px solid rgba(26,41,64,0.5)">Top Positions</div>
+            <div class="vp-signal-row" style="transition-delay:0.3s"><span style="color:#10B981;min-width:16px">●</span><span style="color:#E8ECF2;min-width:65px">xyz:CL</span><span style="color:#8895A7;flex:1">Long</span><span style="color:#00E5A0">$196K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.35s"><span style="color:#EF4444;min-width:16px">●</span><span style="color:#E8ECF2;min-width:65px">TAO</span><span style="color:#8895A7;flex:1">Short</span><span style="color:#EF4444">$6.2K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.4s"><span style="color:#EF4444;min-width:16px">●</span><span style="color:#E8ECF2;min-width:65px">AVAX</span><span style="color:#8895A7;flex:1">Short</span><span style="color:#EF4444">$2.1K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.45s"><span style="color:#EF4444;min-width:16px">●</span><span style="color:#E8ECF2;min-width:65px">LINK</span><span style="color:#8895A7;flex:1">Short</span><span style="color:#EF4444">$1.3K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.5s;border-bottom:none"><span style="color:#10B981;min-width:16px">●</span><span style="color:#E8ECF2;min-width:65px">AZTEC</span><span style="color:#8895A7;flex:1">Long</span><span style="color:#00E5A0">$1.2K</span></div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Signal Fusion -->
+        <div class="visual-panel" data-tab="3">
+          <div class="vp-card"><img src="chain_comparison.png" alt="Chain Comparison" loading="lazy"></div>
+          <div style="margin-top:16px">
+            <div class="vp-chain-pill">
+              <div class="vp-chain-pill-name">Ethereum</div>
+              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="98" style="background:#10B981"></div></div>
+              <div class="vp-chain-pill-val">$328M</div>
+            </div>
+            <div class="vp-chain-pill">
+              <div class="vp-chain-pill-name">Base</div>
+              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="8" style="background:#3B82F6"></div></div>
+              <div class="vp-chain-pill-val">$3M</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Threat Matrix -->
+        <div class="visual-panel" data-tab="4">
+          <div class="vp-alert high" style="transition-delay:0.1s">
+            <div class="vp-alert-sev">HIGH</div>
+            <div class="vp-alert-msg">UNI accumulation — 29 SM wallets</div>
+          </div>
+          <div class="vp-alert high" style="transition-delay:0.25s">
+            <div class="vp-alert-sev">HIGH</div>
+            <div class="vp-alert-msg">WLD whale entry — $50M</div>
+          </div>
+          <div class="vp-alert medium" style="transition-delay:0.4s">
+            <div class="vp-alert-sev">MEDIUM</div>
+            <div class="vp-alert-msg">ONDO netflow surge — $91M</div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Morning Brief -->
+        <div class="visual-panel" data-tab="5">
+          <div class="vp-stat-grid">
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="53">0</div><div class="vp-stat-label">Signals</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="5">0</div><div class="vp-stat-label">Chains</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="3">0</div><div class="vp-stat-label">Alerts</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="2">0</div><div class="vp-stat-label">Charts</div></div>
+          </div>
+          <div class="vp-pipeline">
+            <span>scan</span><span style="color:#1A2940">→</span><span>signals</span><span style="color:#1A2940">→</span><span>alerts</span><span style="color:#1A2940">→</span><span>charts</span><span style="color:#1A2940">→</span><span>report</span>
+          </div>
+          <div class="vp-pipeline-bar"><div class="vp-pipeline-fill"></div></div>
+          <div class="vp-card"><img src="syndicate_bubble_map.png" alt="Syndicate Bubble Map" loading="lazy"></div>
+        </div>
+
+        <!-- Tab 6: Watch Mode -->
+        <div class="visual-panel" data-tab="6">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="vp-pulse-dot"></span>
+            <span class="vp-watch-status">MONITORING ACTIVE</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8895A7;margin-bottom:8px" id="vp-watch-cycle">Cycle <span data-cycle>1</span> — scanning...</div>
+          <div class="vp-watch-notification" id="vp-watch-notif">
+            <span style="color:#00E5A0;font-weight:700">NEW:</span> VIRTUAL on base — 28 SM wallets
+          </div>
+        </div>
+
+        <!-- Tab 7: Portfolio -->
+        <div class="visual-panel" data-tab="7">
+          <div class="vp-portfolio-row" style="transition-delay:0.1s">
+            <div class="vp-portfolio-label">ETH</div>
+            <div class="vp-portfolio-track"><div class="vp-portfolio-fill" data-width="45" style="background:#3B82F6;color:#fff">$1.2M</div></div>
+            <div class="vp-portfolio-pct">45%</div>
+          </div>
+          <div class="vp-portfolio-row" style="transition-delay:0.2s">
+            <div class="vp-portfolio-label">UNI</div>
+            <div class="vp-portfolio-track"><div class="vp-portfolio-fill" data-width="22" style="background:#14B8A6;color:#fff">$580K</div></div>
+            <div class="vp-portfolio-pct">22%</div>
+          </div>
+          <div class="vp-portfolio-row" style="transition-delay:0.3s">
+            <div class="vp-portfolio-label">ONDO</div>
+            <div class="vp-portfolio-track"><div class="vp-portfolio-fill" data-width="18" style="background:#10B981;color:#fff">$470K</div></div>
+            <div class="vp-portfolio-pct">18%</div>
+          </div>
+          <div class="vp-portfolio-row" style="transition-delay:0.4s">
+            <div class="vp-portfolio-label">Other</div>
+            <div class="vp-portfolio-track"><div class="vp-portfolio-fill" data-width="15" style="background:#4B5563;color:#fff">$390K</div></div>
+            <div class="vp-portfolio-pct">15%</div>
+          </div>
+          <div class="vp-pnl">+$340K <span style="font-size:16px;font-weight:600;color:#8895A7">(28.3%)</span></div>
+        </div>
+
+        <!-- Tab 8: Quote -->
+        <div class="visual-panel" data-tab="8">
+          <div class="vp-quote-card">
+            <div class="vp-quote-row"><span class="vp-quote-label">Input</span><span class="vp-quote-val">1.5 ETH</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Output</span><span class="vp-quote-val accent" data-count-to="5107" data-prefix="" data-suffix=".23 USDC" data-decimals="0">0</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Route</span><span class="vp-quote-val">Uniswap V3</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Chain</span><span class="vp-quote-val">Base</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Rate</span><span class="vp-quote-val" data-count-to="3404" data-suffix=".82" data-decimals="0">0</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Impact</span><span class="vp-quote-val green">0.02%</span></div>
+            <div class="vp-quote-row"><span class="vp-quote-label">Gas</span><span class="vp-quote-val green">~$0.12</span></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -861,6 +1075,71 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
   </div>
 </footer>
 <script>
+// --- Visual Panel Animation System ---
+function animateCounters(panel) {
+  panel.querySelectorAll('[data-count-to]').forEach(el => {
+    const target = parseInt(el.dataset.countTo, 10);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    if (isNaN(target) || target === 0) { el.textContent = prefix + '0' + suffix; return; }
+    let start = null;
+    const duration = 1200;
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+    function step(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const current = Math.floor(easeOut(progress) * target);
+      el.textContent = prefix + current.toLocaleString() + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = prefix + target.toLocaleString() + suffix;
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+function animateBars(panel) {
+  panel.querySelectorAll('[data-width]').forEach(el => {
+    const w = el.dataset.width;
+    el.style.width = '0';
+    requestAnimationFrame(() => { requestAnimationFrame(() => { el.style.width = w + '%'; }); });
+  });
+}
+
+let _watchInterval = null;
+function startWatchAnimation(panel) {
+  if (_watchInterval) { clearInterval(_watchInterval); _watchInterval = null; }
+  const cycleEl = panel.querySelector('[data-cycle]');
+  const notifEl = document.getElementById('vp-watch-notif');
+  if (!cycleEl) return;
+  let cycle = 1;
+  cycleEl.textContent = cycle;
+  if (notifEl) notifEl.classList.remove('show');
+  _watchInterval = setInterval(() => {
+    cycle++;
+    if (cycle > 5) { clearInterval(_watchInterval); _watchInterval = null; return; }
+    cycleEl.textContent = cycle;
+  }, 1200);
+  if (notifEl) { setTimeout(() => notifEl.classList.add('show'), 2000); }
+}
+
+function activateVisualPanel(tab) {
+  document.querySelectorAll('#visual-panels .visual-panel').forEach(p => {
+    p.classList.remove('active', 'animate');
+  });
+  if (_watchInterval) { clearInterval(_watchInterval); _watchInterval = null; }
+  const panel = document.querySelector(`#visual-panels .visual-panel[data-tab="${tab}"]`);
+  if (!panel) return;
+  panel.classList.add('active');
+  // Reset bars to 0 before animating
+  panel.querySelectorAll('[data-width]').forEach(el => { el.style.width = '0'; });
+  // Force reflow
+  void panel.offsetHeight;
+  panel.classList.add('animate');
+  animateCounters(panel);
+  animateBars(panel);
+  if (tab === '6') startWatchAnimation(panel);
+}
+
 document.getElementById('term-tabs').addEventListener('click', (e) => {
   const btn = e.target.closest('.term-tab');
   if (!btn) return;
@@ -869,22 +1148,8 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
   document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
-  // Switch dashboard tab in iframe to match terminal tab
-  const dashFrame = document.getElementById('dashboard-frame');
-  if (dashFrame) {
-    const tabMap = {'0':'signals','1':'network','2':'signals','3':'charts','4':'signals','5':'signals','6':'signals','7':'signals','8':'signals'};
-    const dashTab = tabMap[tab] || 'signals';
-    try {
-      const dw = dashFrame.contentWindow;
-      if (dw && typeof dw.showTab === 'function') {
-        const tabBtn = dashFrame.contentDocument.querySelector('.tab.active');
-        dw.showTab(dashTab, tabBtn || dashFrame.contentDocument.querySelector('.tab'));
-      }
-    } catch(e) {
-      // Fallback: reload iframe with hash
-      dashFrame.src = 'dashboard.html#' + dashTab;
-    }
-  }
+  // Activate matching visual panel
+  activateVisualPanel(tab);
   // Update feature description
   const desc = btn.dataset.desc || '';
   const parts = desc.split(' ');
@@ -896,6 +1161,8 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
     setTimeout(initNetworkGraph, 100);
   }
 });
+// Activate tab 0 visual panel on load
+document.addEventListener('DOMContentLoaded', () => { activateVisualPanel('0'); });
 const featCodes = [
   `<span class="text-muted">$</span> nansenscope scan --chains ethereum,base,solana\n\n<span class="text-success">✓</span> 3 chains scanned in 22s\n<span class="text-txt">10 HIGH signals detected</span>\n<span class="text-accent">Top: UNI — 29 top traders ($144M)</span>`,
   `<span class="text-muted">$</span> nansenscope network --address 0xa5d2...fecf\n\n<span class="text-success">✓</span> 12 nodes, 11 edges\n<span class="text-txt">2 clusters detected</span>\n<span class="text-accent">Hub: 0xa5d2...fecf (7 connections)</span>`,
