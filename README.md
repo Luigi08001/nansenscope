@@ -16,6 +16,10 @@
 
 ---
 
+<video src="https://github.com/Luigi08001/nansenscope/raw/main/docs/demo_web.mp4" width="100%" autoplay muted loop></video>
+
+---
+
 ## What is NansenScope?
 
 NansenScope is a CLI-powered intelligence platform that turns Nansen's raw blockchain data into actionable signals. It scans 18 chains, detects wallet clusters, tracks leveraged bets on Hyperliquid, identifies cross-chain convergence patterns, and alerts you — all autonomously.
