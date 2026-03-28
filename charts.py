@@ -204,77 +204,89 @@ def signal_timeline(signals: list[Signal]) -> str:
     return _save_chart(fig, "signal_timeline")
 
 
-def chain_comparison(data: dict[str, dict[str, Any]]) -> str:
+def chain_comparison(data) -> str:
     """
-    Generate a horizontal bar chart comparing SM signal counts across chains.
-    Only shows chains with data. Clean, readable, competition-grade.
+    Generate a dual-metric chain comparison: signal count + total USD value.
+    Accepts either dict[str, list[Signal]] or dict[str, dict].
+    Shows that chains differ in quality even when signal counts are similar.
     """
+    import re
+
     if not data:
         log.warning("No data for chain comparison")
         return ""
 
-    # Filter to chains with actual signals and sort by total
-    chains_with_data = {c: d for c, d in data.items() if d.get("total_signals", 0) > 0}
-    if not chains_with_data:
+    # Normalize input: accept both list[Signal] and dict formats
+    chain_stats = {}
+    for chain, val in data.items():
+        if isinstance(val, list):
+            # List of Signal objects
+            signals = val
+            count = len(signals)
+            total_usd = 0
+            for s in signals:
+                summary = s.summary if hasattr(s, 'summary') else str(s)
+                m = re.search(r'\$([0-9,]+)', summary)
+                if m:
+                    total_usd += float(m.group(1).replace(',', ''))
+            if count > 0:
+                chain_stats[chain] = {"count": count, "usd": total_usd}
+        elif isinstance(val, dict) and val.get("total_signals", 0) > 0:
+            chain_stats[chain] = {
+                "count": val.get("total_signals", 0),
+                "usd": val.get("total_usd", 0),
+            }
+
+    if not chain_stats:
         log.warning("No chains with signals for comparison")
         return ""
 
-    # Sort by total signals descending
-    sorted_chains = sorted(chains_with_data.keys(),
-                           key=lambda c: chains_with_data[c].get("total_signals", 0))
+    # Sort by USD value descending
+    sorted_chains = sorted(chain_stats.keys(),
+                           key=lambda c: chain_stats[c]["usd"], reverse=True)
+    sorted_chains.reverse()  # bottom-to-top for horizontal bars
+
+    chain_colors = {
+        "ethereum": "#627EEA", "base": "#0052FF", "solana": "#9945FF",
+        "arbitrum": "#28A0F0", "bnb": "#F0B90B", "polygon": "#8247E5",
+        "optimism": "#FF0420", "avalanche": "#E84142",
+    }
 
     fig = go.Figure()
 
-    # Stacked horizontal bars: HIGH, MEDIUM, CONVERGENCE
-    categories = [
-        ("high", "HIGH Severity", "#FF8C00"),
-        ("medium", "MEDIUM Severity", "#FFD700"),
-        ("convergence", "Convergence", "#00FF88"),
-        ("critical", "CRITICAL", "#FF0000"),
-    ]
+    colors = [chain_colors.get(c, "#4ECDC4") for c in sorted_chains]
+    usd_vals = [chain_stats[c]["usd"] for c in sorted_chains]
+    counts = [chain_stats[c]["count"] for c in sorted_chains]
 
-    for key, label, color in categories:
-        values = [chains_with_data.get(c, {}).get(key, 0) for c in sorted_chains]
-        if any(v > 0 for v in values):
-            fig.add_trace(go.Bar(
-                name=label,
-                y=sorted_chains,
-                x=values,
-                orientation="h",
-                marker_color=color,
-                opacity=0.9,
-                text=[str(v) if v > 0 else "" for v in values],
-                textposition="inside",
-                textfont=dict(size=12, color="white"),
-            ))
-
-    # Add total annotations on the right
-    for chain in sorted_chains:
-        total = chains_with_data[chain].get("total_signals", 0)
-        fig.add_annotation(
-            x=total + 0.5, y=chain,
-            text=f"<b>{total}</b>",
-            showarrow=False,
-            font=dict(size=13, color="#C9D1D9"),
-            xanchor="left",
-        )
+    fig.add_trace(go.Bar(
+        y=[c.upper() for c in sorted_chains],
+        x=usd_vals,
+        orientation="h",
+        marker=dict(color=colors, opacity=0.9),
+        text=[f"${v:,.0f}  •  {c} signals" for v, c in zip(usd_vals, counts)],
+        textposition="inside",
+        insidetextanchor="end",
+        textfont=dict(size=11, color="#E0E6ED"),
+        showlegend=False,
+    ))
 
     fig.update_layout(
         **LAYOUT_DEFAULTS,
         title=dict(
-            text="<b>Chain Sweep</b> — Smart Money Signals by Chain",
+            text="<b>Chain Sweep</b> — Smart Money Value by Chain",
             font=dict(size=18),
         ),
-        xaxis=dict(title="Signal Count", showgrid=True,
-                    gridcolor="rgba(150,150,150,0.1)"),
-        yaxis=dict(title=""),
-        barmode="stack",
-        width=950,
+        xaxis=dict(
+            title="Total Smart Money Value (USD)",
+            showgrid=True,
+            gridcolor="rgba(150,150,150,0.1)",
+        ),
+        yaxis=dict(showgrid=False, tickfont=dict(size=13)),
+        width=1100,
         height=max(350, len(sorted_chains) * 65 + 150),
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                    font=dict(size=11)),
+        showlegend=False,
     )
+    fig.update_layout(margin=dict(l=120, r=200, t=80, b=60))
 
     return _save_chart(fig, "chain_comparison")
 
