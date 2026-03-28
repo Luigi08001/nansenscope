@@ -641,13 +641,22 @@ resize();window.addEventListener('resize',resize);
 // Cluster colors
 const CCOLORS=['#00E5A0','#FF6B6B','#4ECDC4','#FFE66D','#A78BFA','#F97316','#06B6D4','#EC4899','#84CC16','#8B5CF6'];
 
-// Init node positions with some spread
+// Init node positions: cluster-based separation
 const rng=(s)=>{{let x=Math.sin(s)*10000;return x-Math.floor(x)}};
+const clusterSet=new Set(NODES.map(n=>n.cl).filter(c=>c>=0));
+const clusterArr=[...clusterSet];
+const clusterCenters={{}};
+clusterArr.forEach((cl,i)=>{{
+  const angle=2*Math.PI*i/Math.max(clusterArr.length,1);
+  const dist=Math.min(W,H)*0.25;
+  clusterCenters[cl]={{x:W/2+Math.cos(angle)*dist, y:H/2+Math.sin(angle)*dist}};
+}});
 NODES.forEach((n,i)=>{{
-  const a=2*Math.PI*i/NODES.length;
-  const r=120+rng(i*137)*80;
-  n.x=W/2+Math.cos(a)*r;
-  n.y=H/2+Math.sin(a)*r;
+  const cc=clusterCenters[n.cl]||{{x:W/2,y:H/2}};
+  const a=2*Math.PI*rng(i*137);
+  const r=40+rng(i*73)*60;
+  n.x=cc.x+Math.cos(a)*r;
+  n.y=cc.y+Math.sin(a)*r;
   n.vx=0;n.vy=0;
   n.fx=null;n.fy=null;
 }});
@@ -671,11 +680,17 @@ function simulate(){{
   const alpha=1-simStep/SIM_STEPS;
   const k=0.008*alpha;
 
-  // Center gravity
-  let cx=0,cy=0;
-  NODES.forEach(n=>{{cx+=n.x;cy+=n.y}});
-  cx/=NODES.length||1;cy/=NODES.length||1;
-  NODES.forEach(n=>{{n.vx+=(W/2-cx-n.x)*0.0003;n.vy+=(H/2-cy-n.y)*0.0003}});
+  // Cluster gravity — pull nodes toward their cluster center
+  NODES.forEach(n=>{{
+    const cc=clusterCenters[n.cl];
+    if(cc){{
+      n.vx+=(cc.x-n.x)*0.01*alpha;
+      n.vy+=(cc.y-n.y)*0.01*alpha;
+    }}
+    // Weak global center gravity
+    n.vx+=(W/2-n.x)*0.0003;
+    n.vy+=(H/2-n.y)*0.0003;
+  }});
 
   // Repulsion (Barnes-Hut would be better but N<100 is fine)
   for(let i=0;i<NODES.length;i++){{

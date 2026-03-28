@@ -65,8 +65,8 @@
   function rAddr(){ return '0x'+Array.from({length:4},()=>Math.floor(Math.random()*65536).toString(16).padStart(4,'0')).join('').slice(0,4)+'...'+Math.floor(Math.random()*65536).toString(16).padStart(4,'0'); }
   const nodes = [], edges = [];
   const CX = W/2, CY = H/2;
-  const hub1X = CX - 160, hub1Y = CY;
-  const hub2X = CX + 160, hub2Y = CY;
+  const hub1X = CX - W*0.25, hub1Y = CY;
+  const hub2X = CX + W*0.25, hub2Y = CY;
   nodes.push({id:0, x:hub1X, y:hub1Y, vx:0, vy:0, r:22, label:'DeFi Whale #1', color:'#00E5A0', type:'hub', cluster:1, detail:'Accumulated $2.1M across 47 tokens'});
   nodes.push({id:1, x:hub2X, y:hub2Y, vx:0, vy:0, r:18, label:'Fund Deployer', color:'#F5A623', type:'hub', cluster:0, detail:'Deployed $450K to 4 wallets'});
   const smLabels = [
