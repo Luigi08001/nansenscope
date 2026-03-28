@@ -517,9 +517,9 @@
         <div class="header">
             <div class="header-left">
                 <h1><span class="accent">Nansen</span>Scope <span class="dim">Dashboard</span></h1>
-                <div class="header-cmd"><span class="dollar">$</span> nansenscope daily --chains ethereum, base, solana, arbitrum, bnb</div>
+                <div class="header-cmd"><span class="dollar">$</span> nansenscope daily --chains ethereum</div>
                 <div class="header-meta">
-                    <span class="green">SCAN COMPLETE</span> &mdash; 2026-03-27T23:09:17.314509+00:00
+                    <span class="green">SCAN COMPLETE</span> &mdash; 2026-03-28T16:00:45.027361+00:00
                 </div>
             </div>
             <div class="header-right">
@@ -530,19 +530,19 @@
         <!-- STATS BAR -->
         <div class="stats">
             <div class="stat">
-                <div class="stat-value">20</div>
+                <div class="stat-value">0</div>
                 <div class="stat-label">Signals Detected</div>
             </div>
             <div class="stat">
-                <div class="stat-value white">5</div>
+                <div class="stat-value white">1</div>
                 <div class="stat-label">Chains Scanned</div>
             </div>
             <div class="stat">
-                <div class="stat-value">20</div>
+                <div class="stat-value">0</div>
                 <div class="stat-label">High Priority</div>
             </div>
             <div class="stat">
-                <div class="stat-value white">20</div>
+                <div class="stat-value white">0</div>
                 <div class="stat-label">Unique Tokens</div>
             </div>
         </div>
@@ -563,27 +563,9 @@
 
             <!-- TAB: Signals -->
             <div id="tab-signals" class="tab-content active animate">
-                <div class="vp-stat-grid">
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="20">0</div>
-                        <div class="vp-stat-label">Total Signals</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="5">0</div>
-                        <div class="vp-stat-label">Chains</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="20">0</div>
-                        <div class="vp-stat-label">High Priority</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="20">0</div>
-                        <div class="vp-stat-label">Unique Tokens</div>
-                    </div>
-                </div>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterSignals('all', this)">All</button>
-                    <button class="filter-btn" onclick="filterSignals('base', this)">Base</button><button class="filter-btn" onclick="filterSignals('ethereum', this)">Ethereum</button>
+                    
                 </div>
                 <div class="table-wrap">
                     <table class="signal-table">
@@ -600,206 +582,6 @@
                         </thead>
                         <tbody id="signal-tbody">
                             
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.04s;">
-            <td class="row-num">1</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">UNI</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">29 smart money wallets hold UNI ($137,829,209)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.08s;">
-            <td class="row-num">2</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">WLD</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">22 smart money wallets hold WLD ($50,299,335)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.12s;">
-            <td class="row-num">3</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">ONDO</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">19 smart money wallets hold ONDO ($92,228,293)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.16s;">
-            <td class="row-num">4</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">AMPL</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">17 smart money wallets hold AMPL ($8,125,568)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.20s;">
-            <td class="row-num">5</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">ENA</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">17 smart money wallets hold ENA ($15,798,882)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.24s;">
-            <td class="row-num">6</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">SAFE</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">16 smart money wallets hold SAFE ($1,150,271)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.28s;">
-            <td class="row-num">7</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">LRDS</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">16 smart money wallets hold LRDS ($72,900)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.32s;">
-            <td class="row-num">8</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">SYRUP</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">15 smart money wallets hold SYRUP ($14,225,907)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.36s;">
-            <td class="row-num">9</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">LDO</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">15 smart money wallets hold LDO ($6,970,804)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="ethereum" data-severity="high" style="position:relative;transition-delay: 0.40s;">
-            <td class="row-num">10</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">ethereum</span></td>
-            <td class="token">STRK</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">14 smart money wallets hold STRK ($1,447,793)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.44s;">
-            <td class="row-num">11</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">VIRTUAL</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">27 smart money wallets hold VIRTUAL ($714,377)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.48s;">
-            <td class="row-num">12</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">FACY</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">16 smart money wallets hold FACY ($10,442)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.52s;">
-            <td class="row-num">13</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">WACH</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">11 smart money wallets hold WACH ($3,276)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.56s;">
-            <td class="row-num">14</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">CAP</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">9 smart money wallets hold CAP ($3,001)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.60s;">
-            <td class="row-num">15</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">WAVE</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">8 smart money wallets hold WAVE ($10,030)</td>
-            <td class="score">100</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="100" style="--bar-w:100;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.64s;">
-            <td class="row-num">16</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">AERO</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">7 smart money wallets hold AERO ($908,096)</td>
-            <td class="score">96</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="96" style="--bar-w:96;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.68s;">
-            <td class="row-num">17</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">WETH</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">7 smart money wallets hold WETH ($77,942)</td>
-            <td class="score">96</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="96" style="--bar-w:96;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.72s;">
-            <td class="row-num">18</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">TIBBIR</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">7 smart money wallets hold TIBBIR ($1,340,480)</td>
-            <td class="score">96</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="96" style="--bar-w:96;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.76s;">
-            <td class="row-num">19</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">SS</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">6 smart money wallets hold SS ($1,184)</td>
-            <td class="score">88</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="88" style="--bar-w:88;"></div></td>
-        </tr>
-        <tr class="signal-row" data-chain="base" data-severity="high" style="position:relative;transition-delay: 0.80s;">
-            <td class="row-num">20</td>
-            <td><span class="sev-badge high">HIGH</span></td>
-            <td><span class="chain-pill">base</span></td>
-            <td class="token">REI</td>
-            <td class="type">High Conviction</td>
-            <td class="summary">6 smart money wallets hold REI ($28,488)</td>
-            <td class="score">88</td>
-            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="88" style="--bar-w:88;"></div></td>
-        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -810,94 +592,10 @@
                 <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:12px">Signal Fusion &mdash; Top Signals by Conviction</div>
                 <div class="table-wrap" style="margin-bottom:20px">
                     
-        <div class="signal-row" style="transition-delay:0.1s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="100"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">UNI (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">29 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$137,829,209</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.15000000000000002s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="93"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">VIRTUAL (base)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">27 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$714,377</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.2s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="76"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">WLD (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">22 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$50,299,335</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.25s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="66"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">ONDO (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">19 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$92,228,293</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.30000000000000004s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="59"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">AMPL (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">17 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$8,125,568</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.35s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="59"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">ENA (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">17 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$15,798,882</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.4s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="55"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">SAFE (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">16 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$1,150,271</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.45000000000000007s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="55"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">LRDS (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">16 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$72,900</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.5s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="55"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">FACY (base)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">16 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$10,442</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.55s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="52"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">SYRUP (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">15 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$14,225,907</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.6s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="52"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">LDO (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">15 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$6,970,804</span>
-        </div>
-        <div class="signal-row" style="transition-delay:0.65s;position:relative;overflow:hidden;padding:10px 14px">
-            <div class="vp-row-bar" data-width="48"></div>
-            <span style="color:#E8ECF2;font-weight:600;min-width:120px;z-index:1">STRK (ethereum)</span>
-            <span style="color:#8895A7;flex:1;z-index:1">14 wallets</span>
-            <span style="color:#00E5A0;font-weight:600;z-index:1">$1,447,793</span>
-        </div>
                 </div>
                 <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:12px">Chain Sweep &mdash; Smart Money Value by Chain</div>
                 <div style="display:flex;flex-direction:column;gap:8px">
                     
-        <div style="display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:12px">
-            <span style="color:#E8ECF2;min-width:80px;font-weight:600">ETHEREUM</span>
-            <div style="flex:1;height:28px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:4px;overflow:hidden;position:relative">
-                <div class="vp-bar-fill" data-width="98" style="background:#627EEA;height:100%;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#E8ECF2;font-weight:500;transition:width 1s ease 0.2s">$328,148,962 · 10 signals</div>
-            </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:12px">
-            <span style="color:#E8ECF2;min-width:80px;font-weight:600">BASE</span>
-            <div style="flex:1;height:28px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:4px;overflow:hidden;position:relative">
-                <div class="vp-bar-fill" data-width="1" style="background:#0052FF;height:100%;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#E8ECF2;font-weight:500;transition:width 1s ease 0.35s">$3,097,316 · 10 signals</div>
-            </div>
-        </div>
                 </div>
             </div>
 

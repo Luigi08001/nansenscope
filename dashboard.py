@@ -776,24 +776,6 @@ def generate_dashboard(auto_open: bool = True) -> Path:
 
             <!-- TAB: Signals -->
             <div id="tab-signals" class="tab-content active animate">
-                <div class="vp-stat-grid">
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="{total_signals}">0</div>
-                        <div class="vp-stat-label">Total Signals</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="{chain_count}">0</div>
-                        <div class="vp-stat-label">Chains</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="{high_count}">0</div>
-                        <div class="vp-stat-label">High Priority</div>
-                    </div>
-                    <div class="vp-stat-box">
-                        <div class="vp-stat-val" data-count-to="{unique_tokens}">0</div>
-                        <div class="vp-stat-label">Unique Tokens</div>
-                    </div>
-                </div>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterSignals('all', this)">All</button>
                     {chain_filters}
