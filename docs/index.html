@@ -62,7 +62,9 @@ tailwind.config = {
   .vp-card { background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 10px; padding: 16px; margin-top: 12px; }
   .vp-card img { width: 100%; border-radius: 8px; opacity: 0; transform: scale(0.97); transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s; }
   .visual-panel.animate .vp-card img { opacity: 1; transform: scale(1); }
-  .vp-signal-row { opacity: 0; transform: translateX(-20px); transition: opacity 0.4s ease, transform 0.4s ease; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(26,41,64,0.5); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .vp-signal-row { opacity: 0; transform: translateX(-20px); transition: opacity 0.4s ease, transform 0.4s ease; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(26,41,64,0.5); font-family: 'JetBrains Mono', monospace; font-size: 12px; position: relative; }
+  .vp-row-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03)); transition: width 1s ease 0.3s; border-right: 2px solid rgba(0,229,160,0.15); }
+  .visual-panel.animate .vp-row-bar { width: calc(var(--bar-w, 0) * 1%); }
   .visual-panel.animate .vp-signal-row { opacity: 1; transform: translateX(0); }
   .vp-hint-bar { text-align: center; padding: 10px 16px; background: rgba(26,41,64,0.2); border: 1px solid #1A2940; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8895A7; margin-top: 12px; }
   .vp-hint-bar span { color: #00E5A0; }
@@ -761,12 +763,12 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
           </div>
           <div class="vp-card" style="padding:0;overflow:hidden;max-height:350px">
             <div style="padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;border-bottom:1px solid rgba(26,41,64,0.5)">Signal Overview</div>
-            <div class="vp-signal-row" style="transition-delay:0.15s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">UNI</span><span style="color:#8895A7;flex:1">29 SM wallets</span><span style="color:#00E5A0">$144M</span></div>
-            <div class="vp-signal-row" style="transition-delay:0.2s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">WLD</span><span style="color:#8895A7;flex:1">22 SM wallets</span><span style="color:#00E5A0">$60M</span></div>
-            <div class="vp-signal-row" style="transition-delay:0.25s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">ONDO</span><span style="color:#8895A7;flex:1">19 SM wallets</span><span style="color:#00E5A0">$87M</span></div>
-            <div class="vp-signal-row" style="transition-delay:0.3s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">VIRTUAL</span><span style="color:#8895A7;flex:1">27 SM wallets</span><span style="color:#00E5A0">$757K</span></div>
-            <div class="vp-signal-row" style="transition-delay:0.35s"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">JUP</span><span style="color:#8895A7;flex:1">19 SM wallets</span><span style="color:#00E5A0">$2.7M</span></div>
-            <div class="vp-signal-row" style="transition-delay:0.4s;border-bottom:none"><span style="color:#E5484D;font-weight:700;min-width:40px">HIGH</span><span style="color:#E8ECF2;min-width:55px">APE</span><span style="color:#8895A7;flex:1">14 SM wallets</span><span style="color:#00E5A0">$8.2M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.15s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="100"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">UNI</span><span style="color:#8895A7;flex:1;z-index:1">29 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$144M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.2s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="42"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">WLD</span><span style="color:#8895A7;flex:1;z-index:1">22 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$60M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.25s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="60"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">ONDO</span><span style="color:#8895A7;flex:1;z-index:1">19 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$87M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.3s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="93"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">VIRTUAL</span><span style="color:#8895A7;flex:1;z-index:1">27 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$757K</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.35s;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="66"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">JUP</span><span style="color:#8895A7;flex:1;z-index:1">19 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$2.7M</span></div>
+            <div class="vp-signal-row" style="transition-delay:0.4s;border-bottom:none;position:relative;overflow:hidden"><div class="vp-row-bar" data-width="48"></div><span style="color:#E5484D;font-weight:700;min-width:40px;z-index:1">HIGH</span><span style="color:#E8ECF2;min-width:55px;z-index:1;font-weight:600">APE</span><span style="color:#8895A7;flex:1;z-index:1">14 SM wallets</span><span style="color:#00E5A0;z-index:1;font-weight:600">$8.2M</span></div>
           </div>
           <div class="vp-card"><img src="signal_timeline.png" alt="Signal Timeline" loading="lazy"></div>
         </div>
@@ -1120,6 +1122,10 @@ function activateVisualPanel(tab) {
   // Force reflow
   void panel.offsetHeight;
   panel.classList.add('animate');
+  // Set row bar widths via CSS variable
+  panel.querySelectorAll('.vp-row-bar').forEach(el => {
+    el.style.setProperty('--bar-w', el.dataset.width || '0');
+  });
   animateCounters(panel);
   animateBars(panel);
   if (tab === '6') startWatchAnimation(panel);
