@@ -375,7 +375,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
         }}
 
         /* Content area */
-        .content {{ padding: 28px 48px; }}
+        .content {{ padding: 28px 48px; min-height: calc(100vh - 280px); }}
 
         /* Tabs */
         .tab-bar {{
@@ -617,7 +617,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             border: 1px solid #1A2940;
             border-radius: 8px;
             padding: 24px;
-            max-height: 70vh;
+            max-height: calc(100vh - 300px);
             overflow-y: auto;
         }}
         .report-pre::-webkit-scrollbar {{ width: 6px; }}
@@ -705,7 +705,7 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             .stat {{ min-width: 50%; }}
             .charts-2col {{ grid-template-columns: 1fr; }}
             .content, .header, .stats, .chain-bar {{ padding-left: 20px; padding-right: 20px; }}
-            #network-map-container {{ height: 380px; }}
+            #network-map-container {{ height: calc(100vh - 220px); min-height: 500px; }}
         }}
     </style>
 </head>
