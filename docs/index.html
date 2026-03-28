@@ -776,6 +776,12 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
         <!-- Tab 1: Syndicate Hunter -->
         <div class="visual-panel" data-tab="1">
           <div class="vp-hint-bar"><span>Drag nodes</span> · Scroll to zoom · Hover for details</div>
+          <div class="vp-stat-grid" style="margin-top:12px">
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="12">0</div><div class="vp-stat-label">Wallets Found</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="11">0</div><div class="vp-stat-label">Connections</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="2">0</div><div class="vp-stat-label">Clusters</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-prefix="$" data-count-to="2" data-suffix=".5M">0</div><div class="vp-stat-label">Total PnL</div></div>
+          </div>
         </div>
 
         <!-- Tab 2: Leverage Radar -->
@@ -803,35 +809,88 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
           </div>
         </div>
 
-        <!-- Tab 3: Signal Fusion -->
+        <!-- Tab 3: Signal Fusion — Cross-chain convergence detection -->
         <div class="visual-panel" data-tab="3">
-          <div style="margin-top:8px">
-            <div class="vp-chain-pill">
-              <div class="vp-chain-pill-name">Ethereum</div>
-              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="98" style="background:#10B981"></div></div>
-              <div class="vp-chain-pill-val">$328M</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8895A7;margin-bottom:12px">Cross-Chain Convergence — same token flagged on multiple chains</div>
+          <div class="vp-card" style="padding:0;overflow:hidden;margin-bottom:12px">
+            <div style="padding:10px 16px;border-bottom:1px solid rgba(26,41,64,0.5);display:flex;justify-content:space-between;align-items:center">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E5484D;font-weight:700">⚠ CONVERGENCE DETECTED</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8895A7">highest conviction signals</span>
             </div>
-            <div class="vp-chain-pill">
+            <div class="vp-signal-row" style="transition-delay:0.15s;position:relative;overflow:hidden">
+              <div class="vp-row-bar" data-width="95"></div>
+              <span style="color:#E5484D;font-weight:700;min-width:50px;z-index:1">CRIT</span>
+              <span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">UNI</span>
+              <span style="color:#8895A7;flex:1;z-index:1">ethereum (29 wallets) + base (netflow +$2.1M)</span>
+              <span style="color:#00E5A0;z-index:1;font-weight:600">Score 95</span>
+            </div>
+            <div class="vp-signal-row" style="transition-delay:0.25s;position:relative;overflow:hidden">
+              <div class="vp-row-bar" data-width="88"></div>
+              <span style="color:#E5484D;font-weight:700;min-width:50px;z-index:1">CRIT</span>
+              <span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">ONDO</span>
+              <span style="color:#8895A7;flex:1;z-index:1">ethereum (19 wallets) + arbitrum (4 wallets)</span>
+              <span style="color:#00E5A0;z-index:1;font-weight:600">Score 88</span>
+            </div>
+            <div class="vp-signal-row" style="transition-delay:0.35s;position:relative;overflow:hidden">
+              <div class="vp-row-bar" data-width="82"></div>
+              <span style="color:#F5A623;font-weight:700;min-width:50px;z-index:1">HIGH</span>
+              <span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">WLD</span>
+              <span style="color:#8895A7;flex:1;z-index:1">ethereum — 22 SM wallets ($60M)</span>
+              <span style="color:#00E5A0;z-index:1;font-weight:600">Score 82</span>
+            </div>
+            <div class="vp-signal-row" style="transition-delay:0.45s;position:relative;overflow:hidden">
+              <div class="vp-row-bar" data-width="78"></div>
+              <span style="color:#F5A623;font-weight:700;min-width:50px;z-index:1">HIGH</span>
+              <span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">VIRTUAL</span>
+              <span style="color:#8895A7;flex:1;z-index:1">base — 27 SM wallets ($757K)</span>
+              <span style="color:#00E5A0;z-index:1;font-weight:600">Score 78</span>
+            </div>
+            <div class="vp-signal-row" style="transition-delay:0.55s;border-bottom:none;position:relative;overflow:hidden">
+              <div class="vp-row-bar" data-width="75"></div>
+              <span style="color:#F5A623;font-weight:700;min-width:50px;z-index:1">HIGH</span>
+              <span style="color:#E8ECF2;min-width:45px;z-index:1;font-weight:700">JUP</span>
+              <span style="color:#8895A7;flex:1;z-index:1">solana — 19 SM wallets ($2.7M)</span>
+              <span style="color:#00E5A0;z-index:1;font-weight:600">Score 75</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div class="vp-chain-pill" style="flex:1">
+              <div class="vp-chain-pill-name">Ethereum</div>
+              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="98" style="background:#627EEA"></div></div>
+              <div class="vp-chain-pill-val">$328M · 10 signals</div>
+            </div>
+            <div class="vp-chain-pill" style="flex:1">
               <div class="vp-chain-pill-name">Base</div>
-              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="8" style="background:#3B82F6"></div></div>
-              <div class="vp-chain-pill-val">$3M</div>
+              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="8" style="background:#0052FF"></div></div>
+              <div class="vp-chain-pill-val">$3M · 10 signals</div>
+            </div>
+            <div class="vp-chain-pill" style="flex:1">
+              <div class="vp-chain-pill-name">Solana</div>
+              <div class="vp-chain-pill-bar"><div class="vp-chain-pill-fill" data-width="5" style="background:#9945FF"></div></div>
+              <div class="vp-chain-pill-val">$3.6M · 2 signals</div>
             </div>
           </div>
         </div>
 
-        <!-- Tab 4: Threat Matrix -->
+        <!-- Tab 4: Threat Matrix — Alert engine with cooldowns -->
         <div class="visual-panel" data-tab="4">
+          <div class="vp-stat-grid" style="margin-bottom:12px">
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="5">0</div><div class="vp-stat-label">Rules Active</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="3">0</div><div class="vp-stat-label">Alerts Triggered</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" data-count-to="20">0</div><div class="vp-stat-label">Signals Scanned</div></div>
+            <div class="vp-stat-box"><div class="vp-stat-val" style="color:#10B981">60min</div><div class="vp-stat-label">Cooldown</div></div>
+          </div>
           <div class="vp-alert high" style="transition-delay:0.1s">
-            <div class="vp-alert-sev">HIGH</div>
-            <div class="vp-alert-msg">UNI accumulation — 29 SM wallets</div>
+            <div class="vp-alert-sev">CRITICAL</div>
+            <div class="vp-alert-msg">Whale Accumulation — UNI: 29 wallets, $144M total holdings<br><span style="color:#8895A7;font-size:10px">Rule: sm_wallets > 20 AND usd_value > $50M | Cooldown: 60min</span></div>
           </div>
           <div class="vp-alert high" style="transition-delay:0.25s">
             <div class="vp-alert-sev">HIGH</div>
-            <div class="vp-alert-msg">WLD whale entry — $50M</div>
+            <div class="vp-alert-msg">Smart Money Entry — WLD: 22 wallets accumulating, $60M<br><span style="color:#8895A7;font-size:10px">Rule: sm_wallets > 15 AND type = high_conviction | Cooldown: 60min</span></div>
           </div>
           <div class="vp-alert medium" style="transition-delay:0.4s">
             <div class="vp-alert-sev">MEDIUM</div>
-            <div class="vp-alert-msg">ONDO netflow surge — $91M</div>
+            <div class="vp-alert-msg">Netflow Surge — ONDO: +$91M inflow in 24h across ethereum + arbitrum<br><span style="color:#8895A7;font-size:10px">Rule: netflow > $10M | Cooldown: 30min</span></div>
           </div>
         </div>
 
