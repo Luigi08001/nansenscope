@@ -47,6 +47,11 @@ tailwind.config = {
   .term-tab.active { color: #E8ECF2; border-color: #00E5A0; }
   .term-content { display: none; }
   .term-content.active { display: block; }
+  .visual-panel { display: none; animation: fadeInPanel 0.4s ease; }
+  .visual-panel.active { display: block; }
+  @keyframes fadeInPanel { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes watchPulse { 0%,100% { box-shadow: 0 0 6px rgba(0,229,160,0.4); } 50% { box-shadow: 0 0 18px rgba(0,229,160,0.8); } }
+  .watch-pulse { animation: watchPulse 2s ease-in-out infinite; }
   .feature-item { border-left: 2px solid transparent; padding-left: 20px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
   .feature-item:hover, .feature-item.active { border-color: #00E5A0; background: rgba(1,255,167,0.03); }
   .feature-item.active .feat-name { color: #00E5A0; }
@@ -687,46 +692,233 @@ Scanned 2 chains | 16 total signals | <span class="text-muted">0 NEW</span>
  <span class="text-muted">Min Output:</span>    <span class="text-txt">5,081.69 USDC</span>
  <span class="text-muted">Gas Estimate:</span>  <span class="text-success">~$0.12</span></pre></div>
       </div>
+      <!-- Visual Dashboard Renders -->
+      <div id="visual-panels" style="border-top:1px solid #1A2940;">
+        <!-- Tab 0: Chain Sweep -->
+        <div class="visual-panel active" data-tab="0" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Top 5 Signals — Ranked by Conviction</p>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #1A2940;">
+                  <th style="text-align:left;padding:8px 12px;color:#8895A7;font-weight:500;">#</th>
+                  <th style="text-align:left;padding:8px 12px;color:#8895A7;font-weight:500;">Token</th>
+                  <th style="text-align:left;padding:8px 12px;color:#8895A7;font-weight:500;">Chain</th>
+                  <th style="text-align:left;padding:8px 12px;color:#8895A7;font-weight:500;">Traders</th>
+                  <th style="text-align:right;padding:8px 12px;color:#8895A7;font-weight:500;">Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid rgba(26,41,64,0.5);"><td style="padding:8px 12px;color:#E8ECF2;">1</td><td style="padding:8px 12px;color:#00E5A0;font-weight:600;">UNI</td><td style="padding:8px 12px;color:#8895A7;">ethereum</td><td style="padding:8px 12px;color:#E8ECF2;">29</td><td style="padding:8px 12px;text-align:right;color:#00E5A0;">$144M</td></tr>
+                <tr style="border-bottom:1px solid rgba(26,41,64,0.5);"><td style="padding:8px 12px;color:#E8ECF2;">2</td><td style="padding:8px 12px;color:#00E5A0;font-weight:600;">ONDO</td><td style="padding:8px 12px;color:#8895A7;">ethereum</td><td style="padding:8px 12px;color:#E8ECF2;">19</td><td style="padding:8px 12px;text-align:right;color:#00E5A0;">$87M</td></tr>
+                <tr style="border-bottom:1px solid rgba(26,41,64,0.5);"><td style="padding:8px 12px;color:#E8ECF2;">3</td><td style="padding:8px 12px;color:#00E5A0;font-weight:600;">WLD</td><td style="padding:8px 12px;color:#8895A7;">ethereum</td><td style="padding:8px 12px;color:#E8ECF2;">22</td><td style="padding:8px 12px;text-align:right;color:#00E5A0;">$60M</td></tr>
+                <tr style="border-bottom:1px solid rgba(26,41,64,0.5);"><td style="padding:8px 12px;color:#E8ECF2;">4</td><td style="padding:8px 12px;color:#00E5A0;font-weight:600;">VIRTUAL</td><td style="padding:8px 12px;color:#8895A7;">base</td><td style="padding:8px 12px;color:#E8ECF2;">27</td><td style="padding:8px 12px;text-align:right;color:#00E5A0;">$757K</td></tr>
+                <tr><td style="padding:8px 12px;color:#E8ECF2;">5</td><td style="padding:8px 12px;color:#00E5A0;font-weight:600;">JUP</td><td style="padding:8px 12px;color:#8895A7;">solana</td><td style="padding:8px 12px;color:#E8ECF2;">19</td><td style="padding:8px 12px;text-align:right;color:#00E5A0;">$2.7M</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:16px;background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:8px;overflow:hidden;">
+            <img src="signal_timeline.png" alt="Signal Timeline" style="width:100%;display:block;max-height:300px;object-fit:contain;">
+          </div>
+        </div>
+
+        <!-- Tab 1: Syndicate Hunter — network map already in term-content, visual panel is empty marker -->
+        <div class="visual-panel" data-tab="1" style="padding:0;">
+          <!-- Network map is rendered inline in the terminal content above -->
+        </div>
+
+        <!-- Tab 2: Leverage Radar -->
+        <div class="visual-panel" data-tab="2" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Smart Money Leverage Gauge</p>
+          <div style="background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:12px;padding:24px;text-align:center;max-width:500px;margin:0 auto;">
+            <div style="font-size:48px;font-weight:900;color:#00E5A0;font-family:'Satoshi',sans-serif;line-height:1;">18.91</div>
+            <div style="font-size:13px;color:#8895A7;margin-top:4px;font-family:'JetBrains Mono',monospace;">Long / Short Ratio</div>
+            <div style="margin-top:16px;height:12px;border-radius:6px;overflow:hidden;display:flex;background:#1A2940;">
+              <div style="width:94.7%;background:linear-gradient(90deg,#10B981,#00E5A0);border-radius:6px 0 0 6px;"></div>
+              <div style="width:5.3%;background:#EF4444;border-radius:0 6px 6px 0;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-family:'JetBrains Mono',monospace;">
+              <span style="color:#10B981;">LONG 94.7%</span>
+              <span style="color:#EF4444;">SHORT 5.3%</span>
+            </div>
+            <div style="margin-top:16px;display:inline-block;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);border-radius:999px;padding:6px 16px;font-size:12px;color:#00E5A0;font-family:'JetBrains Mono',monospace;">
+              Strongly Bullish
+            </div>
+            <div style="margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:12px;">
+                <div style="font-size:18px;font-weight:700;color:#E8ECF2;font-family:'Satoshi',sans-serif;">50</div>
+                <div style="font-size:10px;color:#8895A7;">Positions</div>
+              </div>
+              <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:12px;">
+                <div style="font-size:18px;font-weight:700;color:#E8ECF2;font-family:'Satoshi',sans-serif;">$208K</div>
+                <div style="font-size:10px;color:#8895A7;">Volume</div>
+              </div>
+              <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:12px;">
+                <div style="font-size:18px;font-weight:700;color:#E8ECF2;font-family:'Satoshi',sans-serif;">5</div>
+                <div style="font-size:10px;color:#8895A7;">SM Traders</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Signal Fusion -->
+        <div class="visual-panel" data-tab="3" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Chain Comparison — Cross-Chain Value Distribution</p>
+          <div style="background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:8px;overflow:hidden;">
+            <img src="chain_comparison.png" alt="Chain Comparison" style="width:100%;display:block;max-height:350px;object-fit:contain;">
+          </div>
+        </div>
+
+        <!-- Tab 4: Threat Matrix -->
+        <div class="visual-panel" data-tab="4" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Active Alerts</p>
+          <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;">
+            <div style="background:rgba(229,72,77,0.08);border:1px solid rgba(229,72,77,0.3);border-radius:8px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#E5484D;margin-top:4px;flex-shrink:0;box-shadow:0 0 8px rgba(229,72,77,0.5);"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#E5484D;font-family:'JetBrains Mono',monospace;">CRITICAL — Whale Accumulation</div>
+                <div style="font-size:11px;color:#8895A7;margin-top:4px;">UNI: 29 wallets, $144M inflow · Cooldown: 60min</div>
+              </div>
+            </div>
+            <div style="background:rgba(229,72,77,0.08);border:1px solid rgba(229,72,77,0.3);border-radius:8px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#E5484D;margin-top:4px;flex-shrink:0;box-shadow:0 0 8px rgba(229,72,77,0.5);"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#E5484D;font-family:'JetBrains Mono',monospace;">CRITICAL — Convergence Spike</div>
+                <div style="font-size:11px;color:#8895A7;margin-top:4px;">ONDO: score 88 > threshold 80 · Cooldown: 30min</div>
+              </div>
+            </div>
+            <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:8px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#F5A623;margin-top:4px;flex-shrink:0;box-shadow:0 0 8px rgba(245,166,35,0.5);"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#F5A623;font-family:'JetBrains Mono',monospace;">HIGH — Cross-Chain Flow</div>
+                <div style="font-size:11px;color:#8895A7;margin-top:4px;">WETH: $2.1M netflow · Cooldown: 45min</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Morning Brief -->
+        <div class="visual-panel" data-tab="5" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Daily Pipeline Summary</p>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+            <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-size:28px;font-weight:800;color:#00E5A0;font-family:'Satoshi',sans-serif;line-height:1;">53</div>
+              <div style="font-size:10px;color:#8895A7;margin-top:4px;font-family:'JetBrains Mono',monospace;">Signals</div>
+            </div>
+            <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-size:28px;font-weight:800;color:#00E5A0;font-family:'Satoshi',sans-serif;line-height:1;">5</div>
+              <div style="font-size:10px;color:#8895A7;margin-top:4px;font-family:'JetBrains Mono',monospace;">Chains</div>
+            </div>
+            <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-size:28px;font-weight:800;color:#00E5A0;font-family:'Satoshi',sans-serif;line-height:1;">2</div>
+              <div style="font-size:10px;color:#8895A7;margin-top:4px;font-family:'JetBrains Mono',monospace;">Charts</div>
+            </div>
+            <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-size:28px;font-weight:800;color:#00E5A0;font-family:'Satoshi',sans-serif;line-height:1;">1</div>
+              <div style="font-size:10px;color:#8895A7;margin-top:4px;font-family:'JetBrains Mono',monospace;">Report</div>
+            </div>
+          </div>
+          <div style="background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:8px;overflow:hidden;">
+            <img src="syndicate_bubble_map.png" alt="Syndicate Bubble Map" style="width:100%;display:block;max-height:300px;object-fit:contain;">
+          </div>
+        </div>
+
+        <!-- Tab 6: Watch Mode -->
+        <div class="visual-panel" data-tab="6" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Live Monitoring Status</p>
+          <div style="background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:12px;padding:32px;text-align:center;max-width:400px;margin:0 auto;">
+            <div style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#00E5A0;margin-bottom:16px;" class="watch-pulse"></div>
+            <div style="font-size:14px;font-weight:600;color:#E8ECF2;font-family:'JetBrains Mono',monospace;">Watch Mode Active</div>
+            <div style="font-size:11px;color:#8895A7;margin-top:6px;">ethereum, base · every 5 min</div>
+            <div style="margin-top:20px;display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;text-align:left;">
+              <div id="watch-cycle-log">
+                <div style="color:#00E5A0;">Cycle 1 — 15 signals detected</div>
+                <div style="color:#00E5A0;">Cycle 2 — 1 new: VIRTUAL (base)</div>
+                <div style="color:#8895A7;">Cycle 3 — No new signals</div>
+              </div>
+              <div style="color:#8895A7;margin-top:8px;" id="watch-anim-line">Scanning...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 7: Portfolio -->
+        <div class="visual-panel" data-tab="7" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">Portfolio Breakdown — $2.08M Total</p>
+          <div style="max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">ETH</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:67.2%;height:100%;background:linear-gradient(90deg,#00E5A0,#10B981);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">67.2%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">UNI</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:11.7%;height:100%;background:linear-gradient(90deg,#00E5A0,#10B981);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">11.7%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">ONDO</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:8.6%;height:100%;background:linear-gradient(90deg,#7C6CF0,#A855F7);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">8.6%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">AAVE</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:7.5%;height:100%;background:linear-gradient(90deg,#7C6CF0,#A855F7);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">7.5%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">LDO</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:3%;height:100%;background:linear-gradient(90deg,#F5A623,#FCD34D);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">3.0%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:50px;font-size:11px;color:#E8ECF2;font-family:'JetBrains Mono',monospace;text-align:right;">LINK</span>
+              <div style="flex:1;height:24px;background:#1A2940;border-radius:4px;overflow:hidden;position:relative;">
+                <div style="width:2%;height:100%;background:linear-gradient(90deg,#F5A623,#FCD34D);border-radius:4px;"></div>
+              </div>
+              <span style="width:70px;font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;">2.0%</span>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:16px;font-family:'JetBrains Mono',monospace;">
+            <span style="font-size:11px;color:#8895A7;">30D PnL: </span><span style="font-size:13px;color:#00E5A0;font-weight:600;">+$340,200 (+19.5%)</span>
+          </div>
+        </div>
+
+        <!-- Tab 8: Quote -->
+        <div class="visual-panel" data-tab="8" style="padding:20px;">
+          <p style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;margin-bottom:12px">DEX Quote Result</p>
+          <div style="background:rgba(26,41,64,0.3);border:1px solid #1A2940;border-radius:12px;padding:24px;max-width:400px;margin:0 auto;text-align:center;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;">
+              <div style="background:#0C1420;border:1px solid #1A2940;border-radius:8px;padding:12px 20px;">
+                <div style="font-size:20px;font-weight:700;color:#E8ECF2;font-family:'Satoshi',sans-serif;">1.5 ETH</div>
+                <div style="font-size:10px;color:#8895A7;">Input</div>
+              </div>
+              <div style="color:#00E5A0;font-size:20px;">→</div>
+              <div style="background:#0C1420;border:1px solid rgba(0,229,160,0.3);border-radius:8px;padding:12px 20px;">
+                <div style="font-size:20px;font-weight:700;color:#00E5A0;font-family:'Satoshi',sans-serif;">5,107.23 USDC</div>
+                <div style="font-size:10px;color:#8895A7;">Output</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#8895A7;font-family:'JetBrains Mono',monospace;line-height:2;">
+              <div>Route: <span style="color:#E8ECF2;">Uniswap V3</span> · Chain: <span style="color:#E8ECF2;">Base</span></div>
+              <div>Rate: <span style="color:#E8ECF2;">1 ETH = 3,404.82 USDC</span></div>
+              <div>Impact: <span style="color:#00E5A0;">0.02%</span> · Gas: <span style="color:#00E5A0;">~$0.12</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
-<div class="section-fade"></div>
-<!-- Live Results Gallery -->
-<section class="py-24 px-6 md:px-12 relative" style="z-index:2; background: linear-gradient(180deg, transparent, rgba(0,229,160,0.02) 50%, transparent);">
-  <div class="max-w-6xl mx-auto">
-    <p class="text-muted text-sm font-mono mb-3 fade-in">LIVE RESULTS</p>
-    <h2 class="font-display text-3xl md:text-4xl font-black mb-6 fade-in" style="font-family:'Satoshi',sans-serif">Real data. Real signals.</h2>
-    <p class="text-muted mb-12 fade-in" style="max-width:600px">Output from a live scan — March 27, 2026. 5 chains, 20 signals, 26 API calls via x402 micropayments.</p>
-    
-    <div style="display:grid; grid-template-columns: 1fr; gap: 20px;" class="fade-in">
-      <div style="background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 12px; overflow: hidden;">
-        <div style="padding: 14px 20px; border-bottom: 1px solid #1A2940; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #00E5A0;">Signal Fusion — Top Signals by Conviction</div>
-        <img src="signal_timeline.png" alt="Signal Timeline" style="width: 100%; display: block;">
-      </div>
-    </div>
-    
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;" class="fade-in">
-      <div style="background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 12px; overflow: hidden;">
-        <div style="padding: 14px 20px; border-bottom: 1px solid #1A2940; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #00E5A0;">Chain Sweep — Value by Chain</div>
-        <img src="chain_comparison.png" alt="Chain Comparison" style="width: 100%; display: block;">
-      </div>
-      <div style="background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 12px; overflow: hidden;">
-        <div style="padding: 14px 20px; border-bottom: 1px solid #1A2940; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #00E5A0;">Syndicate Bubble Map</div>
-        <img src="syndicate_bubble_map.png" alt="Syndicate Map" style="width: 100%; display: block;">
-      </div>
-    </div>
-    
-    <div style="display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap;" class="fade-in">
-      <a href="network_map.html" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.25); border-radius: 8px; color: #00E5A0; text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 13px; transition: all 0.2s;">
-        ↗ Interactive Network Map
-      </a>
-      <a href="bubble_map.html" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.25); border-radius: 8px; color: #00E5A0; text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 13px; transition: all 0.2s;">
-        ↗ Interactive Bubble Map
-      </a>
-    </div>
-  </div>
-</section>
-<div class="section-fade"></div>
 <section class="py-24 px-6 md:px-12 relative" style="z-index:2">
   <div class="max-w-6xl mx-auto">
     <p class="text-muted text-sm font-mono mb-3 fade-in">CAPABILITIES</p>
@@ -890,8 +1082,11 @@ document.getElementById('term-tabs').addEventListener('click', (e) => {
   const tab = btn.dataset.tab;
   document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.visual-panel').forEach(v => v.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector(`.term-content[data-tab="${tab}"]`).classList.add('active');
+  const vp = document.querySelector(`.visual-panel[data-tab="${tab}"]`);
+  if (vp) vp.classList.add('active');
   // Update feature description
   const desc = btn.dataset.desc || '';
   const parts = desc.split(' ');
