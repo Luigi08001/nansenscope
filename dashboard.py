@@ -56,21 +56,26 @@ def _build_chain_filters(signals: list) -> str:
 
 
 def _build_signal_rows(signals: list) -> str:
+    max_score = max((s.get("score", 0) for s in signals), default=1) or 1
     rows = ""
     for i, s in enumerate(signals, 1):
         sev = s.get("severity", "high").upper()
         sev_class = sev.lower()
         summary = s.get("summary", "")[:100].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         token = s.get("token", "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        score = s.get("score", 0)
+        bar_w = int((score / max_score) * 100) if max_score else 0
+        delay = f"transition-delay: {0.04 * i:.2f}s;"
         rows += f"""
-        <tr class="signal-row" data-chain="{s.get('chain','')}" data-severity="{sev.lower()}">
+        <tr class="signal-row" data-chain="{s.get('chain','')}" data-severity="{sev.lower()}" style="position:relative;{delay}">
             <td class="row-num">{i}</td>
             <td><span class="sev-badge {sev_class}">{sev}</span></td>
             <td><span class="chain-pill">{s.get('chain','')}</span></td>
             <td class="token">{token}</td>
             <td class="type">{s.get('type','').replace('_',' ').title()}</td>
             <td class="summary">{summary}</td>
-            <td class="score">{s.get('score', 0):.0f}</td>
+            <td class="score">{score:.0f}</td>
+            <td style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0;border:none;pointer-events:none;"><div class="vp-row-bar" data-width="{bar_w}" style="--bar-w:{bar_w};"></div></td>
         </tr>"""
     return rows
 
@@ -568,6 +573,46 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             border-radius: 3px;
         }}
 
+        /* --- Visual Panel Animations --- */
+        .vp-stat-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }}
+        .vp-stat-box {{
+            background: rgba(26,41,64,0.3); border: 1px solid #1A2940; border-radius: 10px;
+            padding: 16px; text-align: center;
+            opacity: 0; transform: translateY(15px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }}
+        .tab-content.animate .vp-stat-box {{ opacity: 1; transform: translateY(0); }}
+        .tab-content.animate .vp-stat-box:nth-child(1) {{ transition-delay: 0s; }}
+        .tab-content.animate .vp-stat-box:nth-child(2) {{ transition-delay: 0.08s; }}
+        .tab-content.animate .vp-stat-box:nth-child(3) {{ transition-delay: 0.16s; }}
+        .tab-content.animate .vp-stat-box:nth-child(4) {{ transition-delay: 0.24s; }}
+        .vp-stat-val {{
+            font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800;
+            color: #00E5A0; line-height: 1;
+        }}
+        .vp-stat-label {{
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            color: #8895A7; margin-top: 6px;
+        }}
+        .signal-row {{
+            transition: background 0.15s, opacity 0.4s ease, transform 0.4s ease;
+            opacity: 0; transform: translateX(-20px);
+        }}
+        .tab-content.animate .signal-row {{
+            opacity: 1; transform: translateX(0);
+        }}
+        .signal-row td {{ position: relative; z-index: 1; }}
+        .signal-row .vp-row-bar {{
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+            background: linear-gradient(90deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03));
+            transition: width 1s ease 0.3s;
+            border-right: 2px solid rgba(0,229,160,0.15);
+            z-index: 0;
+        }}
+        .tab-content.animate .signal-row .vp-row-bar {{
+            width: calc(var(--bar-w, 0) * 1%);
+        }}
+
         /* Responsive */
         @media (max-width: 768px) {{
             .stats {{ flex-wrap: wrap; }}
@@ -631,7 +676,25 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             </div>
 
             <!-- TAB: Signals -->
-            <div id="tab-signals" class="tab-content active">
+            <div id="tab-signals" class="tab-content active animate">
+                <div class="vp-stat-grid">
+                    <div class="vp-stat-box">
+                        <div class="vp-stat-val" data-count-to="{total_signals}">0</div>
+                        <div class="vp-stat-label">Total Signals</div>
+                    </div>
+                    <div class="vp-stat-box">
+                        <div class="vp-stat-val" data-count-to="{chain_count}">0</div>
+                        <div class="vp-stat-label">Chains</div>
+                    </div>
+                    <div class="vp-stat-box">
+                        <div class="vp-stat-val" data-count-to="{high_count}">0</div>
+                        <div class="vp-stat-label">High Priority</div>
+                    </div>
+                    <div class="vp-stat-box">
+                        <div class="vp-stat-val" data-count-to="{unique_tokens}">0</div>
+                        <div class="vp-stat-label">Unique Tokens</div>
+                    </div>
+                </div>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterSignals('all', this)">All</button>
                     {chain_filters}
@@ -698,12 +761,68 @@ def generate_dashboard(auto_open: bool = True) -> Path:
     </div>
 
     <script>
+    /* ---- Animated counters ---- */
+    function animateCounters(panel) {{
+        panel.querySelectorAll('[data-count-to]').forEach(function(el) {{
+            var target = parseInt(el.dataset.countTo, 10);
+            var prefix = el.dataset.prefix || '';
+            var suffix = el.dataset.suffix || '';
+            if (isNaN(target) || target === 0) {{ el.textContent = prefix + '0' + suffix; return; }}
+            var start = null;
+            var duration = 1200;
+            function easeOut(t) {{ return 1 - Math.pow(1 - t, 3); }}
+            function step(ts) {{
+                if (!start) start = ts;
+                var progress = Math.min((ts - start) / duration, 1);
+                var current = Math.floor(easeOut(progress) * target);
+                el.textContent = prefix + current.toLocaleString() + suffix;
+                if (progress < 1) requestAnimationFrame(step);
+                else el.textContent = prefix + target.toLocaleString() + suffix;
+            }}
+            requestAnimationFrame(step);
+        }});
+    }}
+
+    /* ---- Animated bars ---- */
+    function animateBars(panel) {{
+        panel.querySelectorAll('[data-width]').forEach(function(el) {{
+            var w = el.dataset.width;
+            el.style.width = '0';
+            requestAnimationFrame(function() {{
+                requestAnimationFrame(function() {{
+                    el.style.width = w + '%';
+                }});
+            }});
+        }});
+    }}
+
     /* ---- Tab switching ---- */
     function showTab(name, el) {{
-        document.querySelectorAll('.tab-content').forEach(function(t) {{ t.classList.remove('active'); }});
+        /* Remove animate + active from all tabs */
+        document.querySelectorAll('.tab-content').forEach(function(t) {{
+            t.classList.remove('active', 'animate');
+        }});
         document.querySelectorAll('.tab').forEach(function(t) {{ t.classList.remove('active'); }});
-        document.getElementById('tab-' + name).classList.add('active');
+
+        var panel = document.getElementById('tab-' + name);
+        panel.classList.add('active');
         el.classList.add('active');
+
+        /* Set --bar-w on row bars */
+        panel.querySelectorAll('.vp-row-bar').forEach(function(bar) {{
+            bar.style.setProperty('--bar-w', bar.dataset.width || '0');
+        }});
+
+        /* Reset bars to 0 before animating */
+        panel.querySelectorAll('[data-width]').forEach(function(bar) {{ bar.style.width = '0'; }});
+
+        /* Force reflow then animate */
+        void panel.offsetHeight;
+        panel.classList.add('animate');
+
+        animateCounters(panel);
+        animateBars(panel);
+
         if (name === 'network') {{ setTimeout(initNetworkGraph, 60); }}
     }}
 
@@ -737,6 +856,21 @@ def generate_dashboard(auto_open: bool = True) -> Path:
             if (arrow) arrow.innerHTML = (i === col && sortDir[col]) ? '&#9660;' : '&#9650;';
         }});
     }}
+
+    /* ---- Initial animation on load ---- */
+    document.addEventListener('DOMContentLoaded', function() {{
+        var panel = document.getElementById('tab-signals');
+        if (panel) {{
+            panel.querySelectorAll('.vp-row-bar').forEach(function(bar) {{
+                bar.style.setProperty('--bar-w', bar.dataset.width || '0');
+            }});
+            panel.querySelectorAll('[data-width]').forEach(function(bar) {{ bar.style.width = '0'; }});
+            void panel.offsetHeight;
+            panel.classList.add('animate');
+            animateCounters(panel);
+            animateBars(panel);
+        }}
+    }});
 
     /* ========================================================
        INLINE CANVAS NETWORK MAP — force-directed graph
