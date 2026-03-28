@@ -63,17 +63,29 @@
             border-bottom: 1px solid #1A2940;
         }
         .header-left h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 800;
             letter-spacing: -0.5px;
         }
         .header-left h1 .accent { color: #00E5A0; }
         .header-left h1 .dim { color: #8895A7; font-weight: 500; }
+        .header-cmd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: #00E5A0;
+            margin-top: 10px;
+            background: rgba(0,229,160,0.06);
+            border: 1px solid rgba(0,229,160,0.15);
+            border-radius: 6px;
+            padding: 8px 16px;
+            display: inline-block;
+        }
+        .header-cmd .dollar { color: #8895A7; }
         .header-meta {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 13px;
             color: #8895A7;
-            margin-top: 6px;
+            margin-top: 8px;
         }
         .header-meta .green { color: #00E5A0; }
         .header-right { display: flex; gap: 8px; align-items: flex-start; }
@@ -108,14 +120,14 @@
         .stat:last-child { border-right: none; }
         .stat-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 700;
             color: #00E5A0;
             line-height: 1;
         }
         .stat-value.white { color: #E8ECF2; }
         .stat-label {
-            font-size: 11px;
+            font-size: 13px;
             color: #8895A7;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -173,12 +185,12 @@
         }
         .tab {
             font-family: 'Inter', sans-serif;
-            padding: 12px 24px;
+            padding: 14px 28px;
             cursor: pointer;
             color: #8895A7;
             border: none;
             border-bottom: 2px solid transparent;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 500;
             background: none;
             transition: all 0.2s;
@@ -224,15 +236,15 @@
         .signal-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 14px;
         }
         .signal-table th {
             background: rgba(26,41,64,0.6);
             color: #8895A7;
-            padding: 12px 14px;
+            padding: 14px 16px;
             text-align: left;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
@@ -460,12 +472,12 @@
         .tab-content.animate .vp-stat-box:nth-child(3) { transition-delay: 0.16s; }
         .tab-content.animate .vp-stat-box:nth-child(4) { transition-delay: 0.24s; }
         .vp-stat-val {
-            font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800;
+            font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 800;
             color: #00E5A0; line-height: 1;
         }
         .vp-stat-label {
-            font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            color: #8895A7; margin-top: 6px;
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            color: #8895A7; margin-top: 8px;
         }
         .signal-row {
             transition: background 0.15s, opacity 0.4s ease, transform 0.4s ease;
@@ -505,8 +517,8 @@
         <div class="header">
             <div class="header-left">
                 <h1><span class="accent">Nansen</span>Scope <span class="dim">Dashboard</span></h1>
+                <div class="header-cmd"><span class="dollar">$</span> nansenscope daily --chains ethereum, base, solana, arbitrum, bnb</div>
                 <div class="header-meta">
-                    <span class="green">$</span> nansenscope daily --chains ethereum, base, solana, arbitrum, bnb<br>
                     <span class="green">SCAN COMPLETE</span> &mdash; 2026-03-27T23:09:17.314509+00:00
                 </div>
             </div>
